@@ -1,0 +1,161 @@
+/* Import Font Modern */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-blue: #002b5c;   
+    --dark-blue: #001226;      
+    --accent-yellow: #FFD700;  
+    --text-gray: #aab7c4;
+    --hover-bg: rgba(255, 255, 255, 0.08);
+    --sidebar-width: 260px;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* --- STRUKTUR LAYOUT UTAMA --- */
+.main-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+.content-area {
+    margin-left: var(--sidebar-width); /* Ruang untuk sidebar fixed */
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s;
+}
+
+/* --- SIDEBAR STYLING (FIXED) --- */
+.sidebar { 
+    width: var(--sidebar-width);
+    background: linear-gradient(180deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+    height: 100vh; 
+    color: white; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--accent-yellow);
+    padding: 25px 0;
+    margin: 0;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.nav-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.4);
+    padding: 20px 25px 8px;
+    font-weight: 700;
+}
+
+.nav-link { 
+    color: var(--text-gray) !important; 
+    padding: 12px 20px;
+    margin: 4px 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.nav-link i {
+    font-size: 1.1rem;
+    width: 25px;
+    margin-right: 12px;
+    text-align: center;
+}
+
+.nav-link:hover { 
+    color: var(--accent-yellow) !important; 
+    background: var(--hover-bg);
+    transform: translateX(5px);
+}
+
+.sub-menu-link {
+    font-size: 0.8rem;
+    padding: 8px 25px 8px 57px;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    display: block;
+    transition: 0.2s;
+}
+
+.sub-menu-link:hover {
+    color: white;
+    padding-left: 62px;
+}
+
+/* --- HEADER / TOPBAR STYLING --- */
+.topbar {
+    height: 70px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 99;
+}
+
+.search-wrapper {
+    background: #f1f3f5;
+    padding: 8px 15px;
+    border-radius: 10px;
+    width: 300px;
+    display: flex;
+    align-items: center;
+}
+
+.search-wrapper input {
+    border: none;
+    background: transparent;
+    outline: none;
+    padding-left: 10px;
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+.avatar-box {
+    width: 38px;
+    height: 38px;
+    background: var(--primary-blue);
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0,43,92,0.2);
+}
+
+/* Tombol Logout */
+.logout-box { padding: 20px; margin-top: auto; }
+.logout-link {
+    background: rgba(255, 71, 87, 0.1) !important;
+    color: #ff6b6b !important;
+    border-radius: 10px;
+    justify-content: center;
+    font-weight: 600;
+}
