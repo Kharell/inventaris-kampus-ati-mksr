@@ -33,6 +33,7 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
             </a>
         </li>
         
+        <!-- Admin -->
         <?php if($role == 'admin'): ?>
             <div class="nav-label mt-3 mb-1 px-3">Manajemen Gudang</div>
             <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/gudang/atk.php"><i class="bi bi-pencil-square me-2"></i> ATK</a></li>
@@ -47,6 +48,7 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
             <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/distribusi/index.php"><i class="bi bi-truck me-2"></i> Distribusi Lab</a></li>
         <?php endif; ?>
 
+        <!-- Kepala Lab -->
         <?php if($role == 'kepala_lab'): ?>
             <div class="nav-label mt-3 mb-1 px-3">Aktivitas Laboratorium</div>
             <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/lab/konfirmasi.php"><i class="bi bi-box-arrow-in-down me-2"></i> Konfirmasi Masuk</a></li>

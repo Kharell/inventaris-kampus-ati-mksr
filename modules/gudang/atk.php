@@ -3,6 +3,7 @@ include "../../config/database.php";
 include "../../config/auth.php";
 checkLogin();
 
+
 // --- Logika Pagination & Pencarian ---
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 $page = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
@@ -33,7 +34,8 @@ $res = mysqli_query($conn, $query);
     <title>Inventaris ATK - Gudang Pusat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="<?= $base_url; ?>assets/css/style.css">
+    <link href="../../assets/css/style.css" rel="stylesheet">
+    
     <style>
         :root { --navy: #0a192f; --navy-light: #112240; --gold: #ffcc00; }
         body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; }
