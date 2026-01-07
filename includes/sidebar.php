@@ -19,7 +19,7 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
 
 <div class="sidebar d-flex flex-column p-0"> 
     <div class="py-4 px-4 text-center">
-        <img src="<?= $base_url; ?>images/logo.png" alt="Logo" style="width: 50px;" class="mb-2">
+        <img src="<?= $base_url; ?>../images/logo.png" alt="Logo" style="width: 50px;" class="mb-2">
         <h4 class="fw-bold mb-0" style="color: #ffcc00; letter-spacing: 1px; font-size: 1.2rem;">INVENTARIS</h4>
         <small class="text-white-50 small">Politeknik ATI Makassar</small>
     </div>
@@ -28,7 +28,7 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
     
     <ul class="nav flex-column mb-auto px-2">
         <li class="nav-item">
-            <a class="nav-link py-2" href="<?= $base_url; ?>views/<?= ($role == 'admin') ? 'admin' : 'kepala-lab'; ?>/index.php">
+            <a class="nav-link py-2" href="<?= $base_url; ?>../views/<?= ($role == 'admin') ? 'admin' : 'kepala-lab'; ?>/index.php">
                 <i class="bi bi-speedometer2 me-2"></i> Dashboard
             </a>
         </li>
@@ -36,28 +36,47 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
         <!-- Admin -->
         <?php if($role == 'admin'): ?>
             <div class="nav-label mt-3 mb-1 px-3">Manajemen Gudang</div>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/gudang/atk.php"><i class="bi bi-pencil-square me-2"></i> ATK</a></li>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/gudang/kebersihan.php"><i class="bi bi-trash3 me-2"></i> Kebersihan</a></li>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php"><i class="bi bi-box-seam me-2"></i> Bahan Praktek</a></li>
+            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>../modules/gudang/atk.php"><i class="bi bi-pencil-square me-2"></i> ATK</a></li>
+            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>../modules/gudang/kebersihan.php"><i class="bi bi-trash3 me-2"></i> Kebersihan</a></li>
+            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>../modules/gudang/bahan-praktek.php"><i class="bi bi-box-seam me-2"></i> Bahan Praktek</a></li>
 
             <div class="nav-label mt-3 mb-1 px-3">Data Master</div>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/bahan-praktek/jurusan.php"><i class="bi bi-mortarboard me-2"></i> Jurusan & Lab</a></li>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/bahan-praktek/kepala-lab.php"><i class="bi bi-person-badge me-2"></i> Kepala Lab</a></li>
+            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>../modules/bahan-praktek/jurusan.php"><i class="bi bi-mortarboard me-2"></i> Jurusan & Lab</a></li>
+            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>../modules/bahan-praktek/kepala-lab.php"><i class="bi bi-person-badge me-2"></i> Kepala Lab</a></li>
             
             <div class="nav-label mt-3 mb-1 px-3">Akademik</div>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/distribusi/index.php"><i class="bi bi-truck me-2"></i> Distribusi Lab</a></li>
+            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>../modules/distribusi/index.php"><i class="bi bi-truck me-2"></i> Distribusi Lab</a></li>
         <?php endif; ?>
 
         <!-- Kepala Lab -->
-        <?php if($role == 'kepala_lab'): ?>
-            <div class="nav-label mt-3 mb-1 px-3">Aktivitas Laboratorium</div>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/lab/konfirmasi.php"><i class="bi bi-box-arrow-in-down me-2"></i> Konfirmasi Masuk</a></li>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/lab/pemakaian.php"><i class="bi bi-clipboard-data me-2"></i> Lapor Pemakaian</a></li>
-            <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/lab/stok.php"><i class="bi bi-archive me-2"></i> Stok Lab Saya</a></li>
+           <?php if($role == 'kepala_lab'): ?>
+            <div class="nav-label mt-3 mb-1 px-3 text-uppercase small opacity-50">Aktivitas Laboratorium</div>
+
+            <li class="nav-item">
+                <a class="nav-link py-1" href="<?= $base_url; ?>../views/kepala-lab/lab/stok.php">
+                    <i class="bi bi-archive me-2"></i> Stok Lab Saya
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link py-1" href="<?= $base_url; ?>../views/kepala-lab/lab/kebutuhan.php">
+                    <i class="bi bi-cart-plus me-2"></i> Input Kebutuhan
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link py-1" href="<?= $base_url; ?>../views/kepala-lab/lab/konfirmasi.php">
+                    <i class="bi bi-box-arrow-in-down me-2"></i> Konfirmasi Masuk
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link py-1" href="<?= $base_url; ?>../views/kepala-lab/lab/pemakaian.php">
+                    <i class="bi bi-clipboard-data me-2"></i> Lapor Pemakaian
+                </a>
+            </li>
+           
         <?php endif; ?>
 
         <div class="nav-label mt-3 mb-1 px-3">Analitik</div>
-        <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>modules/laporan/index.php"><i class="bi bi-file-earmark-bar-graph me-2"></i> Laporan Pusat</a></li>
+        <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>../modules/laporan/index.php"><i class="bi bi-file-earmark-bar-graph me-2"></i> Laporan Pusat</a></li>
     </ul>
 
     <div class="logout-box mt-auto p-3 border-top border-white border-opacity-10">
@@ -95,7 +114,7 @@ function prosesLogout() {
                 didOpen: () => { Swal.showLoading() }
             }).then(() => {
                 // DIARAHKAN KE LOGOUT.PHP (BUKAN LOGIN.PHP) agar session hancur
-                window.location.href = "<?= $base_url; ?>logout.php";
+                window.location.href = "<?= $base_url; ?>../logout.php";
             });
         }
     })

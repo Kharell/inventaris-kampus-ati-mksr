@@ -240,10 +240,28 @@ if (isset($_POST['login'])) {
 
             <div class="mb-4">
                 <label class="form-label text-uppercase">Password</label>
-                <div class="input-group">
+                <!-- <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
                     <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div> -->
+
+                 <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                    
+                    <input 
+                        type="password" 
+                        name="password" 
+                        id="password"
+                        class="form-control" 
+                        placeholder="••••••••" 
+                        required
+                    >
+
+                    <span class="input-group-text password-toggle" onclick="togglePassword()">
+                        <i class="bi bi-eye-fill" id="toggleIcon"></i>
+                    </span>
                 </div>
+
             </div>
 
             <button type="submit" name="login" class="btn btn-login">
@@ -281,6 +299,21 @@ function confirmLogout() {
             window.location.href = "../../logout.php"; 
         }
     })
+}
+
+function togglePassword() {
+    const passwordInput = document.getElementById("password");
+    const icon = document.getElementById("toggleIcon");
+
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        icon.classList.remove("bi-eye-fill");
+        icon.classList.add("bi-eye-slash-fill");
+    } else {
+        passwordInput.type = "password";
+        icon.classList.remove("bi-eye-slash-fill");
+        icon.classList.add("bi-eye-fill");
+    }
 }
 </script>
 

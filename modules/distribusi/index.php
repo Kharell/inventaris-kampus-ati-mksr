@@ -81,6 +81,33 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
         .table-hover tbody tr:hover {
             background-color: rgba(10, 25, 47, 0.02);
         }
+
+                /* Efek kedip pada notifikasi permintaan */
+        .pulse-notif {
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+
+        /* Efek animasi berkedip untuk tanda notifikasi agar lebih terlihat */
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            box-shadow: 0 0 0 rgba(220, 53, 69, 0.4);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
@@ -106,74 +133,109 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
             </div>
 
             <ul class="nav nav-pills nav-jurusan mb-4" id="pills-tab" role="tablist">
-                <?php 
-                $active_j = true;
-                mysqli_data_seek($query_jurusan, 0);
-                while($j = mysqli_fetch_assoc($query_jurusan)): 
-                ?>
-                <li class="nav-item">
-                    <button class="nav-link <?= $active_j ? 'active' : ''; ?>" data-bs-toggle="pill" 
-                            data-bs-target="#jur-<?= $j['id_jurusan']; ?>" type="button">
-                        <?= $j['nama_jurusan']; ?>
-                    </button>
-                </li>
-                <?php $active_j = false; endwhile; ?>
-            </ul>
+    <?php 
+    $active_j = true;
+        mysqli_data_seek($query_jurusan, 0);
+        while($j = mysqli_fetch_assoc($query_jurusan)): 
+            $id_jur = $j['id_jurusan'];
+            
+            // Query untuk cek apakah ada salah satu lab di jurusan ini yang punya permintaan pending
+            $check_req = mysqli_query($conn, "SELECT p.id_permintaan 
+                FROM permintaan_barang p
+                JOIN kepala_lab kl ON p.id_kepala = kl.id_kepala
+                JOIN lab l ON kl.id_lab = l.id_lab
+                WHERE l.id_jurusan = '$id_jur' AND p.status = 'pending' 
+                LIMIT 1"); // Limit 1 karena kita hanya butuh tahu "ada atau tidak"
+                
+            $has_pending = (mysqli_num_rows($check_req) > 0);
+        ?>
+        <li class="nav-item">
+            <button class="nav-link position-relative <?= $active_j ? 'active' : ''; ?>" 
+                    data-bs-toggle="pill" 
+                    data-bs-target="#jur-<?= $id_jur; ?>" 
+                    type="button">
+                
+                <?= $j['nama_jurusan']; ?>
 
-            <div class="row">
-                <div class="col-md-4 col-lg-3">
-                    <h6 class="fw-bold text-muted mb-3 small uppercase">PILIH LABORATORIUM:</h6>
-                    <div class="tab-content">
-                        <?php 
-                        $active_j = true;
-                        mysqli_data_seek($query_jurusan, 0);
-                        while($j = mysqli_fetch_assoc($query_jurusan)): 
-                            $id_jur = $j['id_jurusan'];
-                        ?>
-                        <div class="tab-pane fade <?= $active_j ? 'show active' : ''; ?>" id="jur-<?= $id_jur; ?>">
-                            <div class="nav flex-column nav-pills nav-lab">
-                                <?php 
-                                // Mengambil data lab sekaligus nama kepala labnya
-                                $q_lab = mysqli_query($conn, "SELECT l.*, kl.nama_kepala 
-                                                            FROM lab l 
-                                                            LEFT JOIN kepala_lab kl ON l.id_lab = kl.id_lab 
-                                                            WHERE l.id_jurusan = '$id_jur'");
-                                
-                                while($l = mysqli_fetch_assoc($q_lab)):
-                                    $nama_kepala = !empty($l['nama_kepala']) ? $l['nama_kepala'] : '<span class="text-danger italic">Belum ada Kepala Lab</span>';
-                                ?>
-                                <button class="nav-link mb-2 d-flex justify-content-between align-items-center text-start" 
-                                        onclick="viewLabDetails('<?= $l['id_lab']; ?>', '<?= addslashes($l['nama_lab']); ?>', '<?= addslashes($j['nama_jurusan']); ?>')"
-                                        data-bs-toggle="pill" type="button">
-                                    <div class="w-100">
-                                        <div class="fw-bold d-block text-navy"><?= $l['nama_lab']; ?></div>
-                                        <div class="text-muted small" style="font-size: 0.75rem;">
-                                            <i class="bi bi-person me-1"></i> <?= $nama_kepala; ?>
-                                        </div>
-                                    </div>
-                                    <i class="bi bi-chevron-right ms-2"></i>
-                                </button>
-                                <?php endwhile; ?>
+                <?php if ($has_pending) : ?>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle pulse-dot">
+                        <span class="visually-hidden">New alerts</span>
+                    </span>
+                <?php endif; ?>
+                
+            </button>
+        </li>
+        <?php $active_j = false; endwhile; ?>
+    </ul>
+
+
+
+<div class="row">
+    <div class="col-md-4 col-lg-3">
+        <h6 class="fw-bold text-muted mb-3 small uppercase">PILIH LABORATORIUM:</h6>
+        <div class="tab-content">
+            <?php 
+            $active_j = true;
+            mysqli_data_seek($query_jurusan, 0);
+            while($j = mysqli_fetch_assoc($query_jurusan)): 
+                $id_jur = $j['id_jurusan'];
+            ?>
+            <div class="tab-pane fade <?= $active_j ? 'show active' : ''; ?>" id="jur-<?= $id_jur; ?>">
+                <div class="nav flex-column nav-pills nav-lab">
+                    <?php 
+                    // Query mengambil l.* dan kl.id_kepala agar bisa dikirim ke JavaScript
+                    $q_lab = mysqli_query($conn, "SELECT l.*, kl.id_kepala, kl.nama_kepala,
+                             (SELECT COUNT(*) FROM permintaan_barang p 
+                              WHERE p.id_kepala = kl.id_kepala 
+                              AND p.status = 'pending') as total_permintaan
+                             FROM lab l 
+                             LEFT JOIN kepala_lab kl ON l.id_lab = kl.id_lab 
+                             WHERE l.id_jurusan = '$id_jur'");
+                    
+                    while($l = mysqli_fetch_assoc($q_lab)):
+                        // Pastikan id_kepala ada, jika NULL beri string kosong
+                        $id_kepala = !empty($l['id_kepala']) ? $l['id_kepala'] : '';
+                        $nama_kepala = !empty($l['nama_kepala']) ? $l['nama_kepala'] : '<span class="text-danger italic">Belum ada Kepala Lab</span>';
+                        $jumlah_notif = $l['total_permintaan'];
+                    ?>
+                    <button class="nav-link mb-2 d-flex justify-content-between align-items-center text-start position-relative shadow-sm" 
+                            style="border-radius: 10px;"
+                            onclick="viewLabDetails('<?= $l['id_lab']; ?>', '<?= addslashes($l['nama_lab']); ?>', '<?= addslashes($j['nama_jurusan']); ?>', '<?= $id_kepala; ?>')"
+                            data-bs-toggle="pill" type="button">
+                        <div class="w-100">
+                            <div class="fw-bold d-block text-navy"><?= $l['nama_lab']; ?></div>
+                            <div class="text-muted small" style="font-size: 0.75rem;">
+                                <i class="bi bi-person me-1"></i> <?= $nama_kepala; ?>
                             </div>
                         </div>
-                        <?php $active_j = false; endwhile; ?>
-                    </div>
-                </div>
 
-                <div class="col-md-8 col-lg-9">
-                    <div class="data-container" id="distribusi-view">
-                        <div class="empty-state">
-                            <i class="bi bi-arrow-left-circle mb-3 d-block" style="font-size: 3rem;"></i>
-                            <h5>Silahkan pilih Laboratorium</h5>
-                            <p>Klik salah satu lab di samping untuk melihat daftar bahan terdistribusi.</p>
-                        </div>
-                    </div>
+                        <?php if($jumlah_notif > 0): ?>
+                            <span class="badge rounded-pill bg-danger shadow-sm pulse-notif" 
+                                  style="font-size: 0.7rem; padding: 5px 8px; border: 1px solid white;">
+                                <?= $jumlah_notif; ?> Baru
+                            </span>
+                        <?php else: ?>
+                            <i class="bi bi-chevron-right ms-2 opacity-50"></i>
+                        <?php endif; ?>
+                    </button>
+                    <?php endwhile; ?>
                 </div>
             </div>
+            <?php $active_j = false; endwhile; ?>
+        </div>
+    </div>
 
+    <div class="col-md-8 col-lg-9">
+        <div class="data-container" id="distribusi-view">
+            <div class="empty-state">
+                <i class="bi bi-arrow-left-circle mb-3 d-block" style="font-size: 3rem;"></i>
+                <h5>Silahkan pilih Laboratorium</h5>
+                <p>Klik salah satu lab di samping untuk memproses permintaan atau melihat riwayat.</p>
+            </div>
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="distModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form action="../proses/tambah.php" method="POST" class="modal-content border-0 rounded-4 overflow-hidden">
@@ -187,8 +249,9 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
 
             <div class="modal-body p-4">
                 <input type="hidden" name="id_lab" id="modIdLab">
-                <input type="hidden" name="nama_jurusan" id="modJurusan"> 
-                <input type="hidden" name="nama_lab" id="modLab">     
+                <input type="hidden" name="id_permintaan" id="modIdReq">
+                <input type="hidden" name="nama_jurusan" id="modJurusan">
+                <input type="hidden" name="nama_lab" id="modLab">   
                 
                 <div class="mb-3">
                     <label class="form-label fw-bold small" style="color: #0a192f;">PILIH BAHAN PRAKTEK</label>
@@ -265,9 +328,6 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    let currentLabId = '';
-    let currentLabName = '';
-    let currentJurName = '';
 
     function viewLabDetails(id, labName, jurName) {
         currentLabId = id;
@@ -423,6 +483,66 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
         // Membersihkan URL agar notifikasi tidak muncul lagi saat refresh
         window.history.replaceState({}, document.title, window.location.pathname);
     }
+
+    // Gunakan variabel global agar bisa diakses semua fungsi
+let currentLabId = '';
+let currentLabName = '';
+let currentJurName = '';
+
+function viewLabDetails(id, labName, jurName) {
+    // 1. Simpan ke variabel global
+    currentLabId = id;
+    currentLabName = labName;
+    currentJurName = jurName;
+
+    // 2. Langsung isi input hidden di modal supaya 'siaga'
+    document.getElementById('modIdLab').value = id;
+    document.getElementById('modLab').value = labName;
+    document.getElementById('modJurusan').value = jurName;
+
+    // ... kode fetch/loadDistribusi Anda yang sudah ada ...
+    const view = document.getElementById('distribusi-view');
+    view.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm border-start border-4" style="border-left-color: #0a192f !important;">
+            <div>
+                <h4 class="fw-bold mb-0" style="color: #0a192f;">${labName}</h4>
+                <span class="badge" style="background-color: #ffcc00; color: #0a192f;">${jurName}</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-add-dist shadow-sm" onclick="openDistModal('${id}', '${labName}', '${jurName}')" style="background-color: #0a192f; color: #ffcc00;">
+                    <i class="bi bi-plus-lg me-1"></i>Kirim
+                </button>
+            </div>
+        </div>
+        <div id="table-content">
+            <div class="text-center p-5"><div class="spinner-border" style="color: #0a192f;"></div></div>
+        </div>
+    `;
+    loadDistribusi(id, 1, '');
+}
+
+function prosesACC(idPermintaan, idBahan, jmlMinta, namaBahan) {
+    // Pastikan ID Lab terisi dari variabel global jika parameter fungsi tidak membawanya
+    if (!currentLabId) {
+        Swal.fire('Peringatan', 'ID Lab hilang, silakan klik ulang nama Lab di menu kiri.', 'warning');
+        return;
+    }
+
+    // Isi formulir modal
+    document.getElementById('modIdLab').value = currentLabId;
+    document.getElementById('modIdReq').value = idPermintaan;
+    document.getElementById('modLab').value = currentLabName;
+    document.getElementById('labName').innerText = currentLabName;
+    
+    // Set pilihan barang dan jumlah
+    document.getElementById('modBarang').value = idBahan;
+    document.getElementsByName('jumlah')[0].value = jmlMinta;
+
+    generateCode(); // Buat kode distribusi otomatis
+
+    var myModal = new bootstrap.Modal(document.getElementById('distModal'));
+    myModal.show();
+}
 </script>
 
 </body>

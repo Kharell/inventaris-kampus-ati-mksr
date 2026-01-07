@@ -118,7 +118,7 @@ checkLogin();
                     <div class="portal-card shadow-sm p-4">
                         <div>
                             <div class="icon-box-portal">
-                                <i class="bi bi-flask"></i>
+                                <i class="bi bi-speedometer2 fs-2"></i>
                             </div>
                             <h4 class="fw-bold text-navy">Bahan Praktek</h4>
                             <p class="text-muted small">Laporan penggunaan material habis pakai per laboratorium atau jurusan.</p>
