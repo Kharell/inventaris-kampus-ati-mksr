@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 05, 2026 at 12:40 AM
+-- Generation Time: Jan 07, 2026 at 07:15 AM
 -- Server version: 8.0.30
--- PHP Version: 8.1.10
+-- PHP Version: 8.2.22
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -44,16 +44,16 @@ CREATE TABLE `bahan_praktek` (
 
 INSERT INTO `bahan_praktek` (`id_praktek`, `kode_bahan`, `nama_bahan`, `id_jurusan`, `id_lab`, `stok`, `satuan`, `tgl_masuk`) VALUES
 (1, 'BPR-26-001', 'kabel utp', NULL, NULL, 21, 'roll', '2026-01-04'),
-(2, 'BPR-26-002', 'kabel utp lagi', NULL, NULL, 15, 'pcs', '2026-01-04'),
-(3, 'BPR-26-003', 'kabel', NULL, NULL, 4, 'roll', '2026-01-04'),
-(4, 'BPR-26-004', 'meja', NULL, NULL, 2, 'pcs', '2026-01-04'),
-(5, 'BPR-26-005', 'tang', NULL, NULL, 4, 'lembar', '2026-01-04'),
+(2, 'BPR-26-002', 'kabel utp lagi', NULL, NULL, 12, 'pcs', '2026-01-04'),
+(3, 'BPR-26-003', 'kabel', NULL, NULL, 1, 'roll', '2026-01-04'),
+(4, 'BPR-26-004', 'meja', NULL, NULL, 0, 'pcs', '2026-01-04'),
+(5, 'BPR-26-005', 'tang', NULL, NULL, 2, 'lembar', '2026-01-04'),
 (6, 'BPR-26-006', 'kunci inggris', NULL, NULL, 2, '4', '2026-01-04'),
 (7, 'BPR-26-007', 'kabel jumper', NULL, NULL, 3, 'roll', '2026-01-04'),
-(8, 'BPR-26-008', 'jam', NULL, NULL, 3, 'butir', '2026-01-04'),
+(8, 'BPR-26-008', 'jam', NULL, NULL, 4, 'butir', '2026-01-04'),
 (9, 'BPR-26-009', 'karpet', NULL, NULL, 12, 'roll', '2026-01-04'),
 (10, 'BPR-26-010', 'kursi', NULL, NULL, 24, 'pcs', '2026-01-04'),
-(11, 'BPR-26-011', 'helm', NULL, NULL, 0, 'butir', '2026-01-04');
+(11, 'BPR-26-011', 'helm', NULL, NULL, 2, 'butir', '2026-01-04');
 
 -- --------------------------------------------------------
 
@@ -121,12 +121,17 @@ INSERT INTO `distribusi_lab` (`id_distribusi`, `id_praktek`, `id_lab`, `kode_dis
 (1, 11, 6, 'OSP/P/BPR-26-011', 21, '2026-01-04', 'diterima'),
 (3, 3, 6, 'OSP/P/BPR-26-003', 12, '2026-01-04', 'diterima'),
 (4, 8, 6, 'OSP/P/BPR-26-008', 6, '2026-01-04', 'diterima'),
-(5, 3, 6, 'OSP/P/BPR-26-003', 2, '2026-01-04', 'dikirim'),
-(6, 11, 6, 'OSP/P/BPR-26-011', 2, '2026-01-04', 'dikirim'),
 (7, 2, 2, 'TKM/LKL/BPR-26-002', 6, '2026-01-04', 'diterima'),
 (8, 4, 2, 'TKM/LKL/BPR-26-004', 3, '2026-01-04', 'diterima'),
 (9, 3, 2, 'TKM/LKL/BPR-26-003', 5, '2026-01-04', 'diterima'),
-(10, 8, 8, 'TMIA/K/BPR-26-008', 3, '2026-01-05', 'dikirim');
+(17, 5, 1, 'TIA/LP/BPR-26-005', 2, '2026-01-07', 'dikirim'),
+(18, 3, 2, 'TKM/LKL/BPR-26-003', 1, '2026-01-07', 'diterima'),
+(19, 4, 1, 'TIA/LP/BPR-26-004', 2, '2026-01-07', 'dikirim'),
+(20, 3, 1, 'TIA/LP/BPR-26-003', 1, '2026-01-07', 'dikirim'),
+(21, 2, 1, 'TIA/LP/BPR-26-002', 3, '2026-01-07', 'diterima'),
+(22, 3, 1, 'TIA/LP/BPR-26-003', 2, '2026-01-07', 'diterima'),
+(23, 8, 8, 'TMIA/K/BPR-26-008', 2, '2026-01-07', 'diterima'),
+(24, 3, 8, 'TMIA/K/BPR-26-003', 1, '2026-01-07', 'diterima');
 
 -- --------------------------------------------------------
 
@@ -172,10 +177,11 @@ CREATE TABLE `kepala_lab` (
 --
 
 INSERT INTO `kepala_lab` (`id_kepala`, `id_lab`, `nama_kepala`, `username`, `password`, `password_plain`, `nip`, `kontak`, `role`) VALUES
-(1, 1, 'KAREL', 'karel', '$2y$10$g.rZ1qzHTccSR.e/mYE6/.vHYI1MwHt3IDdTnLS75GL9vuF01UsR2', '123', '2385y9385683', '023895735', 'kepala_lab'),
-(2, 1, 'DIAN', 'dian', '$2y$10$64E5fbg0tTvDqa3cVjHvfuHyjwzToxyxf6xHR1wgrf7lNt8HXpt/6', '123', '24214', '535353', 'kepala_lab'),
 (4, 2, 'MUH. IQRA', 'iqra', '$2y$10$3HjIky/cEHjGEzSU4aWDTOtDEtTlSf4cuXIHwe2mtY8YxB7VHTXmq', '123', '85938953', '93493894', 'kepala_lab'),
-(5, 6, 'HIKMA', 'hikma', '$2y$10$G920tn92QOjJJEKnbbm5MuIcDj4KXu8HWehRaQsb3UpDiEVVGS3KG', '123', '098617711', '0821768196672', 'kepala_lab');
+(5, 6, 'HIKMA', 'hikma', '$2y$10$G920tn92QOjJJEKnbbm5MuIcDj4KXu8HWehRaQsb3UpDiEVVGS3KG', '123', '098617711', '0821768196672', 'kepala_lab'),
+(6, 1, 'Testing Lab', 'testing', '$2y$10$4ystcbO/G8gCrhShak6T.udbH7PvfdDGF5uTTDsp.l78FaHYwj972', 'testing', '9999999999', '0812323456', 'kepala_lab'),
+(7, 2, 'Adalah Pokoknya', 'aku', '$2y$10$RUauWvti1aqxlS7EbmqyiellX9Ua9yQhHI9V375xQttE7CKZd6qAa', 'aku', '099298292', '034023023029', 'kepala_lab'),
+(8, 8, 'der', 'der', '$2y$10$Mkn8ooOQ3HdaKEhfKs0KS.4v1T8xniutZWi5Su5SiDydNwXJ0IXZu', 'der', '335', '35235', 'kepala_lab');
 
 -- --------------------------------------------------------
 
@@ -207,6 +213,67 @@ INSERT INTO `lab` (`id_lab`, `id_jurusan`, `nama_lab`) VALUES
 (11, 4, 'Laboratorium Jaringan Komputer'),
 (12, 4, 'Laboratorium Elektronika & Instrumentasi'),
 (13, 4, 'Laboratorium Teknik Tenaga Listrik');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pemakaian_lab`
+--
+
+CREATE TABLE `pemakaian_lab` (
+  `id_pemakaian` int NOT NULL,
+  `id_distribusi` int NOT NULL,
+  `kode_distribusi` varchar(50) NOT NULL,
+  `id_praktek` int NOT NULL,
+  `id_lab` int NOT NULL,
+  `jumlah_pakai` int NOT NULL,
+  `tgl_pakai` datetime DEFAULT CURRENT_TIMESTAMP,
+  `keterangan` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `pemakaian_lab`
+--
+
+INSERT INTO `pemakaian_lab` (`id_pemakaian`, `id_distribusi`, `kode_distribusi`, `id_praktek`, `id_lab`, `jumlah_pakai`, `tgl_pakai`, `keterangan`) VALUES
+(6, 23, '', 8, 8, 2, '2026-01-07 14:16:53', NULL),
+(7, 24, '', 3, 8, 1, '2026-01-07 14:19:18', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `permintaan_barang`
+--
+
+CREATE TABLE `permintaan_barang` (
+  `id_permintaan` int NOT NULL,
+  `id_kepala` int NOT NULL,
+  `id_barang` int NOT NULL,
+  `jumlah_minta` int NOT NULL,
+  `jumlah_disetujui` int DEFAULT '0',
+  `tgl_permintaan` datetime DEFAULT CURRENT_TIMESTAMP,
+  `tgl_proses` datetime DEFAULT NULL,
+  `status` enum('pending','disetujui','ditolak') DEFAULT 'pending',
+  `keterangan_kepala` text,
+  `catatan_admin` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `permintaan_barang`
+--
+
+INSERT INTO `permintaan_barang` (`id_permintaan`, `id_kepala`, `id_barang`, `jumlah_minta`, `jumlah_disetujui`, `tgl_permintaan`, `tgl_proses`, `status`, `keterangan_kepala`, `catatan_admin`) VALUES
+(2, 6, 2, 5, 0, '2026-01-07 11:13:53', NULL, 'disetujui', NULL, NULL),
+(4, 6, 5, 3, 0, '2026-01-07 11:17:12', NULL, 'disetujui', NULL, NULL),
+(5, 6, 3, 1, 0, '2026-01-07 11:17:42', NULL, 'disetujui', NULL, NULL),
+(6, 6, 4, 5, 0, '2026-01-07 11:17:47', NULL, 'disetujui', NULL, NULL),
+(7, 6, 2, 3, 0, '2026-01-07 11:17:56', NULL, 'disetujui', NULL, NULL),
+(8, 6, 3, 2, 0, '2026-01-07 11:18:02', NULL, 'disetujui', NULL, NULL),
+(10, 7, 7, 5, 0, '2026-01-07 12:31:44', NULL, 'pending', NULL, NULL),
+(11, 7, 6, 2, 0, '2026-01-07 12:32:13', NULL, 'pending', NULL, NULL),
+(12, 7, 3, 2, 0, '2026-01-07 04:33:50', NULL, 'disetujui', NULL, NULL),
+(13, 8, 8, 3, 0, '2026-01-07 13:42:48', NULL, 'disetujui', NULL, NULL),
+(14, 8, 3, 3, 0, '2026-01-07 13:42:54', NULL, 'disetujui', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -285,6 +352,20 @@ ALTER TABLE `lab`
   ADD KEY `id_jurusan` (`id_jurusan`);
 
 --
+-- Indexes for table `pemakaian_lab`
+--
+ALTER TABLE `pemakaian_lab`
+  ADD PRIMARY KEY (`id_pemakaian`),
+  ADD KEY `id_praktek` (`id_praktek`);
+
+--
+-- Indexes for table `permintaan_barang`
+--
+ALTER TABLE `permintaan_barang`
+  ADD PRIMARY KEY (`id_permintaan`),
+  ADD KEY `fk_permintaan_bahan` (`id_barang`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -316,7 +397,7 @@ ALTER TABLE `distribusi`
 -- AUTO_INCREMENT for table `distribusi_lab`
 --
 ALTER TABLE `distribusi_lab`
-  MODIFY `id_distribusi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_distribusi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `jurusan`
@@ -328,7 +409,7 @@ ALTER TABLE `jurusan`
 -- AUTO_INCREMENT for table `kepala_lab`
 --
 ALTER TABLE `kepala_lab`
-  MODIFY `id_kepala` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_kepala` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `lab`
@@ -337,10 +418,22 @@ ALTER TABLE `lab`
   MODIFY `id_lab` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
+-- AUTO_INCREMENT for table `pemakaian_lab`
+--
+ALTER TABLE `pemakaian_lab`
+  MODIFY `id_pemakaian` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `permintaan_barang`
+--
+ALTER TABLE `permintaan_barang`
+  MODIFY `id_permintaan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id_user` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_user` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables
@@ -377,6 +470,18 @@ ALTER TABLE `kepala_lab`
 --
 ALTER TABLE `lab`
   ADD CONSTRAINT `lab_ibfk_1` FOREIGN KEY (`id_jurusan`) REFERENCES `jurusan` (`id_jurusan`);
+
+--
+-- Constraints for table `pemakaian_lab`
+--
+ALTER TABLE `pemakaian_lab`
+  ADD CONSTRAINT `pemakaian_lab_ibfk_1` FOREIGN KEY (`id_praktek`) REFERENCES `bahan_praktek` (`id_praktek`);
+
+--
+-- Constraints for table `permintaan_barang`
+--
+ALTER TABLE `permintaan_barang`
+  ADD CONSTRAINT `fk_permintaan_bahan` FOREIGN KEY (`id_barang`) REFERENCES `bahan_praktek` (`id_praktek`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

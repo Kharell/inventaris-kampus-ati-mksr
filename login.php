@@ -240,14 +240,8 @@ if (isset($_POST['login'])) {
 
             <div class="mb-4">
                 <label class="form-label text-uppercase">Password</label>
-                <!-- <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-                </div> -->
-
                  <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
-                    
+                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>    
                     <input 
                         type="password" 
                         name="password" 
@@ -267,9 +261,19 @@ if (isset($_POST['login'])) {
             <button type="submit" name="login" class="btn btn-login">
                 MASUK SEKARANG <i class="bi bi-arrow-right ms-2"></i>
             </button>
-            
+            <br>
+            <br>
+             <div class="text-center mt-2">
+                <p class="text-muted small">
+                    Belum punya akun? 
+                    <a href="daftarAdmin.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
+                        Daftar Admin
+                    </a>
+                </p>
+            </div>
+
             <p class="text-center mt-5 text-muted small">
-                &copy; 2024 Politeknik ATI Makassar
+                &copy; 2026 Politeknik ATI Makassar
             </p>
         </form>
     </div>
