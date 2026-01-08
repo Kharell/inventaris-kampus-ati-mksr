@@ -72,12 +72,17 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
                     <i class="bi bi-clipboard-data me-2"></i> Lapor Pemakaian
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link py-1" href="<?= $base_url; ?>../views/kepala-lab/lab/laporan.php">
+                    <i class="bi bi-clipboard-data me-2"></i> Cetak Laporan
+                </a>
+            </li>
            
         <?php endif; ?>
 
-        <div class="nav-label mt-3 mb-1 px-3">Analitik</div>
+        <!-- <div class="nav-label mt-3 mb-1 px-3">Analitik</div>
         <li class="nav-item"><a class="nav-link py-1" href="<?= $base_url; ?>../modules/laporan/index.php"><i class="bi bi-file-earmark-bar-graph me-2"></i> Laporan Pusat</a></li>
-    </ul>
+    </ul> -->
 
     <div class="logout-box mt-auto p-3 border-top border-white border-opacity-10">
         <a class="nav-link py-2 text-danger fw-bold d-flex align-items-center justify-content-center" 

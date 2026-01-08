@@ -236,6 +236,7 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
     </div>
 </div>
 
+
 <div class="modal fade" id="distModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form action="../proses/tambah.php" method="POST" class="modal-content border-0 rounded-4 overflow-hidden">
@@ -292,6 +293,8 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
             </div>
         </form>
     </div>
+
+
 </div> <div class="modal fade" id="editDistModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form action="../proses/edit.php" method="POST" class="modal-content border-0 rounded-4">

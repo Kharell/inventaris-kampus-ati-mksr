@@ -133,6 +133,14 @@ if (isset($_POST['daftar'])) {
                         </div>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger">Kode Verifikasi Admin</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                            <input type="password" name="reg_key" class="form-control" placeholder="Kode Rahasia Admin" required>
+                        </div>
+                    </div>
+
                     <div class="d-grid">
                         <button type="submit" name="daftar" class="btn btn-navy shadow-sm text-uppercase">
                             Daftar Akun <i class="bi bi-arrow-right ms-2"></i>
@@ -195,6 +203,19 @@ if (isset($_POST['daftar'])) {
         confirmButtonColor: '#001f3f'
     });
     <?php endif; ?>
+
+    // Definisikan kode rahasia di atas (biasanya simpan di config atau env)
+        $REGISTRATION_KEY_ADMIN = "LAB-RAHASIA-999"; 
+
+        if (isset($_POST['daftar'])) {
+            $user_key = $_POST['reg_key'];
+            
+            if ($user_key !== $REGISTRATION_KEY_ADMIN) {
+                $pesan_error = "Kode Verifikasi Registrasi Salah!";
+            } else {
+                // ... Lanjutkan proses sanitasi dan insert database seperti kode lama Anda ...
+            }
+        }
 </script>
 
 </body>

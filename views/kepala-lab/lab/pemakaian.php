@@ -9,7 +9,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
 
 $id_lab_user = $_SESSION['id_lab'] ?? '';
 
-// 1. Query Opsi Barang menggunakan kolom 'kode_distribusi'
+// 1. Query Opsi Barang (Hanya yang sisa stoknya > 0)
 $sql_opsi = "SELECT 
                 d.id_distribusi, 
                 d.kode_distribusi, 
@@ -24,7 +24,7 @@ $sql_opsi = "SELECT
              HAVING sisa_stok > 0";
 $query_opsi = mysqli_query($conn, $sql_opsi);
 
-// 2. Query Riwayat Pemakaian (JOIN untuk menampilkan nama bahan dan kode distribusi)
+// 2. Query Riwayat Pemakaian
 $sql_history = "SELECT p.*, b.nama_bahan, b.satuan, d.kode_distribusi 
                 FROM pemakaian_lab p 
                 JOIN bahan_praktek b ON p.id_praktek = b.id_praktek 
@@ -67,7 +67,7 @@ $query_history = mysqli_query($conn, $sql_history);
                     </div>
                     <div>
                         <h4 class="fw-bold mb-1" style="color: var(--navy);">Lapor Pemakaian</h4>
-                        <p class="text-muted mb-0 small">Input penggunaan bahan berdasarkan <strong>Kode Distribusi</strong></p>
+                        <p class="text-muted mb-0 small">Gunakan bahan berdasarkan sisa stok yang tersedia</p>
                     </div>
                 </div>
             </div>
@@ -79,10 +79,10 @@ $query_history = mysqli_query($conn, $sql_history);
                         <form action="../proses/tambah.php" method="POST">
                             <div class="mb-3">
                                 <label class="form-label small fw-bold">Pilih Referensi (Kode Distribusi)</label>
-                                <select name="id_distribusi" class="form-select shadow-sm" required>
+                                <select name="id_distribusi" id="pilih_barang" class="form-select shadow-sm" required>
                                     <option value="">-- Cari Kode Distribusi --</option>
                                     <?php while($opt = mysqli_fetch_assoc($query_opsi)): ?>
-                                        <option value="<?= $opt['id_distribusi'] ?>">
+                                        <option value="<?= $opt['id_distribusi'] ?>" data-stok="<?= $opt['sisa_stok'] ?>">
                                             <?= $opt['kode_distribusi'] ?> - <?= $opt['nama_bahan'] ?> (Sisa: <?= $opt['sisa_stok'] ?>)
                                         </option>
                                     <?php endwhile; ?>
@@ -90,9 +90,13 @@ $query_history = mysqli_query($conn, $sql_history);
                             </div>
                             <div class="mb-4">
                                 <label class="form-label small fw-bold">Jumlah Dipakai</label>
-                                <input type="number" name="jumlah_pakai" class="form-control shadow-sm" min="1" placeholder="Masukkan jumlah..." required>
+                                <div class="input-group">
+                                    <input type="number" name="jumlah_pakai" id="input_jumlah" class="form-control shadow-sm" min="1" placeholder="Masukkan jumlah..." required>
+                                    <span class="input-group-text bg-light small" id="label_satuan">Unit</span>
+                                </div>
+                                <div id="stok_help" class="form-text text-danger d-none">Jumlah melebihi stok tersedia!</div>
                             </div>
-                            <button type="submit" name="lapor_pakai" class="btn btn-navy w-100 py-2 fw-bold shadow-sm">
+                            <button type="submit" name="lapor_pakai" id="btn_submit" class="btn btn-navy w-100 py-2 fw-bold shadow-sm">
                                 <i class="bi bi-send-fill me-2"></i>Kirim Laporan
                             </button>
                         </form>
@@ -120,7 +124,9 @@ $query_history = mysqli_query($conn, $sql_history);
                                         <td><span class="badge badge-kode small"><?= $h['kode_distribusi'] ?></span></td>
                                         <td class="small fw-bold text-navy"><?= $h['nama_bahan'] ?></td>
                                         <td class="text-center">
-                                            <span class="badge bg-danger-subtle text-danger">- <?= $h['jumlah_pakai'] ?> <?= $h['satuan'] ?></span>
+                                            <span class="badge bg-primary-subtle text-primary fw-bold px-3">
+                                                <?= $h['jumlah_pakai'] ?> <?= $h['satuan'] ?>
+                                            </span>
                                         </td>
                                         <td class="text-center">
                                             <button onclick="hapusData(<?= $h['id_pemakaian'] ?>)" class="btn btn-sm btn-outline-danger border-0 rounded-circle">
@@ -148,12 +154,34 @@ $query_history = mysqli_query($conn, $sql_history);
 $(document).ready(function() {
     $('#tabelPakai').DataTable({
         "pageLength": 5,
-        "language": { 
-            "search": "Cari data:",
-            "lengthMenu": "_MENU_ per halaman",
-            "paginate": { "next": "→", "previous": "←" }
-        }
+        "order": [[0, "desc"]],
+        "language": { "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json" }
     });
+
+    // Validasi Real-time saat pilih barang
+    $('#pilih_barang').on('change', function() {
+        const stokTersedia = $(this).find(':selected').data('stok');
+        $('#input_jumlah').attr('max', stokTersedia);
+        validasiInput();
+    });
+
+    // Validasi Real-time saat ngetik angka
+    $('#input_jumlah').on('input', function() {
+        validasiInput();
+    });
+
+    function validasiInput() {
+        const inputVal = parseInt($('#input_jumlah').val());
+        const maxVal = parseInt($('#input_jumlah').attr('max'));
+
+        if (inputVal > maxVal) {
+            $('#stok_help').removeClass('d-none');
+            $('#btn_submit').attr('disabled', true);
+        } else {
+            $('#stok_help').addClass('d-none');
+            $('#btn_submit').attr('disabled', false);
+        }
+    }
 });
 
 function hapusData(id) {
@@ -171,25 +199,5 @@ function hapusData(id) {
     })
 }
 </script>
-
-<?php if(isset($_SESSION['alert']) && $_SESSION['alert'] == 'sukses_pakai'): ?>
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: 'Data pemakaian tercatat. Ingin lapor lagi?',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Input Lagi',
-            cancelButtonText: 'Cek Stok Lab',
-            confirmButtonColor: '#001f3f'
-        }).then((result) => {
-            if (result.dismiss === Swal.DismissReason.cancel) {
-                window.location.href = 'stok.php';
-            }
-        });
-    </script>
-    <?php unset($_SESSION['alert']); ?>
-<?php endif; ?>
-
 </body>
 </html>

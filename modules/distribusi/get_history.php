@@ -58,12 +58,12 @@ if (mysqli_num_rows($query_req) > 0) : ?>
                                     <span class="small fw-semibold"><?= $req['stok_gudang'] ?> Unit</span>
                                 </div>
                             </td>
-                            <td class="text-end pe-4">
-                                <button class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm hover-up" 
-                                        onclick="prosesACC('<?= $req['id_permintaan'] ?>', '<?= $req['id_praktek'] ?>', '<?= $req['jumlah_minta'] ?>', '<?= addslashes($req['nama_bahan']) ?>')">
-                                    Validasi & ACC
-                                </button>
-                            </td>
+                           <td class="text-end pe-4">
+                            <button class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm hover-up" 
+                                    onclick="prosesACC('<?= $req['id_permintaan'] ?>', '<?= $req['id_praktek'] ?>', '<?= $req['jumlah_minta'] ?>', '<?= addslashes($req['nama_bahan']) ?>')">
+                                <i class="bi bi-check2-circle me-1"></i> Validasi & ACC
+                            </button>
+                        </td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -224,4 +224,25 @@ $query = mysqli_query($conn, $sql);
 
 .pagination .page-link { color: var(--navy); font-weight: 600; padding: 10px 18px; }
 .pagination .page-item.active .page-link { background-color: var(--navy); color: var(--gold); }
+
+/* Warna dasar Navy */
+.btn-navy {
+    background-color: #001f3f;
+    color: white;
+    border: none;
+    transition: all 0.3s ease; /* Membuat transisi halus */
+}
+
+/* Aksi saat di-hover */
+.btn-navy:hover {
+    background-color: #004080; /* Warna biru yang lebih terang saat hover */
+    color: #ffffff;
+    transform: translateY(-2px); /* Efek melayang sedikit ke atas (hover-up) */
+    box-shadow: 0 5px 15px rgba(0, 31, 63, 0.3); /* Bayangan lebih tegas */
+}
+
+/* Efek saat diklik */
+.btn-navy:active {
+    transform: translateY(0);
+}
 </style>
