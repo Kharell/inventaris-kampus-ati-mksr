@@ -1,32 +1,45 @@
 <?php
+session_start();
 include "config/database.php"; 
 
 $pesan_error = "";
 $pendaftaran_sukses = false;
 
 if (isset($_POST['daftar'])) {
-    // 1. Sanitasi input untuk mencegah SQL Injection
-    $nama_lengkap = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
-    $username     = mysqli_real_escape_string($conn, $_POST['username']);
-    
-    // 2. Enkripsi password menggunakan BCRYPT
-    $password     = password_hash($_POST['password'], PASSWORD_BCRYPT);
-    $role         = "admin"; 
+    $nama = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
+    $user = mysqli_real_escape_string($conn, $_POST['username']);
+    $pass = $_POST['password'];
+    $konfirmasi_pass = $_POST['konfirmasi_password'];
+    $kode_input = $_POST['kode_aktivasi'];
 
-    // 3. Validasi: Cek apakah username sudah terdaftar
-    $cek_user = mysqli_query($conn, "SELECT * FROM users WHERE username = '$username'");
-    
-    if (mysqli_num_rows($cek_user) > 0) {
-        $pesan_error = "Username sudah digunakan!";
+    // 1. Ambil Master Key dari Database
+    $query_key = mysqli_query($conn, "SELECT kode_rahasia FROM master_key WHERE id = 1");
+    $data_key  = mysqli_fetch_assoc($query_key);
+    $master_key_db = $data_key['kode_rahasia'];
+
+    // 2. Validasi
+    if ($kode_input !== $master_key_db) {
+        $pesan_error = "KODE AKTIVASI SALAH! Hubungi Admin Utama.";
+    } elseif ($pass !== $konfirmasi_pass) {
+        $pesan_error = "Konfirmasi Password tidak cocok!";
+    } elseif (strlen($pass) < 8) {
+        $pesan_error = "Password minimal harus 8 karakter!";
     } else {
-        // 4. Proses Insert ke Database
-        $query = "INSERT INTO users (username, password, role, nama_lengkap) 
-                  VALUES ('$username', '$password', '$role', '$nama_lengkap')";
-        
-        if (mysqli_query($conn, $query)) {
-            $pendaftaran_sukses = true;
+        // 3. Cek Username Duplikat
+        $cek_user = mysqli_query($conn, "SELECT * FROM users WHERE username = '$user'");
+        if (mysqli_num_rows($cek_user) > 0) {
+            $pesan_error = "Username sudah digunakan!";
         } else {
-            $pesan_error = "Gagal mendaftar: " . mysqli_error($conn);
+            // 4. Hash Password dan Simpan
+            $pass_hashed = password_hash($pass, PASSWORD_BCRYPT);
+            $query = "INSERT INTO users (username, password, role, nama_lengkap) 
+                      VALUES ('$user', '$pass_hashed', 'admin', '$nama')";
+            
+            if (mysqli_query($conn, $query)) {
+                $pendaftaran_sukses = true;
+            } else {
+                $pesan_error = "Database Error: " . mysqli_error($conn);
+            }
         }
     }
 }
@@ -37,119 +50,79 @@ if (isset($_POST['daftar'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrasi Admin | Inventory Lab</title>
-    
+    <title>Registrasi Admin Aman</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    
     <style>
-        body { 
-            background: #f4f7fa; 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            font-family: 'Inter', sans-serif; 
-        }
-        .card-register { 
-            border: none; 
-            border-radius: 1.5rem; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08); 
-            background: #fff; 
-        }
-        .btn-navy { 
-            background: #001f3f; 
-            color: #fff; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 10px; 
-            font-weight: bold; 
-            transition: 0.3s; 
-        }
-        .btn-navy:hover { 
-            background: #003366; 
-            color: #fff; 
-            transform: translateY(-2px); 
-        }
-        .input-group-text { 
-            background: #f8f9fa; 
-            border-right: none; 
-            color: #6c757d; 
-        }
-        .form-control { 
-            border-left: none; 
-            border-radius: 0 10px 10px 0; 
-            padding: 12px; 
-            border-color: #dee2e6; 
-        }
-        .toggle-password { 
-            cursor: pointer; 
-            background: #fff; 
-            border-left: none; 
-            border-radius: 0 10px 10px 0; 
-            border: 1px solid #dee2e6; 
-            padding: 12px; 
-            color: #6c757d; 
-        }
+        body { background: #f4f7fa; min-height: 100vh; display: flex; align-items: center; font-family: 'Inter', sans-serif; }
+        .card-register { border: none; border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.08); background: #fff; }
+        .btn-navy { background: #001f3f; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
+        .btn-navy:hover { background: #003366; color: #fff; }
+        .form-control:focus { box-shadow: none; border-color: #001f3f; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="row justify-content-center">
+    <div class="row justify-content-center my-5">
         <div class="col-md-5">
             <div class="card card-register p-4 p-md-5">
                 <div class="text-center mb-4">
-                    <i class="bi bi-person-badge-fill text-primary mb-3" style="font-size: 3rem; color: #001f3f !important;"></i>
-                    <h3 class="fw-bold" style="color: #001f3f;">Registrasi Admin</h3>
-                    <p class="text-muted small">Buat akun untuk akses administrator</p>
+                    <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem; color: #001f3f !important;"></i>
+                    <h3 class="fw-bold">Registrasi Admin</h3>
+                    <p class="text-muted small">Silakan lengkapi data administrator</p>
                 </div>
 
                 <form action="" method="POST">
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Nama Lengkap</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
-                            <input type="text" name="nama_lengkap" class="form-control" placeholder="Nama Admin" required>
-                        </div>
+                        <input type="text" name="nama_lengkap" class="form-control" required placeholder="Nama Lengkap">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-at"></i></span>
-                            <input type="text" name="username" class="form-control" placeholder="User ID" required>
-                        </div>
+                        <input type="text" name="username" class="form-control" required placeholder="User ID">
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="form-label small fw-bold">Password</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-key"></i></span>
-                            <input type="password" id="passInput" name="password" class="form-control border-end-0" placeholder="••••••••" required>
-                            <span class="toggle-password" onclick="togglePass()">
-                                <i class="bi bi-eye-slash" id="eyeIcon"></i>
-                            </span>
+                            <input type="password" name="password" id="pass1" class="form-control" required placeholder="••••••••">
+                            <button class="btn btn-outline-secondary" type="button" onclick="toggleView('pass1', 'icon1')">
+                                <i class="bi bi-eye-slash" id="icon1"></i>
+                            </button>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-danger">Kode Verifikasi Admin</label>
+                        <label class="form-label small fw-bold">Konfirmasi Password</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
-                            <input type="password" name="reg_key" class="form-control" placeholder="Kode Rahasia Admin" required>
+                            <input type="password" name="konfirmasi_password" id="pass2" class="form-control" required placeholder="••••••••">
+                            <button class="btn btn-outline-secondary" type="button" onclick="toggleView('pass2', 'icon2')">
+                                <i class="bi bi-eye-slash" id="icon2"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" name="daftar" class="btn btn-navy shadow-sm text-uppercase">
-                            Daftar Akun <i class="bi bi-arrow-right ms-2"></i>
-                        </button>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-danger">KODE AKTIVASI (Master Key)</label>
+                        <input type="password" 
+                            name="kode_aktivasi" 
+                            id="masterKey" 
+                            class="form-control border-danger" 
+                            required 
+                            placeholder="••••••••">
+                        <div class="form-text mt-2" style="font-size: 11px;">
+                            *Hanya Admin utama yang mengetahui kode ini.
+                        </div>
                     </div>
 
-                    <div class="text-center mt-4">
-                        <span class="small text-muted">Sudah punya akun? </span>
-                        <a href="login.php" class="small fw-bold text-decoration-none" style="color: #001f3f;">Masuk</a>
+                    <div class="d-grid mb-3">
+                        <button type="submit" name="daftar" class="btn btn-navy">DAFTARKAN SEKARANG</button>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="small text-muted">Sudah punya akun? <a href="login.php" class="text-decoration-none fw-bold" style="color: #001f3f;">Silakan Login</a></p>
                     </div>
                 </form>
             </div>
@@ -158,43 +131,45 @@ if (isset($_POST['daftar'])) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-    // Fungsi Toggle Show/Hide Password
-    function togglePass() {
-        const passInput = document.getElementById('passInput');
-        const eyeIcon = document.getElementById('eyeIcon');
-        if (passInput.type === 'password') {
-            passInput.type = 'text';
-            eyeIcon.classList.replace('bi-eye-slash', 'bi-eye');
+    // Fungsi untuk toggle lihat password
+    function toggleView(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
         } else {
-            passInput.type = 'password';
-            eyeIcon.classList.replace('bi-eye', 'bi-eye-slash');
+            input.type = 'password';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
         }
     }
 
-  // Pop-up Berhasil + Auto Redirect + SATU Loading Animation
     <?php if ($pendaftaran_sukses): ?>
+    let timerInterval;
     Swal.fire({
         title: 'Berhasil!',
-        html: `
-            <p class="mb-3">Akun Admin telah dibuat. Mengalihkan ke halaman masuk...</p>
-            <div class="spinner-border text-primary" role="status" style="color: #001f3f !important; width: 3rem; height: 3rem;">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        `,
+        html: 'Akun Admin telah dibuat. <br> Menuju halaman login dalam <b></b> milidetik.',
         icon: 'success',
-        timer: 3000, 
-        timerProgressBar: true, 
-        showConfirmButton: false,
-        allowOutsideClick: false,
+        timer: 3000, // Popup akan menutup otomatis dalam 3 detik
+        timerProgressBar: true, // Garis loading di bawah popup
+        confirmButtonColor: '#001f3f',
+        didOpen: () => {
+            Swal.showLoading(); // Menampilkan ikon memutar (spinner) di dalam popup
+            const b = Swal.getHtmlContainer().querySelector('b');
+            timerInterval = setInterval(() => {
+                b.textContent = Swal.getTimerLeft();
+            }, 100);
+        },
         willClose: () => {
-            window.location.href = 'login.php';
+            clearInterval(timerInterval);
         }
+    }).then((result) => {
+        // Otomatis pindah halaman setelah timer habis atau tombol ditekan
+        window.location.href = 'login.php';
     });
     <?php endif; ?>
 
-    // Penanganan SweetAlert untuk Gagal
     <?php if ($pesan_error != ""): ?>
     Swal.fire({
         title: 'Gagal!',
@@ -203,20 +178,8 @@ if (isset($_POST['daftar'])) {
         confirmButtonColor: '#001f3f'
     });
     <?php endif; ?>
-
-    // Definisikan kode rahasia di atas (biasanya simpan di config atau env)
-        $REGISTRATION_KEY_ADMIN = "LAB-RAHASIA-999"; 
-
-        if (isset($_POST['daftar'])) {
-            $user_key = $_POST['reg_key'];
-            
-            if ($user_key !== $REGISTRATION_KEY_ADMIN) {
-                $pesan_error = "Kode Verifikasi Registrasi Salah!";
-            } else {
-                // ... Lanjutkan proses sanitasi dan insert database seperti kode lama Anda ...
-            }
-        }
 </script>
+
 
 </body>
 </html>
