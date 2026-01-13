@@ -58,22 +58,31 @@ if (isset($_POST['update_kebersihan'])) {
 // LOGIKA UPDATE KHUSUS BAHAN PRAKTEK
 // ==========================================
 if (isset($_POST['update_praktek_pusat'])) {
-    $id     = mysqli_real_escape_string($conn, $_POST['id_praktek']);
-    $nama   = mysqli_real_escape_string($conn, $_POST['nama_bahan']);
-    $stok   = mysqli_real_escape_string($conn, $_POST['stok']);
-    $satuan = mysqli_real_escape_string($conn, $_POST['satuan']);
+    // 1. Ambil data dari form modal edit
+    $id          = mysqli_real_escape_string($conn, $_POST['id_praktek']);
+    $nama        = mysqli_real_escape_string($conn, $_POST['nama_bahan']);
+    $spesifikasi = mysqli_real_escape_string($conn, $_POST['spesifikasi']); // Field Baru
+    $stok        = (int)$_POST['stok'];
+    $kondisi     = mysqli_real_escape_string($conn, $_POST['kondisi']);     // Field Baru
+    $satuan      = mysqli_real_escape_string($conn, $_POST['satuan']);
 
-    // Update ke tabel bahan_praktek
+    // 2. Update ke tabel bahan_praktek
+    // Kita tambahkan kolom spesifikasi dan kondisi ke dalam set query
     $query = "UPDATE bahan_praktek SET 
-                nama_bahan = '$nama', 
-                stok = '$stok', 
-                satuan = '$satuan' 
+                nama_bahan  = '$nama', 
+                spesifikasi = '$spesifikasi', 
+                stok        = '$stok', 
+                kondisi     = '$kondisi', 
+                satuan      = '$satuan' 
               WHERE id_praktek = '$id'";
     
+    // 3. Eksekusi dan Redirect
     if (mysqli_query($conn, $query)) {
+        // Mengirim status update_sukses agar SweetAlert menampilkan pesan yang benar
         header("Location: ../gudang/bahan-praktek.php?status=update_sukses");
         exit();
     } else {
+        // Jika gagal, kirim status gagal
         header("Location: ../gudang/bahan-praktek.php?status=gagal");
         exit();
     }

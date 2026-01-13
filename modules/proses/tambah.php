@@ -71,36 +71,44 @@ if (isset($_POST['tambah_kebersihan'])) {
     }
 }
 
-// ==========================================
-// LOGIKA KHUSUS TAMBAH BAHAN PRAKTEK
-// ==========================================
 
+// ==========================================
+// LOGIKA KHUSUS TAMBAH BAHAN PRAKTEK (PUSAT)
+// ==========================================
 if (isset($_POST['tambah_praktek_pusat'])) {
-    // Generate Kode BPR-26-XXX
+    // 1. Generate Kode Otomatis (Prefix BPR-26-XXX)
     $prefix = "BPR-" . date('y') . "-";
     $sql_cari = "SELECT kode_bahan FROM bahan_praktek WHERE kode_bahan LIKE '$prefix%' ORDER BY kode_bahan DESC LIMIT 1";
     $query_cari = mysqli_query($conn, $sql_cari);
     $data = mysqli_fetch_assoc($query_cari);
 
+    // Hitung nomor urut berikutnya
     $no_urut = ($data) ? (int)substr($data['kode_bahan'], -3) + 1 : 1;
     $kode_final = $prefix . str_pad($no_urut, 3, "0", STR_PAD_LEFT);
 
-    $nama   = mysqli_real_escape_string($conn, $_POST['nama_bahan']);
-    $stok   = $_POST['stok'];
-    $satuan = mysqli_real_escape_string($conn, $_POST['satuan']);
-    $tgl    = date('Y-m-d');
+    // 2. Ambil Input & Proteksi Keamanan
+    $nama        = mysqli_real_escape_string($conn, $_POST['nama_bahan']);
+    $spesifikasi = mysqli_real_escape_string($conn, $_POST['spesifikasi']); // Baru
+    $stok        = (int)$_POST['stok'];
+    $kondisi     = mysqli_real_escape_string($conn, $_POST['kondisi']);   // Baru
+    $satuan      = mysqli_real_escape_string($conn, $_POST['satuan']);
+    $tgl_masuk   = date('Y-m-d'); // Otomatis tanggal hari ini
 
-    // Simpan ke tabel bahan_praktek
-    $query = "INSERT INTO bahan_praktek (kode_bahan, nama_bahan, stok, satuan, tgl_masuk) 
-              VALUES ('$kode_final', '$nama', '$stok', '$satuan', '$tgl')";
+    // 3. Query Simpan ke tabel bahan_praktek
+    // Perhatikan urutan kolom: kode_bahan, nama_bahan, spesifikasi, stok, kondisi, satuan, tgl_masuk
+    $query = "INSERT INTO bahan_praktek (kode_bahan, nama_bahan, spesifikasi, stok, kondisi, satuan, tgl_masuk) 
+              VALUES ('$kode_final', '$nama', '$spesifikasi', '$stok', '$kondisi', '$satuan', '$tgl_masuk')";
 
     if (mysqli_query($conn, $query)) {
-        // Redirect kembali ke folder gudang
+        // Redirect ke halaman index bahan-praktek dengan status sukses
         header("Location: ../gudang/bahan-praktek.php?status=sukses");
+        exit();
+    } else {
+        // Jika terjadi error pada database
+        header("Location: ../gudang/bahan-praktek.php?status=gagal");
         exit();
     }
 }
-
 
 
 // 2. PROSES TAMBAH JURUSAN

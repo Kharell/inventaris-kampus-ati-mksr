@@ -9,7 +9,7 @@ $page = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
 $offset = ($page - 1) * $limit;
 
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-$whereClause = $search != '' ? "WHERE nama_bahan LIKE '%$search%' OR kode_bahan LIKE '%$search%'" : "";
+$whereClause = $search != '' ? "WHERE nama_bahan LIKE '%$search%' OR kode_bahan LIKE '%$search%' OR spesifikasi LIKE '%$search%'" : "";
 
 // Hitung total data
 $total_data_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM bahan_praktek $whereClause");
@@ -32,7 +32,6 @@ $res = mysqli_query($conn, $query);
     <style>
         :root { --navy: #0a192f; --navy-light: #112240; --gold: #ffcc00; }
         body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; }
-
         .header-card { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); color: white; border-radius: 15px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .filter-card { border-radius: 15px; border: none; margin-bottom: 20px; }
         .search-box { border-radius: 10px 0 0 10px; border: 2px solid #e9ecef; }
@@ -52,7 +51,6 @@ $res = mysqli_query($conn, $query);
 </head>
 <body>
 
-
 <div class="main-wrapper">
     <?php include "../../includes/sidebar.php"; ?>
 
@@ -60,104 +58,108 @@ $res = mysqli_query($conn, $query);
         <?php include "../../includes/header.php"; ?>
 
         <main class="p-4">
-            
             <div class="header-card d-flex justify-content-between align-items-center shadow-sm">
                 <div>
-                    <<h2 class="fw-bold mb-1"><i class="bi bi-tools text-warning me-2"></i> Bahan Praktek Pusat</h2>
+                    <h2 class="fw-bold mb-1"><i class="bi bi-tools text-warning me-2"></i> Bahan Praktek Pusat</h2>
                     <p class="mb-0 text-white-50">Manajemen stok utama untuk distribusi Laboratorium & Workshop</p>
                 </div>
                 <button class="btn btn-gold px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalTambah">
                     <i class="bi bi-plus-circle-fill me-2"></i>Tambah Alat
                 </button>
             </div>
-            
 
-    <div class="card filter-card shadow-sm">
-        <div class="card-body p-4">
-            <form method="GET" class="row g-3 align-items-end">
-                <div class="col-md-2">
-                    <label class="form-label small fw-bold text-muted">TAMPILKAN</label>
-                    <select name="limit" class="form-select border-2" onchange="this.form.submit()">
-                        <option value="10" <?= $limit == 10 ? 'selected' : ''; ?>>10 Baris</option>
-                        <option value="25" <?= $limit == 25 ? 'selected' : ''; ?>>25 Baris</option>
-                        <option value="50" <?= $limit == 50 ? 'selected' : ''; ?>>50 Baris</option>
-                    </select>
+            <div class="card filter-card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="GET" class="row g-3 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted">TAMPILKAN</label>
+                            <select name="limit" class="form-select border-2" onchange="this.form.submit()">
+                                <option value="10" <?= $limit == 10 ? 'selected' : ''; ?>>10 Baris</option>
+                                <option value="25" <?= $limit == 25 ? 'selected' : ''; ?>>25 Baris</option>
+                                <option value="50" <?= $limit == 50 ? 'selected' : ''; ?>>50 Baris</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6"></div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">CARI BAHAN</label>
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control border-2 search-box" placeholder="Nama, kode, atau spek..." value="<?= htmlspecialchars($search); ?>">
+                                <button class="btn search-btn px-3" type="submit"><i class="bi bi-search"></i></button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-                <div class="col-md-6"></div>
-                <div class="col-md-4">
-                    <label class="form-label small fw-bold text-muted">CARI BAHAN</label>
-                    <div class="input-group">
-                        <input type="text" name="search" class="form-control border-2 search-box" placeholder="Nama atau kode bahan..." value="<?= htmlspecialchars($search); ?>">
-                        <button class="btn search-btn px-3" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+
+            <div class="card table-container shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">No</th>
+                                    <th>Kode</th>
+                                    <th>Nama Bahan</th>
+                                    <th>Spesifikasi</th>
+                                    <th>Kondisi</th>
+                                    <th>Stok</th>
+                                    <th>Satuan</th>
+                                    <th class="text-center pe-4">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $no = $offset + 1;
+                                if(mysqli_num_rows($res) > 0):
+                                    while($row = mysqli_fetch_assoc($res)): 
+                                ?>
+                                <tr>
+                                    <td class="ps-4 text-muted fw-bold"><?= $no++; ?></td>
+                                    <td><span class="badge badge-kode"><?= $row['kode_bahan']; ?></span></td>
+                                    <td class="fw-bold text-dark"><?= $row['nama_bahan']; ?></td>
+                                    <td class="text-muted small"><?= !empty($row['spesifikasi']) ? $row['spesifikasi'] : '-'; ?></td>
+                                    <td>
+                                        <?php 
+                                        $cls = 'bg-success';
+                                        if($row['kondisi'] == 'Kurang Baik') $cls = 'bg-warning text-dark';
+                                        if($row['kondisi'] == 'Rusak') $cls = 'bg-danger';
+                                        ?>
+                                        <span class="badge <?= $cls; ?>"><?= $row['kondisi']; ?></span>
+                                    </td>
+                                    <td><span class="badge badge-stok"><?= $row['stok']; ?></span></td>
+                                    <td class="text-muted"><?= $row['satuan']; ?></td>
+                                    <td class="text-center pe-4">
+                                        <div class="btn-group">
+                                            <button class="btn btn-outline-warning border-0" data-bs-toggle="modal" data-bs-target="#modalEdit<?= $row['id_praktek']; ?>">
+                                                <i class="bi bi-pencil-square fs-5"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger border-0" onclick="confirmDelete('<?= $row['id_praktek']; ?>')">
+                                                <i class="bi bi-trash3-fill fs-5"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endwhile; else: ?>
+                                <tr><td colspan="8" class="text-center py-5 text-muted">Data tidak ditemukan.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="card table-container shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">No</th>
-                            <th>Kode Bahan</th>
-                            <th>Nama Bahan</th>
-                            <th>Stok Pusat</th>
-                            <th>Satuan</th>
-                            <th class="text-center pe-4">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php 
-                        $no = $offset + 1;
-                        if(mysqli_num_rows($res) > 0):
-                            while($row = mysqli_fetch_assoc($res)): 
-                        ?>
-                        <tr>
-                            <td class="ps-4 text-muted fw-bold"><?= $no++; ?></td>
-                            <td><span class="badge badge-kode"><?= $row['kode_bahan']; ?></span></td>
-                            <td class="fw-bold text-dark"><?= $row['nama_bahan']; ?></td>
-                            <td><span class="badge badge-stok"><?= $row['stok']; ?></span></td>
-                            <td class="text-muted"><?= $row['satuan']; ?></td>
-                            <td class="text-center pe-4">
-                                <div class="btn-group">
-                                    <button class="btn btn-outline-warning border-0" data-bs-toggle="modal" data-bs-target="#modalEdit<?= $row['id_praktek']; ?>" title="Edit">
-                                        <i class="bi bi-pencil-square fs-5"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger border-0" onclick="confirmDelete('<?= $row['id_praktek']; ?>')" title="Hapus">
-                                        <i class="bi bi-trash3-fill fs-5"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endwhile; else: ?>
-                        <tr><td colspan="6" class="text-center py-5 text-muted">Data bahan tidak ditemukan.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav class="d-flex justify-content-between align-items-center">
+                        <p class="text-muted small mb-0">Menampilkan <?= mysqli_num_rows($res); ?> dari <?= $total_data; ?> data</p>
+                        <ul class="pagination mb-0">
+                            <?php for($i=1; $i<=$total_pages; $i++): ?>
+                            <li class="page-item <?= ($page == $i) ? 'active' : ''; ?>">
+                                <a class="page-link" href="?halaman=<?= $i; ?>&limit=<?= $limit; ?>&search=<?= $search; ?>"><?= $i; ?></a>
+                            </li>
+                            <?php endfor; ?>
+                        </ul>
+                    </nav>
+                </div>
             </div>
-        </div>
-
-        <div class="card-footer bg-white border-0 py-3">
-            <nav class="d-flex justify-content-between align-items-center">
-                <p class="text-muted small mb-0">Menampilkan <?= mysqli_num_rows($res); ?> dari <?= $total_data; ?> data</p>
-                <ul class="pagination mb-0">
-                    <li class="page-item <?= ($page <= 1) ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="?halaman=<?= $page-1; ?>&limit=<?= $limit; ?>&search=<?= $search; ?>"><i class="bi bi-chevron-left"></i></a>
-                    </li>
-                    <?php for($i=1; $i<=$total_pages; $i++): ?>
-                    <li class="page-item <?= ($page == $i) ? 'active' : ''; ?>">
-                        <a class="page-link" href="?halaman=<?= $i; ?>&limit=<?= $limit; ?>&search=<?= $search; ?>"><?= $i; ?></a>
-                    </li>
-                    <?php endfor; ?>
-                    <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : ''; ?>">
-                        <a class="page-link" href="?halaman=<?= $page+1; ?>&limit=<?= $limit; ?>&search=<?= $search; ?>"><i class="bi bi-chevron-right"></i></a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+        </main>
     </div>
 </div>
 
@@ -165,13 +167,17 @@ $res = mysqli_query($conn, $query);
     <div class="modal-dialog modal-dialog-centered">
         <form action="../proses/tambah.php" method="POST" class="modal-content shadow">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah ke Gudang Pusat</h5>
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Bahan Baru</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3">
                     <label class="form-label fw-bold small">NAMA BAHAN</label>
-                    <input type="text" name="nama_bahan" class="form-control border-2" placeholder="Contoh: Kabel NYA 1.5mm" required>
+                    <input type="text" name="nama_bahan" class="form-control border-2" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">SPESIFIKASI</label>
+                    <textarea name="spesifikasi" class="form-control border-2" rows="2" placeholder="Contoh: Merk, Ukuran, Voltase, dll"></textarea>
                 </div>
                 <div class="row">
                     <div class="col-6 mb-3">
@@ -179,14 +185,22 @@ $res = mysqli_query($conn, $query);
                         <input type="number" name="stok" class="form-control border-2" required>
                     </div>
                     <div class="col-6 mb-3">
+                        <label class="form-label fw-bold small">KONDISI</label>
+                        <select name="kondisi" class="form-select border-2">
+                            <option value="Baik">Baik</option>
+                            <option value="Kurang Baik">Kurang Baik</option>
+                            <option value="Rusak">Rusak</option>
+                        </select>
+                    </div>
+                    <div class="col-12 mb-3">
                         <label class="form-label fw-bold small">SATUAN</label>
                         <input type="text" name="satuan" class="form-control border-2" placeholder="Kg / Meter / Pcs" required>
                     </div>
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" name="tambah_praktek_pusat" class="btn btn-gold px-4 shadow-sm">Simpan Data</button>
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" name="tambah_praktek_pusat" class="btn btn-gold px-4">Simpan Data</button>
             </div>
         </form>
     </div>
@@ -194,9 +208,11 @@ $res = mysqli_query($conn, $query);
 
 <?php 
 if(mysqli_num_rows($res) > 0) {
-    mysqli_data_seek($res, 0); // Kembalikan pointer data ke baris pertama
+    mysqli_data_seek($res, 0); 
     while($row = mysqli_fetch_assoc($res)): 
 ?>
+
+Modal Edit
 <div class="modal fade" id="modalEdit<?= $row['id_praktek']; ?>" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form action="../proses/edit.php" method="POST" class="modal-content shadow">
@@ -210,19 +226,32 @@ if(mysqli_num_rows($res) > 0) {
                     <label class="form-label fw-bold small">NAMA BAHAN</label>
                     <input type="text" name="nama_bahan" class="form-control border-2" value="<?= $row['nama_bahan']; ?>" required>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">SPESIFIKASI</label>
+                    <textarea name="spesifikasi" class="form-control border-2" rows="2"><?= $row['spesifikasi']; ?></textarea>
+                </div>
                 <div class="row">
                     <div class="col-6 mb-3">
-                        <label class="form-label fw-bold small">STOK TERSEDIA</label>
+                        <label class="form-label fw-bold small">STOK</label>
                         <input type="number" name="stok" class="form-control border-2" value="<?= $row['stok']; ?>" required>
                     </div>
                     <div class="col-6 mb-3">
+                        <label class="form-label fw-bold small">KONDISI</label>
+                        <select name="kondisi" class="form-select border-2">
+                            <option value="Baik" <?= $row['kondisi'] == 'Baik' ? 'selected' : ''; ?>>Baik</option>
+                            <option value="Kurang Baik" <?= $row['kondisi'] == 'Kurang Baik' ? 'selected' : ''; ?>>Kurang Baik</option>
+                            <option value="Rusak" <?= $row['kondisi'] == 'Rusak' ? 'selected' : ''; ?>>Rusak</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-16 mb-4">
                         <label class="form-label fw-bold small">SATUAN</label>
                         <input type="text" name="satuan" class="form-control border-2" value="<?= $row['satuan']; ?>" required>
                     </div>
-                </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                 <button type="submit" name="update_praktek_pusat" class="btn btn-gold px-4">Simpan Perubahan</button>
             </div>
         </form>
@@ -232,9 +261,7 @@ if(mysqli_num_rows($res) > 0) {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-    // Skrip SweetAlert sama seperti kode Anda sebelumnya
     function confirmDelete(id) {
         Swal.fire({
             title: 'Hapus bahan?',
@@ -243,27 +270,12 @@ if(mysqli_num_rows($res) > 0) {
             showCancelButton: true,
             confirmButtonColor: '#0a192f',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal'
+            confirmButtonText: 'Ya, Hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = "../proses/hapus.php?id=" + id + "&modul=praktek_pusat";
             }
         })
-    }
-
-    const status = new URLSearchParams(window.location.search).get('status');
-    if (status) {
-        const toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-        });
-        if (status === 'sukses') toast.fire({ icon: 'success', title: 'Bahan berhasil ditambahkan' });
-        if (status === 'update_sukses') toast.fire({ icon: 'success', title: 'Data berhasil diperbarui' });
-        if (status === 'hapus_sukses') toast.fire({ icon: 'success', title: 'Data telah dihapus' });
     }
 </script>
 </body>

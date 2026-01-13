@@ -23,24 +23,41 @@ if (isset($_POST['id'])) {
     }
     exit; 
 }
-
 // --- 2. LOGIKA KIRIM PERMINTAAN (VIA FORM) ---
 if (isset($_POST['kirim_permintaan'])) {
-    $id_kepala = $_SESSION['id_user'];
-    $id_barang = $_POST['id_barang'];
-    $jumlah_minta = $_POST['jumlah_minta'];
-
-    $sql_tambah = "INSERT INTO permintaan_barang (id_kepala, id_barang, jumlah_minta, status) 
-                   VALUES ('$id_kepala', '$id_barang', '$jumlah_minta', 'pending')";
+    // 1. Ambil data dari Session & Post
+    $id_kepala    = $_SESSION['id_user'];
+    $id_barang    = mysqli_real_escape_string($conn, $_POST['id_barang']);
+    $jumlah_minta = mysqli_real_escape_string($conn, $_POST['jumlah_minta']);
     
+    // 2. Menangkap field baru (Spesifikasi & Kondisi)
+    // Gunakan trim() untuk membersihkan spasi dan strtoupper untuk kapitalisasi
+    $spesifikasi  = strtoupper(mysqli_real_escape_string($conn, trim($_POST['spesifikasi'])));
+    $kondisi      = mysqli_real_escape_string($conn, $_POST['kondisi']);
+
+    // 3. Validasi Tambahan: Jika field kosong (karena readonly), beri nilai default
+    if (empty($spesifikasi)) { $spesifikasi = "-"; }
+    if (empty($kondisi)) { $kondisi = "BAIK"; }
+
+    // 4. Query Insert: Pastikan urutan kolom sesuai dengan tabel di database
+    $sql_tambah = "INSERT INTO permintaan_barang 
+                   (id_kepala, id_barang, spesifikasi, jumlah_minta, kondisi, status, tgl_permintaan) 
+                   VALUES 
+                   ('$id_kepala', '$id_barang', '$spesifikasi', '$jumlah_minta', '$kondisi', 'pending', NOW())";
+    
+    // 5. Eksekusi Query
     if (mysqli_query($conn, $sql_tambah)) {
+        // Mengeset session alert untuk memicu SweetAlert di halaman kebutuhan.php
         $_SESSION['alert'] = 'sukses_tambah';
         header("Location: ../lab/kebutuhan.php");
         exit;
     } else {
-        echo "Gagal: " . mysqli_error($conn);
+        // Menampilkan pesan error detail jika gagal (untuk kebutuhan debug)
+        die("Gagal Query: " . mysqli_error($conn));
     }
 }
+
+
 
 // --- 3. LOGIKA LAPOR PEMAKAIAN ---
 // --- SIMPAN PEMAKAIAN ---

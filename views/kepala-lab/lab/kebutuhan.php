@@ -11,9 +11,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
 $id_user = $_SESSION['id_user'];
 
 // 2. Query Ambil Barang dari tabel bahan_praktek
-// Menampilkan semua bahan agar Kepala Lab bisa minta meskipun stok 0 (untuk pengadaan)
-$query_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, satuan FROM bahan_praktek ORDER BY nama_bahan ASC");
-
+// Tambahkan kode_bahan, spesifikasi, dan kondisi ke dalam SELECT
+$query_barang = mysqli_query($conn, "SELECT id_praktek, kode_bahan, nama_bahan, spesifikasi, kondisi, satuan FROM bahan_praktek ORDER BY nama_bahan ASC");
 // 3. Query Ambil Riwayat Permintaan (Gunakan LEFT JOIN agar data p.id_barang tetap muncul)
 $sql_riwayat = "SELECT p.*, b.nama_bahan 
                 FROM permintaan_barang p 
@@ -120,25 +119,45 @@ if (isset($_GET['edit_id'])) {
                                 </div>
                             </form>
                         <?php else: ?>
-                            <h6 class="fw-bold mb-4 text-uppercase">Form Pengajuan</h6>
-                            <form action="../proses/tambah.php" method="POST">
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold">PILIH BAHAN</label>
-                                    <select name="id_barang" class="form-select border-0 bg-light py-2" required>
-                                        <option value="" disabled selected>Pilih bahan...</option>
-                                        <?php while($b = mysqli_fetch_assoc($query_barang)): ?>
-                                            <option value="<?= $b['id_praktek']; ?>"><?= $b['nama_bahan']; ?> (<?= $b['satuan']; ?>)</option>
-                                        <?php endwhile; ?>
-                                    </select>
-                                </div>
-                                <div class="mb-4">
+                            
+                        <h6 class="fw-bold mb-4 text-uppercase">Form Pengajuan</h6>
+                        <form action="../proses/tambah.php" method="POST">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">PILIH BAHAN</label>
+                                <select name="id_barang" id="pilih_bahan" class="form-select border-0 bg-light py-2" required>
+                                    <option value="" disabled selected>Pilih bahan...</option>
+                                    <?php while($b = mysqli_fetch_assoc($query_barang)): ?>
+                                        <option value="<?= $b['id_praktek']; ?>" 
+                                                data-spesifikasi="<?= htmlspecialchars($b['spesifikasi'] ?? '-'); ?>" 
+                                                data-kondisi="<?= htmlspecialchars($b['kondisi'] ?? '-'); ?>">
+                                            <?= $b['nama_bahan']; ?> | <?= $b['kode_bahan']; ?> (<?= $b['satuan']; ?>)
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">SPESIFIKASI</label>
+                                <textarea id="display_spesifikasi" name="spesifikasi" class="form-control border-0 bg-light py-2" rows="2" readonly placeholder="Otomatis terisi..."></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
                                     <label class="form-label small fw-bold">JUMLAH</label>
                                     <input type="number" name="jumlah_minta" class="form-control border-0 bg-light py-2" min="1" required placeholder="0">
                                 </div>
-                                <button type="submit" name="kirim_permintaan" class="btn btn-navy w-100 py-2">
-                                    <i class="bi bi-plus-lg me-2"></i>Tambah Permintaan
-                                </button>
-                            </form>
+
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label small fw-bold text-muted">KONDISI</label>
+                                    <input type="text" id="display_kondisi" name="kondisi" class="form-control border-0 bg-light py-2" readonly placeholder="-">
+                                </div>
+                            </div>
+
+                            <button type="submit" name="kirim_permintaan" class="btn btn-navy w-100 py-2">
+                                <i class="bi bi-plus-lg me-2"></i>Tambah Permintaan
+                            </button>
+                        </form>
+
                         <?php endif; ?>
                     </div>
                 </div>
@@ -153,39 +172,47 @@ if (isset($_GET['edit_id'])) {
                                         <th width="5%">No</th>
                                         <th>Tanggal</th>
                                         <th>Nama Bahan</th>
-                                        <th class="text-center">Minta</th>
-                                        <th class="text-center">Status</th>
+                                        <th>Spesifikasi</th> <th class="text-center">Minta</th>
+                                        <th class="text-center">Kondisi</th> <th class="text-center">Status</th>
                                         <th class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php 
-                                    $no = 1;
-                                    while($r = mysqli_fetch_assoc($riwayat)): ?>
-                                        <tr>
-                                            <td><?= $no++; ?></td>
-                                            <td><small class="text-muted"><?= date('d/m/Y', strtotime($r['tgl_permintaan'])); ?></small></td>
-                                            <td class="fw-bold text-navy"><?= $r['nama_bahan'] ?? '<span class="text-danger">Bahan dihapus</span>'; ?></td>
-                                            <td class="text-center"><?= $r['jumlah_minta']; ?></td>
-                                            <td class="text-center">
-                                                <span class="badge-status bg-<?= $r['status']; ?>">
-                                                    <?= ucfirst($r['status']); ?>
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                <?php if($r['status'] == 'pending'): ?>
-                                                    <a href="?edit_id=<?= $r['id_permintaan']; ?>" class="btn btn-sm btn-outline-primary border-0">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </a>
-                                                    <a href="javascript:void(0)" onclick="confirmDelete('<?= $r['id_permintaan']; ?>')" class="btn btn-sm btn-outline-danger border-0">
-                                                        <i class="bi bi-trash3"></i>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <span class="text-muted small"><i class="bi bi-lock-fill"></i></span>
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php endwhile; ?>
+                                        $no = 1;
+                                        while($r = mysqli_fetch_assoc($riwayat)): ?>
+                                            <tr>
+                                                <td><?= $no++; ?></td>
+                                                <td><small class="text-muted"><?= date('d/m/Y', strtotime($r['tgl_permintaan'])); ?></small></td>
+                                                <td>
+                                                    <div class="fw-bold text-navy"><?= $r['nama_bahan'] ?? '<span class="text-danger">Bahan dihapus</span>'; ?></div>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted" style="font-size: 0.75rem;"><?= $r['spesifikasi'] ?: '-'; ?></small>
+                                                </td>
+                                                <td class="text-center"><?= $r['jumlah_minta']; ?></td>
+                                                <td class="text-center">
+                                                    <small class="badge bg-light text-dark border" style="font-size: 0.7rem;"><?= $r['kondisi'] ?: '-'; ?></small>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge-status bg-<?= $r['status']; ?>">
+                                                        <?= ucfirst($r['status']); ?>
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <?php if($r['status'] == 'pending'): ?>
+                                                        <a href="?edit_id=<?= $r['id_permintaan']; ?>" class="btn btn-sm btn-outline-primary border-0">
+                                                            <i class="bi bi-pencil-square"></i>
+                                                        </a>
+                                                        <a href="javascript:void(0)" onclick="confirmDelete('<?= $r['id_permintaan']; ?>')" class="btn btn-sm btn-outline-danger border-0">
+                                                            <i class="bi bi-trash3"></i>
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <span class="text-muted small"><i class="bi bi-lock-fill"></i></span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -201,15 +228,32 @@ if (isset($_GET['edit_id'])) {
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     $(document).ready(function() {
+        // 1. Inisialisasi DataTable
         $('#tabelKebutuhan').DataTable({
             "language": { "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json" },
             "pageLength": 10
         });
+
+        // 2. Logika Auto-Fill (Pindahkan ke sini agar selalu terbaca)
+        const pilihBahan = document.getElementById('pilih_bahan');
+        if (pilihBahan) {
+            pilihBahan.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                
+                // Ambil data dari atribut data- yang kita buat di PHP
+                const spesifikasi = selectedOption.getAttribute('data-spesifikasi') || '-';
+                const kondisi = selectedOption.getAttribute('data-kondisi') || '-';
+
+                // Masukkan data ke dalam field input/textarea
+                document.getElementById('display_spesifikasi').value = spesifikasi;
+                document.getElementById('display_kondisi').value = kondisi;
+            });
+        }
     });
 
+    // 3. Fungsi Hapus Data
     function confirmDelete(id) {
         Swal.fire({
             title: 'Hapus Permintaan?',
@@ -217,19 +261,27 @@ if (isset($_GET['edit_id'])) {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#001f3f',
-            confirmButtonText: 'Ya, Hapus!'
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = "../proses/hapus.php?id=" + id;
             }
-        })
+        });
     }
 </script>
 
 <?php if(isset($_SESSION['alert'])): ?>
 <script>
-    Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Proses berhasil dilakukan.', timer: 2000, showConfirmButton: false });
+    Swal.fire({ 
+        icon: 'success', 
+        title: 'Berhasil!', 
+        text: 'Proses berhasil dilakukan.', 
+        timer: 2000, 
+        showConfirmButton: false 
+    });
 </script>
 <?php unset($_SESSION['alert']); endif; ?>
+
 </body>
 </html>
