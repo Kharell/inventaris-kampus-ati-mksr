@@ -270,6 +270,13 @@ if (isset($_POST['login'])) {
                         Daftar Admin
                     </a>
                 </p>
+
+                  <p class="text-muted small">
+                    Lupa Password? 
+                    <a href="resetPassword.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
+                        Reset Password
+                    </a>
+                </p>
             </div>
 
             <p class="text-center mt-5 text-muted small">

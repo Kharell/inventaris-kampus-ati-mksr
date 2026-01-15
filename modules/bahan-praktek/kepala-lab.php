@@ -130,7 +130,8 @@ $res = mysqli_query($conn, $query);
                                 </td>
                                 <td>
                                     <div class="d-flex flex-column">
-                                        <small class="text-muted mb-1">User: <code class="text-primary fw-bold"><?= $row['username']; ?></code></small>
+                                        <!-- <small class="text-muted mb-1">User: <code class="text-primary fw-bold"><?= $row['username']; ?></code></small> -->
+                                        <small class="text-muted mb-1">Username: <code class="text-primary fw-bold">Dikunci</code></small>
                                         <div class="input-group input-group-sm" style="width: 140px;">
                                             <input type="password" class="form-control border-0 bg-light" id="listPw<?= $row['id_kepala']; ?>" value="<?= $row['password_plain']; ?>" readonly>
                                             <span class="input-group-text bg-light border-0 cursor-pointer" onclick="toggleViewPw(<?= $row['id_kepala']; ?>)">
