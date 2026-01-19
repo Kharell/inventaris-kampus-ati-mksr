@@ -266,14 +266,14 @@ if (isset($_POST['login'])) {
              <div class="text-center mt-2">
                 <p class="text-muted small">
                     Belum punya akun? 
-                    <a href="daftarAdmin.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
+                    <a href="/daftarAdmin.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
                         Daftar Admin
                     </a>
                 </p>
 
                   <p class="text-muted small">
-                    Lupa Password? 
-                    <a href="resetPassword.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
+                    Admin lupa password? 
+                    <a href="/resestPassword.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
                         Reset Password
                     </a>
                 </p>
