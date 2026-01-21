@@ -38,6 +38,9 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
         }
         .status-pill { font-size: 0.75rem; padding: 6px 12px; border-radius: 30px; font-weight: 600; }
         .bg-proses { background: #fff3cd; color: #856404; }
+        /* Styling tambahan untuk Spek & Kondisi */
+        .text-spek { font-size: 0.8rem; color: #6c757d; display: block; margin-top: 2px; }
+        .badge-kondisi { font-size: 0.7rem; padding: 3px 8px; }
     </style>
 </head>
 <body>
@@ -72,13 +75,14 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
                             <tr>
                                 <th>Kode Distribusi</th>
                                 <th>Nama Material</th>
-                                <th class="text-center">Jumlah</th>
+                                <th>Spek & Kondisi</th> <th class="text-center">Jumlah</th>
                                 <th>Status</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
+                            // PERBAIKAN: Mengambil d.spesifikasi dan d.kondisi dari tabel distribusi_lab
                             $sql = "SELECT d.*, b.nama_bahan, b.satuan 
                                     FROM distribusi_lab d 
                                     JOIN bahan_praktek b ON d.id_praktek = b.id_praktek 
@@ -88,20 +92,31 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
                             $query = mysqli_query($conn, $sql);
 
                             while ($row = mysqli_fetch_assoc($query)) : 
-                                // Penanganan Tanggal agar tidak error
-                                $tgl_kirim = $row['tgl_distribusi'] ?? $row['tgl_permintaan'] ?? $row['tanggal'] ?? null;
+                                $tgl_kirim = $row['tgl_distribusi'] ?? null;
+                                
+                                // Logika warna badge kondisi
+                                $kon = $row['kondisi'] ?? 'Baik';
+                                $kon_class = ($kon == 'Baik') ? 'bg-success' : (($kon == 'Rusak') ? 'bg-danger' : 'bg-warning text-dark');
                             ?>
                             <tr>
                                 <td>
-                                    <span class="fw-bold text-navy"><?= $row['kode_distribusi'] ?></span>
+                                    <span class="fw-bold text-navy"><?= htmlspecialchars($row['kode_distribusi']) ?></span>
                                     <div class="smaller text-muted" style="font-size: 0.7rem;">
                                         Dikirim: <?= $tgl_kirim ? date('d/m/Y', strtotime($tgl_kirim)) : '-'; ?>
                                     </div>
                                 </td>
-                                <td class="fw-bold"><?= $row['nama_bahan'] ?></td>
+                                <td class="fw-bold"><?= htmlspecialchars($row['nama_bahan']) ?></td>
+                                
+                                <td>
+                                    <span class="text-spek"><i class="bi bi-info-circle me-1"></i><?= htmlspecialchars($row['spesifikasi'] ?? '-') ?></span>
+                                    <span class="badge badge-kondisi <?= $kon_class ?> mt-1">
+                                        <?= htmlspecialchars($kon) ?>
+                                    </span>
+                                </td>
+
                                 <td class="text-center">
                                     <span class="badge bg-light text-dark border px-3">
-                                        <?= $row['jumlah'] ?> <?= $row['satuan'] ?>
+                                        <?= $row['jumlah'] ?> <?= htmlspecialchars($row['satuan']) ?>
                                     </span>
                                 </td>
                                 <td>
@@ -109,11 +124,18 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
                                         <i class="bi bi-arrow-repeat me-1"></i> Sedang Dikirim
                                     </span>
                                 </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" 
-                                            onclick="terimaBarang('<?= $row['id_distribusi'] ?>', '<?= addslashes($row['nama_bahan']) ?>')">
-                                        <i class="bi bi-check2-circle me-1"></i> Terima
-                                    </button>
+                               <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" 
+                                                onclick="terimaBarang('<?= $row['id_distribusi'] ?>', '<?= addslashes($row['nama_bahan']) ?>')">
+                                            <i class="bi bi-check2-circle me-1"></i> Terima
+                                        </button>
+
+                                        <button class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" 
+                                                onclick="tolakBarang('<?= $row['id_distribusi'] ?>', '<?= addslashes($row['nama_bahan']) ?>')">
+                                            <i class="bi bi-x-circle me-1"></i> Tolak
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <?php endwhile; ?>
@@ -151,7 +173,6 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    // LOKASI DIARAHKAN KE FOLDER PROSES/TAMBAH.PHP
                     url: '../proses/tambah.php', 
                     type: 'POST',
                     data: { id: id },
@@ -177,7 +198,87 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
             }
         });
     }
+
+    function tolakBarang(id, nama) {
+    Swal.fire({
+        title: 'Penolakan Barang',
+        html: `
+            <div class="text-start">
+                <p class="small text-muted mb-3">Mengapa barang <b>${nama}</b> ditolak?</p>
+                
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="alasanTolak" id="alas1" value="Spesifikasi Tidak Sesuai" checked>
+                    <label class="form-check-label" for="alas1">Spesifikasi Tidak Sesuai</label>
+                </div>
+                
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="alasanTolak" id="alas2" value="Kondisi Barang Rusak/Cacat">
+                    <label class="form-check-label" for="alas2">Kondisi Barang Rusak/Cacat</label>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="alasanTolak" id="alas3" value="Jumlah Tidak Sesuai">
+                    <label class="form-check-label" for="alas3">Jumlah Tidak Sesuai</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="alasanTolak" id="alas4" value="Lainnya">
+                    <label class="form-check-label" for="alas4">Lainnya (Tulis di bawah)</label>
+                </div>
+                
+                <textarea id="catatanTambahan" class="form-control mt-2" placeholder="Catatan tambahan (opsional)..." rows="2"></textarea>
+            </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Konfirmasi Tolak',
+        cancelButtonText: 'Batal',
+        preConfirm: () => {
+            // Mengambil nilai radio button yang dipilih
+            const alasanPilihan = document.querySelector('input[name="alasanTolak"]:checked').value;
+            const catatan = document.getElementById('catatanTambahan').value;
+            
+            // Gabungkan alasan utama dan catatan tambahan
+            return {
+                alasan: alasanPilihan,
+                catatan: catatan
+            };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const dataFinal = result.value.alasan + (result.value.catatan ? " - " + result.value.catatan : "");
+            
+            $.ajax({
+                url: '../proses/tambah.php',
+                type: 'POST',
+                data: { 
+                    aksi: 'tolak', 
+                    id: id, 
+                    keterangan: dataFinal 
+                },
+                success: function(response) {
+                    if (response.trim() === "success") {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil Ditolak',
+                            text: 'Barang dikembalikan ke status gudang.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Gagal!', 'Terjadi kesalahan sistem: ' + response, 'error');
+                    }
+                }
+            });
+        }
+    });
+}
 </script>
 
 </body>
 </html>
+

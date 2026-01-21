@@ -13,7 +13,7 @@ if (empty($id_lab)) {
 }
 
 // --- BAGIAN A: PERMINTAAN MASUK (ANTRIAN) ---
-$sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok as stok_gudang, b.id_praktek
+$sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok as stok_gudang, b.id_praktek, b.spesifikasi, b.kondisi
             FROM permintaan_barang p
             JOIN bahan_praktek b ON p.id_barang = b.id_praktek
             JOIN kepala_lab kl ON p.id_kepala = kl.id_kepala
@@ -33,6 +33,7 @@ if (mysqli_num_rows($query_req) > 0) : ?>
                     <thead class="bg-light">
                         <tr class="text-muted small uppercase ls-1">
                             <th class="ps-4 py-3">Detail Material</th>
+                            <th class="text-center">Spek & Kondisi</th> 
                             <th class="text-center">Kuantitas</th>
                             <th class="text-center">Ketersediaan</th>
                             <th class="text-end pe-4">Aksi</th>
@@ -41,15 +42,30 @@ if (mysqli_num_rows($query_req) > 0) : ?>
                     <tbody>
                         <?php while ($req = mysqli_fetch_assoc($query_req)) : 
                             $stok_status = ($req['stok_gudang'] < $req['jumlah_minta']) ? 'bg-danger' : 'bg-success';
+                            
+                            // Logika warna badge kondisi (Mencegah error null)
+                            $kon_val = $req['kondisi'] ?? 'Baik';
+                            $kon_color = 'bg-secondary';
+                            if($kon_val == 'Baik') $kon_color = 'bg-success';
+                            elseif($kon_val == 'Kurang Baik') $kon_color = 'bg-warning text-dark';
+                            elseif($kon_val == 'Rusak') $kon_color = 'bg-danger';
                         ?>
                         <tr class="transition-all">
                             <td class="ps-4">
-                                <div class="fw-bold text-navy mb-1"><?= $req['nama_bahan'] ?></div>
+                                <div class="fw-bold text-navy mb-1"><?= htmlspecialchars($req['nama_bahan'] ?? '') ?></div>
                                 <div class="text-muted smaller"><i class="bi bi-clock me-1"></i><?= date('d M Y, H:i', strtotime($req['tgl_permintaan'])) ?></div>
                             </td>
+                            
+                            <td class="text-center">
+                                <div class="small fw-semibold text-dark mb-1"><?= !empty($req['spesifikasi']) ? htmlspecialchars($req['spesifikasi']) : '-' ?></div>
+                                <span class="badge <?= $kon_color ?> border-0" style="font-size: 10px; padding: 3px 8px;">
+                                    <i class="bi bi-info-circle me-1"></i><?= htmlspecialchars($kon_val) ?>
+                                </span>
+                            </td>
+
                             <td class="text-center">
                                 <span class="badge bg-warning-subtle text-dark border border-warning px-3 py-2 rounded-3">
-                                    <strong class="fs-6"><?= $req['jumlah_minta'] ?></strong> <?= $req['satuan'] ?>
+                                    <strong class="fs-6"><?= $req['jumlah_minta'] ?></strong> <?= htmlspecialchars($req['satuan'] ?? '') ?>
                                 </span>
                             </td>
                             <td class="text-center">
@@ -58,12 +74,19 @@ if (mysqli_num_rows($query_req) > 0) : ?>
                                     <span class="small fw-semibold"><?= $req['stok_gudang'] ?> Unit</span>
                                 </div>
                             </td>
-                           <td class="text-end pe-4">
-                            <button class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm hover-up" 
-                                    onclick="prosesACC('<?= $req['id_permintaan'] ?>', '<?= $req['id_praktek'] ?>', '<?= $req['jumlah_minta'] ?>', '<?= addslashes($req['nama_bahan']) ?>')">
+                            <td class="text-end pe-4">
+                                <button class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm hover-up" 
+                                  onclick="prosesACC(
+                                    '<?= $req['id_permintaan'] ?>', 
+                                    '<?= $req['id_praktek'] ?>', 
+                                    '<?= $req['jumlah_minta'] ?>', 
+                                    '<?= addslashes($req['nama_bahan'] ?? '') ?>',
+                                    '<?= addslashes($req['spesifikasi'] ?? '-') ?>', 
+                                    '<?= addslashes($req['kondisi'] ?? 'Baik') ?>'
+                                )">
                                 <i class="bi bi-check2-circle me-1"></i> Validasi & ACC
                             </button>
-                        </td>
+                            </td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -99,8 +122,10 @@ $query = mysqli_query($conn, $sql);
                 <thead class="bg-navy text-white">
                     <tr class="ls-1">
                         <th class="ps-4 py-3">#</th>
-                        <th>Material</th>
                         <th>Kode Distribusi</th>
+                        <th>Material</th>
+                        <th>Spesifikasi</th>
+                        <th>Kondisi</th>
                         <th class="text-center">Kuantitas</th>
                         <th>Status</th>
                         <th class="text-center pe-4">Kontrol</th>
@@ -111,19 +136,35 @@ $query = mysqli_query($conn, $sql);
                     $no = $offset + 1;
                     while ($row = mysqli_fetch_assoc($query)) : 
                         $is_received = ($row['status'] == 'diterima');
-                        $initial = strtoupper(substr($row['nama_bahan'], 0, 1));
+                        $nama_bahan  = $row['nama_bahan'] ?? 'Tanpa Nama';
+                        $initial     = strtoupper(substr($nama_bahan, 0, 1));
+                        
+                        // PERBAIKAN BARIS 141: Mencegah error strtolower null
+                        $kondisi_raw = strtolower($row['kondisi'] ?? '');
+                        $badge_kondisi = ($kondisi_raw == 'baik' || $kondisi_raw == 'baru') ? 'text-success' : 'text-danger';
                     ?>
                     <tr>
                         <td class="ps-4 text-muted small"><?= $no++ ?></td>
+                        <td><code class="kode-modern"><?= htmlspecialchars($row['kode_distribusi'] ?? '') ?></code></td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="avatar-table me-3"><?= $initial ?></div>
-                                <div class="fw-bold text-navy"><?= $row['nama_bahan'] ?></div>
+                                <div class="fw-bold text-navy"><?= htmlspecialchars($nama_bahan) ?></div>
                             </div>
                         </td>
-                        <td><code class="kode-modern"><?= $row['kode_distribusi'] ?></code></td>
+                        <td>
+                            <div class="small text-muted text-wrap" style="max-width: 200px;">
+                                <i class="bi bi-info-circle me-1"></i><?= !empty($row['spesifikasi']) ? htmlspecialchars($row['spesifikasi']) : '-' ?>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold small <?= $badge_kondisi ?>">
+                                <i class="bi bi-patch-check-fill me-1"></i><?= htmlspecialchars($row['kondisi'] ?? 'Baik') ?>
+                            </div>
+                        </td>
                         <td class="text-center">
-                            <span class="fw-bold text-dark"><?= $row['jumlah'] ?></span> <small class="text-muted"><?= $row['satuan'] ?></small>
+                            <span class="fw-bold text-dark"><?= $row['jumlah'] ?></span> 
+                            <small class="text-muted"><?= htmlspecialchars($row['satuan'] ?? '') ?></small>
                         </td>
                         <td>
                             <?php if ($is_received) : ?>
@@ -135,15 +176,19 @@ $query = mysqli_query($conn, $sql);
                         <td class="text-center pe-4">
                             <?php if (!$is_received) : ?>
                                 <div class="btn-group shadow-sm rounded-3 overflow-hidden">
-                                    <button class="btn btn-white btn-sm px-3" title="Edit" onclick="openEditDist('<?= $row['id_distribusi'] ?>', '<?= addslashes($row['nama_bahan']) ?>', '<?= $row['jumlah'] ?>')">
+                                    <button class="btn btn-white btn-sm px-3" title="Edit" 
+                                            onclick="openEditDist('<?= $row['id_distribusi'] ?>', '<?= addslashes($nama_bahan) ?>', '<?= $row['jumlah'] ?>')">
                                         <i class="bi bi-pencil-square text-warning"></i>
                                     </button>
-                                    <button class="btn btn-white btn-sm px-3" title="Hapus" onclick="hapusDistribusi('<?= $row['id_distribusi'] ?>')">
+                                    <button class="btn btn-white btn-sm px-3" title="Hapus" 
+                                            onclick="hapusDistribusi('<?= $row['id_distribusi'] ?>')">
                                         <i class="bi bi-trash3 text-danger"></i>
                                     </button>
                                 </div>
                             <?php else : ?>
-                                <i class="bi bi-lock-fill text-muted" title="Data Terkunci"></i>
+                                <div class="text-muted small">
+                                    <i class="bi bi-lock-fill me-1"></i>Terkunci
+                                </div>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -152,6 +197,7 @@ $query = mysqli_query($conn, $sql);
             </table>
         </div>
     </div>
+    ```
 
     <?php if ($total_page > 1) : ?>
     <nav class="mt-4 anim-fade-up">

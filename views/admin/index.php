@@ -52,6 +52,8 @@ for ($i = 6; $i >= 0; $i--) {
     border: none;
 }
 
+
+
 /* Tambahan dekorasi agar banner tidak flat */
 .welcome-banner::after {
     content: '';

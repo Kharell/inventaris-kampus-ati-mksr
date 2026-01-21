@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 13, 2026 at 02:10 AM
+-- Generation Time: Jan 21, 2026 at 01:11 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.22
 
@@ -45,10 +45,10 @@ CREATE TABLE `bahan_praktek` (
 --
 
 INSERT INTO `bahan_praktek` (`id_praktek`, `kode_bahan`, `nama_bahan`, `spesifikasi`, `id_jurusan`, `id_lab`, `stok`, `kondisi`, `satuan`, `tgl_masuk`) VALUES
-(12, 'BPR-26-001', 'Kabel 5 M', NULL, NULL, NULL, 8, 'Baik', 'Meter', '2026-01-08'),
-(13, 'BPR-26-002', 'Tang', NULL, NULL, NULL, 11, 'Baik', 'Pcs', '2026-01-08'),
-(14, 'BPR-26-003', 'meja', NULL, NULL, NULL, 19, 'Baik', '', '2026-01-12'),
-(15, 'BPR-26-004', 'kamera', NULL, NULL, NULL, 10, 'Baik', 'kg', '2026-01-13');
+(19, 'BPR-26-002', 'Tang', 'Tang Besi ', NULL, NULL, 12, 'Baik', 'Pcsss', '2026-01-13'),
+(20, 'BPR-26-003', 'Meja', 'Meja Bundar ', NULL, NULL, 8, 'Baik', 'Pcs', '2026-01-13'),
+(21, 'BPR-26-004', 'wr', 'wrwrw', NULL, NULL, 32, 'Rusak', 'kg', '2026-01-20'),
+(22, 'BPR-26-005', 'Kelender', 'fgjg', NULL, NULL, 16, 'Kurang Baik', 'wrwrw', '2026-01-20');
 
 -- --------------------------------------------------------
 
@@ -105,19 +105,27 @@ CREATE TABLE `distribusi_lab` (
   `kode_distribusi` varchar(50) DEFAULT NULL,
   `jumlah` int DEFAULT NULL,
   `tanggal_distribusi` date DEFAULT NULL,
-  `status` enum('dikirim','diterima') NOT NULL DEFAULT 'dikirim'
+  `spesifikasi` text,
+  `kondisi` varchar(50) DEFAULT NULL,
+  `status` enum('dikirim','diterima') NOT NULL DEFAULT 'dikirim',
+  `keterangan` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `distribusi_lab`
 --
 
-INSERT INTO `distribusi_lab` (`id_distribusi`, `id_praktek`, `id_lab`, `kode_distribusi`, `jumlah`, `tanggal_distribusi`, `status`) VALUES
-(29, 12, 6, 'OSP/LP/BPR-26-001', 1, '2026-01-08', 'diterima'),
-(30, 13, 6, 'OSP/LP/BPR-26-002', 2, '2026-01-08', 'diterima'),
-(31, 12, 6, 'OSP/LP/BPR-26-001', 1, '2026-01-08', 'dikirim'),
-(32, 14, 14, 'JC/CS/BPR-26-003', 1, '2026-01-12', 'diterima'),
-(33, 13, 14, 'JC/CS/BPR-26-002', 2, '2026-01-12', 'diterima');
+INSERT INTO `distribusi_lab` (`id_distribusi`, `id_praktek`, `id_lab`, `kode_distribusi`, `jumlah`, `tanggal_distribusi`, `spesifikasi`, `kondisi`, `status`, `keterangan`) VALUES
+(35, 19, 6, 'OSP/LP/BPR-26-002', 1, '2026-01-20', NULL, NULL, 'diterima', NULL),
+(38, 19, 6, 'OSP/LP/BPR-26-002', 3, '2026-01-20', NULL, NULL, 'diterima', NULL),
+(48, 20, 6, 'OSP/LP/BPR-26-003', 4, '2026-01-20', 'Meja Bundar ', 'Baik', 'diterima', NULL),
+(49, 20, 6, 'OSP/LP/BPR-26-003', 4, '2026-01-20', 'Meja Bundar ', 'Baik', 'dikirim', NULL),
+(50, 20, 6, 'OSP/LP/BPR-26-003', 1, '2026-01-20', 'Meja Bundar ', 'Baik', 'diterima', NULL),
+(51, 22, 6, 'OSP/LP/BPR-26-005', 3, '2026-01-20', 'fgjg', 'Kurang Baik', 'dikirim', NULL),
+(52, 21, 6, 'OSP/LP/BPR-26-004', 2, '2026-01-20', 'wrwrw', 'Rusak', 'diterima', NULL),
+(53, 19, 6, 'OSP/LP/BPR-26-002', 4, '2026-01-20', 'Tang Besi ', 'Baik', 'diterima', NULL),
+(54, 22, 6, 'OSP/LP/BPR-26-005', 2, '2026-01-20', 'fgjg', 'Kurang Baik', 'dikirim', NULL),
+(55, 22, 6, 'OSP/LP/BPR-26-005', 2, '2026-01-20', 'fgjg', 'Kurang Baik', 'dikirim', NULL);
 
 -- --------------------------------------------------------
 
@@ -164,8 +172,8 @@ CREATE TABLE `kepala_lab` (
 --
 
 INSERT INTO `kepala_lab` (`id_kepala`, `id_lab`, `nama_kepala`, `username`, `password`, `password_plain`, `nip`, `kontak`, `role`) VALUES
-(9, 6, 'Kepala Lab Testing', 'testing', '$2y$10$cWTCZpvWh3TjVneYD6WAoec1Er/Jhhp801flFL..69bmIMdT3sIJS', 'testing', '9999999999', '034023023029', 'kepala_lab'),
-(10, 14, 'muslimin', 'muslimin', '$2y$10$6AKo6gep1oqW4CeOAOfb5.s9rROLx76i.d3gUT8WOyd922/Ptpkaq', 'muslimin', '00000', '080000', 'kepala_lab');
+(9, 6, 'KAROLUS GANTENG', 'testing', '$2y$10$cWTCZpvWh3TjVneYD6WAoec1Er/Jhhp801flFL..69bmIMdT3sIJS', 'testing', '9999999999', '034023023029', 'kepala_lab'),
+(10, 14, 'muslimin', 'muslimin', '$2y$10$6AKo6gep1oqW4CeOAOfb5.s9rROLx76i.d3gUT8WOyd922/Ptpkaq', 'muslimin', '094847649674335', '087373646372', 'kepala_lab');
 
 -- --------------------------------------------------------
 
@@ -229,14 +237,6 @@ CREATE TABLE `pemakaian_lab` (
   `keterangan` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Dumping data for table `pemakaian_lab`
---
-
-INSERT INTO `pemakaian_lab` (`id_pemakaian`, `id_distribusi`, `kode_distribusi`, `id_praktek`, `id_lab`, `jumlah_pakai`, `tgl_pakai`, `keterangan`) VALUES
-(14, 32, '', 14, 14, 1, '2026-01-12 09:14:42', NULL),
-(15, 33, '', 13, 14, 2, '2026-01-12 09:14:49', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -247,7 +247,9 @@ CREATE TABLE `permintaan_barang` (
   `id_permintaan` int NOT NULL,
   `id_kepala` int NOT NULL,
   `id_barang` int NOT NULL,
+  `spesifikasi` text,
   `jumlah_minta` int NOT NULL,
+  `kondisi` varchar(50) DEFAULT NULL,
   `jumlah_disetujui` int DEFAULT '0',
   `tgl_permintaan` datetime DEFAULT CURRENT_TIMESTAMP,
   `tgl_proses` datetime DEFAULT NULL,
@@ -260,12 +262,28 @@ CREATE TABLE `permintaan_barang` (
 -- Dumping data for table `permintaan_barang`
 --
 
-INSERT INTO `permintaan_barang` (`id_permintaan`, `id_kepala`, `id_barang`, `jumlah_minta`, `jumlah_disetujui`, `tgl_permintaan`, `tgl_proses`, `status`, `keterangan_kepala`, `catatan_admin`) VALUES
-(17, 9, 12, 2, 0, '2026-01-08 13:15:35', NULL, 'disetujui', NULL, NULL),
-(18, 9, 13, 3, 0, '2026-01-08 13:15:46', NULL, 'disetujui', NULL, NULL),
-(19, 9, 12, 2, 0, '2026-01-08 13:29:40', NULL, 'disetujui', NULL, NULL),
-(20, 10, 14, 4, 0, '2026-01-12 09:05:32', NULL, 'disetujui', NULL, NULL),
-(21, 10, 13, 2, 0, '2026-01-12 09:05:42', NULL, 'disetujui', NULL, NULL);
+INSERT INTO `permintaan_barang` (`id_permintaan`, `id_kepala`, `id_barang`, `spesifikasi`, `jumlah_minta`, `kondisi`, `jumlah_disetujui`, `tgl_permintaan`, `tgl_proses`, `status`, `keterangan_kepala`, `catatan_admin`) VALUES
+(22, 9, 20, 'MEJA BUNDAR', 3, 'Baik', 0, '2026-01-13 11:04:52', NULL, 'disetujui', NULL, NULL),
+(23, 9, 19, 'TANG BESI', 3, 'Baik', 0, '2026-01-13 11:09:11', NULL, 'disetujui', NULL, NULL),
+(24, 9, 20, 'MEJA BUNDAR', 5, 'Baik', 0, '2026-01-20 09:53:38', NULL, 'disetujui', NULL, NULL),
+(25, 9, 20, 'MEJA BUNDAR', 4, 'Baik', 0, '2026-01-20 10:03:31', NULL, 'disetujui', NULL, NULL),
+(26, 9, 19, 'TANG BESI', 3, 'Baik', 0, '2026-01-20 11:21:42', NULL, 'disetujui', NULL, NULL),
+(27, 9, 20, 'MEJA BUNDAR', 3, 'Baik', 0, '2026-01-20 11:21:50', NULL, 'disetujui', NULL, NULL),
+(28, 9, 20, 'MEJA BUNDAR', 5, 'Baik', 0, '2026-01-20 12:48:23', NULL, 'disetujui', NULL, NULL),
+(29, 9, 20, 'MEJA BUNDAR', 2, 'Baik', 0, '2026-01-20 13:24:08', NULL, 'disetujui', NULL, NULL),
+(30, 9, 20, 'MEJA BUNDAR', 1, 'Baik', 0, '2026-01-20 13:24:14', NULL, 'disetujui', NULL, NULL),
+(31, 9, 19, 'TANG BESI', 3, 'Baik', 0, '2026-01-20 13:24:19', NULL, 'disetujui', NULL, NULL),
+(32, 9, 20, 'MEJA BUNDAR', 2, 'Baik', 0, '2026-01-20 13:43:34', NULL, 'disetujui', NULL, NULL),
+(33, 9, 19, 'TANG BESI', 2, 'Baik', 0, '2026-01-20 13:43:38', NULL, 'disetujui', NULL, NULL),
+(34, 9, 20, 'MEJA BUNDAR', 4, 'Baik', 0, '2026-01-20 13:43:44', NULL, 'disetujui', NULL, NULL),
+(35, 9, 20, 'MEJA BUNDAR', 2, 'Baik', 0, '2026-01-20 13:43:49', NULL, 'disetujui', NULL, NULL),
+(36, 9, 20, 'MEJA BUNDAR', 4, 'Baik', 0, '2026-01-20 14:10:34', NULL, 'disetujui', NULL, NULL),
+(37, 9, 19, 'TANG BESI', 4, 'Baik', 0, '2026-01-20 14:10:37', NULL, 'disetujui', NULL, NULL),
+(38, 9, 20, 'MEJA BUNDAR', 2, 'Baik', 0, '2026-01-20 14:10:42', NULL, 'disetujui', NULL, NULL),
+(39, 9, 21, 'WRWRW', 2, 'Rusak', 0, '2026-01-20 14:13:31', NULL, 'disetujui', NULL, NULL),
+(40, 9, 22, 'FGJG', 3, 'Kurang Baik', 0, '2026-01-20 14:13:40', NULL, 'disetujui', NULL, NULL),
+(41, 9, 22, 'FGJG', 2, 'Kurang Baik', 0, '2026-01-20 15:15:58', NULL, 'disetujui', NULL, NULL),
+(42, 9, 22, 'FGJG', 2, 'Kurang Baik', 0, '2026-01-20 15:16:05', NULL, 'disetujui', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -286,7 +304,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id_user`, `username`, `password`, `role`, `nama_lengkap`) VALUES
-(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'Administrator Pusat'),
+(1, 'admin', '$2y$10$gOVkvpC1M6390t9Lzl7WreYg05ZKF3BYAtYV.zE0QN4Q/WijmNOza', 'admin', 'Administrator Pusat'),
 (2, 'kalab', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'kepala_lab', 'Kepala Lab Teknik');
 
 --
@@ -377,7 +395,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bahan_praktek`
 --
 ALTER TABLE `bahan_praktek`
-  MODIFY `id_praktek` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id_praktek` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `barang`
@@ -395,7 +413,7 @@ ALTER TABLE `distribusi`
 -- AUTO_INCREMENT for table `distribusi_lab`
 --
 ALTER TABLE `distribusi_lab`
-  MODIFY `id_distribusi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id_distribusi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `jurusan`
@@ -431,7 +449,7 @@ ALTER TABLE `pemakaian_lab`
 -- AUTO_INCREMENT for table `permintaan_barang`
 --
 ALTER TABLE `permintaan_barang`
-  MODIFY `id_permintaan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id_permintaan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `users`

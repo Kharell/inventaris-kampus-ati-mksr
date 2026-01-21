@@ -35,6 +35,13 @@ $count_stok = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total F
             color: #2d3436;
         }
         
+        /* [ STYLE HEADER BARU ] */
+        .page-header {
+            border-color: var(--navy) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
         .card { 
             border: none; 
             border-radius: 24px; 
@@ -123,11 +130,30 @@ $count_stok = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total F
         <?php include "../../../includes/header.php"; ?>
 
         <main class="p-4 p-lg-5">
-            <div class="d-flex flex-column mb-5">
-                <h1 class="fw-bold" style="color: var(--navy);">LAPORAN KEPALA LAB</h1>
-                <p class="text-muted">Sistem dokumentasi dan pengarsipan digital laporan pertanggungjawaban laboratorium.</p>
-            </div>
+            
+            <div class="page-header d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded-4 border-start border-5 mb-5" style="border-color: var(--navy) !important; position: relative; overflow: hidden;">
+                <div style="position: absolute; right: -20px; top: -20px; width: 150px; height: 150px; background: rgba(0, 31, 63, 0.03); border-radius: 50%;"></div>
+                
+                <div class="d-flex align-items-center">
+                    <div class="icon-shape bg-primary-subtle p-3 rounded-3 me-4 text-primary shadow-sm" style="background: linear-gradient(135deg, #f0f7ff 0%, #e0ebf5 100%); width: 60px; height: 60px;">
+                        <i class="bi bi-file-earmark-bar-graph-fill" style="font-size: 2rem; color: var(--navy);"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1" style="color: var(--navy); letter-spacing: -0.5px;">Laporan Kepala Lab</h4>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-primary text-white me-2" style="background: var(--navy) !important; font-size: 0.65rem;">DOKUMENTASI</span>
+                            <p class="text-muted mb-0 small">Sistem dokumentasi dan pengarsipan digital laporan laboratorium.</p>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="d-none d-md-block text-end" style="z-index: 1;">
+                    <small class="text-muted d-block mb-1">Status Sistem</small>
+                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">
+                        <i class="bi bi-check-circle-fill me-1"></i> Terhubung
+                    </span>
+                </div>
+            </div>
             <div class="row g-4 mb-5">
                 <div class="col-md-3">
                     <div class="card p-4 text-center">
@@ -161,100 +187,98 @@ $count_stok = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total F
             </div>
 
             <form action="export.php" method="GET" target="_blank">
-    <div class="row g-4">
-        <div class="col-lg-7">
-            <h5 class="fw-bold mb-4 d-flex align-items-center">
-                <i class="bi bi-grid-fill me-3 text-primary"></i> Pilih Kategori Dokumen
-            </h5>
-            
-            <input type="radio" class="report-selector" name="tipe_data" id="type1" value="pemakaian" checked>
-            <label class="report-card w-100 mb-3" for="type1">
-                <div class="icon-shape bg-primary text-white shadow-sm"><i class="bi bi-box-arrow-up-right"></i></div>
-                <div>
-                    <span class="d-block fw-bold fs-5">Laporan Pemakaian</span>
-                    <span class="small text-muted">Data penggunaan bahan berdasarkan rincian tanggal.</span>
-                </div>
-            </label>
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <h5 class="fw-bold mb-4 d-flex align-items-center">
+                            <i class="bi bi-grid-fill me-3 text-primary"></i> Pilih Kategori Dokumen
+                        </h5>
+                        
+                        <input type="radio" class="report-selector" name="tipe_data" id="type1" value="pemakaian" checked>
+                        <label class="report-card w-100 mb-3" for="type1">
+                            <div class="icon-shape bg-primary text-white shadow-sm"><i class="bi bi-box-arrow-up-right"></i></div>
+                            <div>
+                                <span class="d-block fw-bold fs-5">Laporan Pemakaian</span>
+                                <span class="small text-muted">Data penggunaan bahan berdasarkan rincian tanggal.</span>
+                            </div>
+                        </label>
 
-            <input type="radio" class="report-selector" name="tipe_data" id="type2" value="sisa">
-            <label class="report-card w-100 mb-3" for="type2">
-                <div class="icon-shape bg-success text-white shadow-sm"><i class="bi bi-pie-chart"></i></div>
-                <div>
-                    <span class="d-block fw-bold fs-5">Laporan Sisa Barang</span>
-                    <span class="small text-muted">Rekapitulasi sisa stok/inventaris akhir saja.</span>
-                </div>
-            </label>
+                        <input type="radio" class="report-selector" name="tipe_data" id="type2" value="sisa">
+                        <label class="report-card w-100 mb-3" for="type2">
+                            <div class="icon-shape bg-success text-white shadow-sm"><i class="bi bi-pie-chart"></i></div>
+                            <div>
+                                <span class="d-block fw-bold fs-5">Laporan Sisa Barang</span>
+                                <span class="small text-muted">Rekapitulasi sisa stok/inventaris akhir saja.</span>
+                            </div>
+                        </label>
 
-            <input type="radio" class="report-selector" name="tipe_data" id="type3" value="gabungan">
-            <label class="report-card w-100 mb-4" for="type3">
-                <div class="icon-shape bg-warning text-white shadow-sm"><i class="bi bi-layout-three-columns"></i></div>
-                <div>
-                    <span class="d-block fw-bold fs-5">Rekapitulasi Stok & Pakai (Gabungan)</span>
-                    <span class="small text-muted">Tabel lengkap: Stok Awal, Total Pakai, dan Sisa Akhir.</span>
-                </div>
-            </label>
+                        <input type="radio" class="report-selector" name="tipe_data" id="type3" value="gabungan">
+                        <label class="report-card w-100 mb-4" for="type3">
+                            <div class="icon-shape bg-warning text-white shadow-sm"><i class="bi bi-layout-three-columns"></i></div>
+                            <div>
+                                <span class="d-block fw-bold fs-5">Rekapitulasi Stok & Pakai (Gabungan)</span>
+                                <span class="small text-muted">Tabel lengkap: Stok Awal, Total Pakai, dan Sisa Akhir.</span>
+                            </div>
+                        </label>
+                    </div>
 
-            <
-        </div>
+                    <div class="col-lg-5">
+                        <div class="config-box shadow-sm h-100">
+                            <h5 class="fw-bold mb-4 d-flex align-items-center">
+                                <i class="bi bi-sliders me-3 text-primary"></i> Konfigurasi Laporan
+                            </h5>
 
-        <div class="col-lg-5">
-            <div class="config-box shadow-sm h-100">
-                <h5 class="fw-bold mb-4 d-flex align-items-center">
-                    <i class="bi bi-sliders me-3 text-primary"></i> Konfigurasi Laporan
-                </h5>
+                            <div class="mb-4">
+                                <label class="small fw-bold text-muted mb-2 text-uppercase d-flex align-items-center">
+                                    <i class="bi bi-calendar-range me-2 text-primary"></i> Rentang Periode
+                                </label>
+                                <select name="periode" class="form-select border-0 bg-light py-3 px-4" id="selectPeriode" onchange="updateWaktuLabel()" style="border-radius: 14px;">
+                                    <option value="bulan">Laporan Bulanan</option>
+                                    <option value="triwulan">Laporan Triwulan</option>
+                                    <option value="semester">Laporan Semester</option>
+                                </select>
+                            </div>
 
-                <div class="mb-4">
-                    <label class="small fw-bold text-muted mb-2 text-uppercase d-flex align-items-center">
-                        <i class="bi bi-calendar-range me-2 text-primary"></i> Rentang Periode
-                    </label>
-                    <select name="periode" class="form-select border-0 bg-light py-3 px-4" id="selectPeriode" onchange="updateWaktuLabel()" style="border-radius: 14px;">
-                        <option value="bulan">Laporan Bulanan</option>
-                        <option value="triwulan">Laporan Triwulan</option>
-                        <option value="semester">Laporan Semester</option>
-                    </select>
-                </div>
+                            <div class="mb-4">
+                                <label class="small fw-bold text-muted mb-2 text-uppercase d-flex align-items-center" id="labelWaktu">
+                                    <i class="bi bi-calendar-check me-2 text-primary"></i> Bulan Laporan
+                                </label>
+                                <input type="month" name="waktu" class="form-control border-0 bg-light py-3 px-4" value="<?= date('Y-m') ?>" style="border-radius: 14px;" required>
+                                <div id="hintWaktu" class="mt-2 small text-muted fst-italic">Laporan mencakup data 1 bulan penuh.</div>
+                            </div>
 
-                <div class="mb-4">
-                    <label class="small fw-bold text-muted mb-2 text-uppercase d-flex align-items-center" id="labelWaktu">
-                        <i class="bi bi-calendar-check me-2 text-primary"></i> Bulan Laporan
-                    </label>
-                    <input type="month" name="waktu" class="form-control border-0 bg-light py-3 px-4" value="<?= date('Y-m') ?>" style="border-radius: 14px;" required>
-                    <div id="hintWaktu" class="mt-2 small text-muted fst-italic">Laporan mencakup data 1 bulan penuh.</div>
-                </div>
+                            <div class="mb-5">
+                                <label class="small fw-bold text-muted mb-3 text-uppercase d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-arrow-down me-2 text-primary"></i> Format Dokumen
+                                </label>
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <input type="radio" class="btn-check" name="format" id="f_pdf" value="pdf" checked>
+                                        <label class="btn btn-outline-light text-dark w-100 format-pill" for="f_pdf">
+                                            <i class="bi bi-filetype-pdf text-danger"></i> PDF
+                                        </label>
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="radio" class="btn-check" name="format" id="f_word" value="word">
+                                        <label class="btn btn-outline-light text-dark w-100 format-pill" for="f_word">
+                                            <i class="bi bi-filetype-docx text-primary"></i> WORD
+                                        </label>
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="radio" class="btn-check" name="format" id="f_excel" value="excel">
+                                        <label class="btn btn-outline-light text-dark w-100 format-pill" for="f_excel">
+                                            <i class="bi bi-filetype-xlsx text-success"></i> EXCEL
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
 
-                <div class="mb-5">
-                    <label class="small fw-bold text-muted mb-3 text-uppercase d-flex align-items-center">
-                        <i class="bi bi-file-earmark-arrow-down me-2 text-primary"></i> Format Dokumen
-                    </label>
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <input type="radio" class="btn-check" name="format" id="f_pdf" value="pdf" checked>
-                            <label class="btn btn-outline-light text-dark w-100 format-pill" for="f_pdf">
-                                <i class="bi bi-filetype-pdf text-danger"></i> PDF
-                            </label>
-                        </div>
-                        <div class="col-4">
-                            <input type="radio" class="btn-check" name="format" id="f_word" value="word">
-                            <label class="btn btn-outline-light text-dark w-100 format-pill" for="f_word">
-                                <i class="bi bi-filetype-docx text-primary"></i> WORD
-                            </label>
-                        </div>
-                        <div class="col-4">
-                            <input type="radio" class="btn-check" name="format" id="f_excel" value="excel">
-                            <label class="btn btn-outline-light text-dark w-100 format-pill" for="f_excel">
-                                <i class="bi bi-filetype-xlsx text-success"></i> EXCEL
-                            </label>
+                            <button type="submit" class="btn btn-generate w-100 py-3">
+                                <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN
+                            </button>
                         </div>
                     </div>
                 </div>
-
-                <button type="submit" class="btn btn-generate w-100 py-3">
-                    <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN
-                </button>
-            </div>
-        </div>
-    </div>
-</form>
+            </form>
         </main>
     </div>
 </div>

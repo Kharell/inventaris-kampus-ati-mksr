@@ -4,7 +4,8 @@ include "../../config/auth.php";
 checkLogin();
 
 $query_jurusan = mysqli_query($conn, "SELECT * FROM jurusan ORDER BY nama_jurusan ASC");
-$list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, stok, satuan FROM bahan_praktek WHERE stok > 0 ORDER BY nama_bahan ASC");
+// Pastikan query ini menyertakan spesifikasi dan kondisi
+$list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, stok, satuan, spesifikasi, kondisi FROM bahan_praktek WHERE stok > 0 ORDER BY nama_bahan ASC");
 ?>
 
 <!DOCTYPE html>
@@ -248,43 +249,80 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <div class="modal-body p-4">
-                <input type="hidden" name="id_lab" id="modIdLab">
-                <input type="hidden" name="id_permintaan" id="modIdReq">
-                <input type="hidden" name="nama_jurusan" id="modJurusan">
-                <input type="hidden" name="nama_lab" id="modLab">   
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold small" style="color: #0a192f;">PILIH BAHAN PRAKTEK</label>
-                    <select name="id_praktek" id="modBarang" class="form-select border-2" onchange="generateCode()" required>
-                        <option value="">-- Pilih Bahan --</option>
-                        <?php 
-                        mysqli_data_seek($list_barang, 0); 
-                        while($b = mysqli_fetch_assoc($list_barang)): 
-                        ?>
-                            <option value="<?= $b['id_praktek']; ?>" data-kode="<?= $b['kode_bahan']; ?>">
-                                <?= $b['nama_bahan']; ?> (Stok: <?= $b['stok']; ?> <?= $b['satuan']; ?>)
-                            </option>
-                        <?php endwhile; ?>
-                    </select>
-                </div>
+           <div class="modal-body p-4">
+    <input type="hidden" name="id_lab" id="modIdLab">
+    <input type="hidden" name="id_permintaan" id="modIdReq">
+    <input type="hidden" name="nama_jurusan" id="modJurusan">
+    <input type="hidden" name="nama_lab" id="modLab">   
+    
+    <div class="mb-3">
+        <label class="form-label fw-bold small" style="color: #0a192f;">PILIH BAHAN PRAKTEK</label>
+        <select name="id_praktek" id="modBarang" class="form-select border-2" onchange="updateDetailBahan()" required>
+            <option value="">-- Pilih Bahan --</option>
+            <?php 
+            mysqli_data_seek($list_barang, 0); 
+            while($b = mysqli_fetch_assoc($list_barang)): 
+            ?>
+                <option value="<?= $b['id_praktek']; ?>" 
+                        data-kode="<?= $b['kode_bahan']; ?>"
+                        data-spesifikasi="<?= htmlspecialchars($b['spesifikasi']); ?>"
+                        data-kondisi="<?= $b['kondisi']; ?>">
+                    <?= $b['nama_bahan']; ?> (Stok: <?= $b['stok']; ?> <?= $b['satuan']; ?>)
+                </option>
+            <?php endwhile; ?>
+        </select>
+    </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold small" style="color: #0a192f;">KODE LABEL OTOMATIS</label>
-                    <input type="text" name="kode_distribusi" id="modKode" class="form-control bg-light fw-bold font-monospace" readonly style="color: #0a192f; border: 1px dashed #0a192f;">
-                </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold small" style="color: #0a192f;">KODE LABEL OTOMATIS</label>
+        <input type="text" name="kode_distribusi" id="modKode" class="form-control bg-light fw-bold font-monospace" readonly style="color: #0a192f; border: 1px dashed #0a192f;">
+    </div>
 
-                <div class="row">
-                    <div class="col-6 mb-3">
-                        <label class="fw-bold small" style="color: #0a192f;">JUMLAH KIRIM</label>
-                        <input type="number" name="jumlah" class="form-control" min="1" required>
-                    </div>
-                    <div class="col-6 mb-3">
-                        <label class="fw-bold small" style="color: #0a192f;">TANGGAL</label>
-                        <input type="date" name="tanggal_distribusi" class="form-control" value="<?= date('Y-m-d'); ?>">
-                    </div>
-                </div>
+<div class="mb-3">
+    <label class="form-label fw-bold small" style="color: #0a192f;">SPESIFIKASI BARANG</label>
+    <input type="text" name="spesifikasi" id="modSpesifikasi" class="form-control bg-light border-2" readonly placeholder="Terisi otomatis..." required>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-bold small d-block" style="color: #0a192f;">KONDISI BARANG (DARI DATABASE)</label>
+    <div class="border rounded-3 p-2 bg-light">
+        <input type="hidden" name="kondisi" id="modKondisiHidden">
+
+        <div id="rowBaik" class="d-flex align-items-center justify-content-between p-2 mb-1 rounded-2 text-muted opacity-50">
+            <div class="d-flex align-items-center small fw-bold">
+                <i class="bi bi-shield-check me-2"></i> Baik
             </div>
+            <i id="checkBaik" class="bi bi-check-circle-fill d-none"></i>
+        </div>
+
+        <div id="rowKurang" class="d-flex align-items-center justify-content-between p-2 mb-1 rounded-2 text-muted opacity-50">
+            <div class="d-flex align-items-center small fw-bold">
+                <i class="bi bi-exclamation-triangle me-2"></i> Kurang Baik
+            </div>
+            <i id="checkKurang" class="bi bi-check-circle-fill d-none"></i>
+        </div>
+
+        <div id="rowRusak" class="d-flex align-items-center justify-content-between p-2 rounded-2 text-muted opacity-50">
+            <div class="d-flex align-items-center small fw-bold">
+                <i class="bi bi-x-octagon me-2"></i> Rusak
+            </div>
+            <i id="checkRusak" class="bi bi-check-circle-fill d-none"></i>
+        </div>
+    </div>
+</div>
+
+    <div class="row">
+        <div class="col-6 mb-3">
+            <label class="fw-bold small" style="color: #0a192f;">JUMLAH KIRIM</label>
+            <input type="number" name="jumlah" id="modJumlah" class="form-control" min="1" required>
+        </div>
+        <div class="col-6 mb-3">
+            <label class="fw-bold small" style="color: #0a192f;">TANGGAL</label>
+            <input type="date" name="tanggal_distribusi" class="form-control" value="<?= date('Y-m-d'); ?>">
+        </div>
+    </div>
+</div>
+
 
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="submit" name="simpan_distribusi" class="btn w-100 py-3 fw-bold shadow-sm" style="background-color: #0a192f; color: #ffcc00; border-radius: 10px;">
@@ -524,27 +562,88 @@ function viewLabDetails(id, labName, jurName) {
     loadDistribusi(id, 1, '');
 }
 
-function prosesACC(idPermintaan, idBahan, jmlMinta, namaBahan) {
-    // Pastikan ID Lab terisi dari variabel global jika parameter fungsi tidak membawanya
+function prosesACC(idPermintaan, idBahan, jmlMinta, namaBahan, spek, kondisi) {
     if (!currentLabId) {
-        Swal.fire('Peringatan', 'ID Lab hilang, silakan klik ulang nama Lab di menu kiri.', 'warning');
+        Swal.fire('Peringatan', 'ID Lab hilang...', 'warning');
         return;
     }
 
-    // Isi formulir modal
     document.getElementById('modIdLab').value = currentLabId;
     document.getElementById('modIdReq').value = idPermintaan;
     document.getElementById('modLab').value = currentLabName;
     document.getElementById('labName').innerText = currentLabName;
     
-    // Set pilihan barang dan jumlah
     document.getElementById('modBarang').value = idBahan;
-    document.getElementsByName('jumlah')[0].value = jmlMinta;
-
-    generateCode(); // Buat kode distribusi otomatis
+    document.getElementById('modJumlah').value = jmlMinta;
+    
+    // Set Spek & Kondisi dari parameter
+    document.getElementById('modSpesifikasi').value = spek;
+    document.getElementById('modKondisiHidden').value = kondisi;
+    
+    updateVisualKondisi(kondisi);
+    generateCode(); 
 
     var myModal = new bootstrap.Modal(document.getElementById('distModal'));
     myModal.show();
+}
+</script>
+
+<script>
+function updateDetailBahan() {
+    const select = document.getElementById('modBarang');
+    const selectedOption = select.options[select.selectedIndex];
+
+    if (!select.value) {
+        document.getElementById('modKode').value = "";
+        document.getElementById('modSpesifikasi').value = "";
+        resetVisualKondisi();
+        return;
+    }
+
+    const kode = selectedOption.getAttribute('data-kode');
+    const spesifikasi = selectedOption.getAttribute('data-spesifikasi');
+    const kondisi = selectedOption.getAttribute('data-kondisi');
+
+    // 1. Set Kode & Spek
+    const tgl = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    document.getElementById('modKode').value = kode + "-" + tgl;
+    document.getElementById('modSpesifikasi').value = spesifikasi;
+
+    // 2. Set Value untuk PHP
+    document.getElementById('modKondisiHidden').value = kondisi;
+
+    // 3. Update Visual Centang
+    updateVisualKondisi(kondisi);
+}
+
+function updateVisualKondisi(kondisi) {
+    resetVisualKondisi();
+    let rowId = '', checkId = '', bgClass = '';
+
+    if (kondisi === 'Baik') { 
+        rowId = 'rowBaik'; checkId = 'checkBaik'; bgClass = 'bg-success text-white'; 
+    } else if (kondisi === 'Kurang Baik') { 
+        rowId = 'rowKurang'; checkId = 'checkKurang'; bgClass = 'bg-warning text-dark'; 
+    } else if (kondisi === 'Rusak') { 
+        rowId = 'rowRusak'; checkId = 'checkRusak'; bgClass = 'bg-danger text-white'; 
+    }
+
+    if (rowId) {
+        const row = document.getElementById(rowId);
+        row.classList.remove('opacity-50', 'text-muted');
+        row.classList.add(...bgClass.split(' '), 'shadow-sm');
+        document.getElementById(checkId).classList.remove('d-none');
+    }
+}
+
+function resetVisualKondisi() {
+    ['rowBaik', 'rowKurang', 'rowRusak'].forEach(id => {
+        const el = document.getElementById(id);
+        el.className = "d-flex align-items-center justify-content-between p-2 mb-1 rounded-2 text-muted opacity-50";
+    });
+    ['checkBaik', 'checkKurang', 'checkRusak'].forEach(id => {
+        document.getElementById(id).classList.add('d-none');
+    });
 }
 </script>
 

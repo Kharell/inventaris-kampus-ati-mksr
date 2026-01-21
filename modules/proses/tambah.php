@@ -181,29 +181,32 @@ if (isset($_POST['simpan_distribusi'])) {
     $kode           = mysqli_real_escape_string($conn, $_POST['kode_distribusi'] ?? '');
     $jumlah         = (int)($_POST['jumlah'] ?? 0);
     $tanggal        = $_POST['tanggal_distribusi'] ?? date('Y-m-d');
+    
+    // Ambil data spesifikasi dan kondisi dari form
+    $spesifikasi    = mysqli_real_escape_string($conn, $_POST['spesifikasi'] ?? '-');
+    $kondisi        = mysqli_real_escape_string($conn, $_POST['kondisi'] ?? 'Baik');
 
-    // VALIDASI KRUSIAL
-    if (empty($id_lab) || $id_lab == 'undefined') {
-        // Jika ID Lab kosong, kembalikan ke index dengan status error
-        header("Location: ../distribusi/index.php?status=error_id");
-        exit();
-    }
-
-    // 1. Cek stok di gudang pusat
+    // Cek stok terlebih dahulu
     $cek = mysqli_query($conn, "SELECT stok FROM bahan_praktek WHERE id_praktek = '$id_praktek'");
     $dt = mysqli_fetch_assoc($cek);
-    if ($dt['stok'] >= $jumlah) {
+    
+    if ($dt && $dt['stok'] >= $jumlah) {
         mysqli_begin_transaction($conn);
-        
         try {
-            // 2. Simpan ke tabel distribusi_lab
-            mysqli_query($conn, "INSERT INTO distribusi_lab (id_praktek, id_lab, kode_distribusi, jumlah, tanggal_distribusi, status) 
-                                 VALUES ('$id_praktek', '$id_lab', '$kode', '$jumlah', '$tanggal', 'dikirim')");
+            // INSERT ke distribusi_lab
+            $query_ins = "INSERT INTO distribusi_lab 
+                (id_praktek, id_lab, kode_distribusi, jumlah, tanggal_distribusi, spesifikasi, kondisi, status) 
+                VALUES 
+                ('$id_praktek', '$id_lab', '$kode', '$jumlah', '$tanggal', '$spesifikasi', '$kondisi', 'dikirim')";
             
-            // 3. Kurangi stok di gudang pusat
+            if (!mysqli_query($conn, $query_ins)) {
+                throw new Exception(mysqli_error($conn)); // Melempar error spesifik
+            }
+
+            // Update stok
             mysqli_query($conn, "UPDATE bahan_praktek SET stok = stok - $jumlah WHERE id_praktek = '$id_praktek'");
 
-            // 4. Update status permintaan barang (Jika berasal dari permintaan Kepala Lab)
+            // Update permintaan jika ada
             if (!empty($id_permintaan)) {
                 mysqli_query($conn, "UPDATE permintaan_barang SET status = 'disetujui' WHERE id_permintaan = '$id_permintaan'");
             }
@@ -212,6 +215,7 @@ if (isset($_POST['simpan_distribusi'])) {
             header("Location: ../distribusi/index.php?id_lab=$id_lab&status=sukses");
         } catch (Exception $e) {
             mysqli_rollback($conn);
+            // DEBUG: Jika masih error, matikan header di bawah dan gunakan die($e->getMessage());
             header("Location: ../distribusi/index.php?id_lab=$id_lab&status=gagal");
         }
     } else {

@@ -43,6 +43,7 @@ if (isset($_GET['edit_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
     
     <style>
         :root { --navy: #001f3f; --bg: #f4f7fa; }
@@ -70,9 +71,9 @@ if (isset($_GET['edit_id'])) {
 <div class="d-flex">
     <?php include "../../../includes/sidebar.php"; ?>
 
+    <!-- card heder -->
     <div class="flex-grow-1" style="min-height: 100vh;">
         <?php if(file_exists("../../../includes/header.php")) include "../../../includes/header.php"; ?>
-
         <main class="p-4">
             <div class="page-header d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded-4 border-start border-5" style="border-color: var(--navy) !important; position: relative; overflow: hidden;">
                 <div style="position: absolute; right: -20px; top: -20px; width: 150px; height: 150px; background: rgba(0, 31, 63, 0.03); border-radius: 50%;"></div>
@@ -89,7 +90,6 @@ if (isset($_GET['edit_id'])) {
                         </div>
                     </div>
                 </div>
-
                 <div class="d-none d-md-block text-end">
                     <small class="text-muted d-block mb-1">Status Sistem</small>
                     <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">
@@ -97,6 +97,9 @@ if (isset($_GET['edit_id'])) {
                     </span>
                 </div>
             </div>
+            
+
+            
 
             <div class="row g-4 mt-1">
                 <div class="col-lg-4">
@@ -164,6 +167,24 @@ if (isset($_GET['edit_id'])) {
 
                 <div class="col-lg-8">
                     <div class="card p-4">
+                        <div class="card p-3 mb-4 bg-light border-0">
+                            <form action="cetak_kebutuhan.php" method="GET" target="_blank" class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">DARI TANGGAL</label>
+                                    <input type="date" name="tgl_awal" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">SAMPAI TANGGAL</label>
+                                    <input type="date" name="tgl_akhir" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-danger w-100">
+                                        <i class="bi bi-file-earmark-pdf me-2"></i>Cetak PDF
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
                         <h6 class="fw-bold mb-4 text-uppercase">Riwayat Permintaan Saya</h6>
                         <div class="table-responsive">
                             <table id="tabelKebutuhan" class="table table-hover align-middle mb-0">

@@ -13,20 +13,19 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
 
 /**
  * QUERY STOK:
- * Mengambil data stok awal dari tabel distribusi dan menghitung pengurangan 
- * secara otomatis dari tabel pemakaian_lab.
+ * Mengambil data stok, spesifikasi, dan kondisi dari tabel distribusi_lab
  */
 $sql_stok = "SELECT 
                 d.id_distribusi,
                 d.kode_distribusi, 
                 d.id_praktek,
                 d.jumlah as qty_awal,
+                d.spesifikasi, 
+                d.kondisi,
                 b.nama_bahan, 
                 b.satuan, 
                 d.tanggal_distribusi, 
-                -- Menghitung total yang sudah dipakai
                 COALESCE((SELECT SUM(jumlah_pakai) FROM pemakaian_lab WHERE id_distribusi = d.id_distribusi), 0) as total_terpakai,
-                -- Sisa Stok = Stok Awal - Total Pakai
                 (d.jumlah - COALESCE((SELECT SUM(jumlah_pakai) FROM pemakaian_lab WHERE id_distribusi = d.id_distribusi), 0)) as sisa_stok
              FROM distribusi_lab d
              JOIN bahan_praktek b ON d.id_praktek = b.id_praktek
@@ -71,26 +70,29 @@ if (!$query_stok) {
         }
         .text-navy { color: var(--navy); }
         .stok-badge { 
-            font-size: 1rem; 
+            font-size: 0.9rem; 
             font-weight: 700; 
-            padding: 8px 16px; 
-            border-radius: 12px; 
+            padding: 6px 12px; 
+            border-radius: 10px; 
             display: inline-block; 
-            min-width: 60px;
+            min-width: 50px;
         }
-        /* Color Logic for stock levels */
         .bg-low { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .bg-empty { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .bg-safe { background: #e0f2f1; color: #00695c; border: 1px solid #b2dfdb; }
 
         .icon-shape {
-            width: 48px;
-            height: 48px;
+            width: 42px;
+            height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 14px;
+            border-radius: 12px;
         }
+
+        /* [ TAMBAHAN STYLE UNTUK BADGE SOFT ] */
+        .bg-soft-primary { background: #e8f0fe; color: #0d6efd; }
+        .bg-success-subtle { background-color: #d1e7dd; }
     </style>
 </head>
 <body>
@@ -101,17 +103,37 @@ if (!$query_stok) {
     <div class="flex-grow-1" style="min-height: 100vh;">
         <?php if(file_exists("../../../includes/header.php")) include "../../../includes/header.php"; ?>
 
-        <main class="p-4 p-lg-5">
-            <div class="d-flex justify-content-between align-items-center mb-5">
-                <div>
-                    <h1 class="fw-bold text-navy mb-1">Stok Lab Saya</h1>
-                    <p class="text-muted">Monitoring real-time ketersediaan bahan berdasarkan pemakaian.</p>
+        <main class="p-4">
+            
+            <div class="page-header d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded-4 border-start border-5 mb-4" style="border-color: var(--navy) !important; position: relative; overflow: hidden;">
+                <div style="position: absolute; right: -20px; top: -20px; width: 150px; height: 150px; background: rgba(0, 31, 63, 0.03); border-radius: 50%;"></div>
+                
+                <div class="d-flex align-items-center">
+                    <div class="icon-shape bg-primary-subtle p-3 rounded-3 me-4 text-primary shadow-sm" style="background: linear-gradient(135deg, #f0f7ff 0%, #e0ebf5 100%);">
+                        <i class="bi bi-intersect" style="font-size: 1.8rem; color: var(--navy);"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1" style="color: var(--navy); letter-spacing: -0.5px;">Stok Lab Saya</h4>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-soft-primary text-primary me-2" style="font-size: 0.65rem;">INVENTARIS</span>
+                            <p class="text-muted mb-0 small">Monitoring real-time ketersediaan bahan berdasarkan pemakaian.</p>
+                        </div>
+                    </div>
                 </div>
-                <a href="laporan.php" class="btn btn-outline-primary rounded-pill px-4">
-                    <i class="bi bi-printer me-2"></i> Cetak Laporan
-                </a>
-            </div>
 
+                <div class="d-flex align-items-center gap-3" style="z-index: 1;">
+                    <a href="laporan.php" class="btn btn-outline-primary rounded-pill px-4">
+                        <i class="bi bi-printer me-2"></i> Cetak Laporan
+                    </a>
+
+                    <div class="d-none d-md-block text-end border-start ps-3">
+                        <small class="text-muted d-block mb-1">Status Sistem</small>
+                        <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">
+                            <i class="bi bi-check-circle-fill me-1"></i> Terhubung
+                        </span>
+                    </div>
+                </div>
+            </div>
             <div class="card p-4">
                 <div class="table-responsive">
                     <table id="tabelStok" class="table table-hover align-middle" style="width:100%">
@@ -122,6 +144,8 @@ if (!$query_stok) {
                                 <th class="text-center">Stok Awal</th>
                                 <th class="text-center">Terpakai</th>
                                 <th class="text-center">Sisa Stok</th>
+                                <th>Spesifikasi</th>
+                                <th class="text-center">Kondisi</th>
                                 <th class="text-center">Satuan</th>
                                 <th>Tgl Masuk</th>
                             </tr>
@@ -133,17 +157,20 @@ if (!$query_stok) {
                                 while ($row = mysqli_fetch_assoc($query_stok)) : 
                                     $sisa = $row['sisa_stok'];
                                     
-                                    // Logic penentuan warna
+                                    // Logic penentuan warna stok
                                     if ($sisa <= 0) {
                                         $status_class = 'bg-empty';
-                                        $label = "Habis";
                                     } elseif ($sisa < 5) {
                                         $status_class = 'bg-low';
-                                        $label = "Menipis";
                                     } else {
                                         $status_class = 'bg-safe';
-                                        $label = "Aman";
                                     }
+
+                                    // Logic warna Kondisi
+                                    $kondisi_badge = 'bg-secondary';
+                                    if($row['kondisi'] == 'Baik') $kondisi_badge = 'bg-success';
+                                    if($row['kondisi'] == 'Kurang Baik') $kondisi_badge = 'bg-warning text-dark';
+                                    if($row['kondisi'] == 'Rusak') $kondisi_badge = 'bg-danger';
                             ?>
                             <tr>
                                 <td><?= $no++; ?></td>
@@ -171,6 +198,17 @@ if (!$query_stok) {
                                         <?= number_format($sisa, 0, ',', '.'); ?>
                                     </span>
                                 </td>
+
+                                <td class="small text-muted">
+                                    <?= !empty($row['spesifikasi']) ? nl2br($row['spesifikasi']) : '-'; ?>
+                                </td>
+
+                                <td class="text-center">
+                                    <span class="badge <?= $kondisi_badge; ?> rounded-pill">
+                                        <?= $row['kondisi'] ?? 'N/A'; ?>
+                                    </span>
+                                </td>
+
                                 <td class="text-center fw-bold text-muted"><?= $row['satuan']; ?></td>
                                 <td>
                                     <small class="text-muted">
@@ -202,7 +240,7 @@ if (!$query_stok) {
                 "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json"
             },
             "pageLength": 10,
-            "order": [[6, "desc"]],
+            "order": [[8, "desc"]], 
             "responsive": true
         });
     });
