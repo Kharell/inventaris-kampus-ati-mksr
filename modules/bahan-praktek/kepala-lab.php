@@ -63,6 +63,8 @@ $res = mysqli_query($conn, $query);
 <body>
     <?php include "../../includes/sidebar.php"; ?>
     
+    <main class="p-3 p-md-4" style="margin-top: 30px;"></main>
+    
     <div class="main-content" style="margin-left: 260px; padding: 25px;">
         <?php include "../../includes/header.php"; ?>
 

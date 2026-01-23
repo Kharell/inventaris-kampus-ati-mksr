@@ -172,17 +172,20 @@ if (isset($_POST['tambah_kepala'])) {
 }
 
 // ==========================================
-// 1. LOGIKA DISTRIBUSI BAHAN (TAMBAHAN BARU)
+// 1. LOGIKA DISTRIBUSI BAHAN (SUDAH DIPERBAIKI)
 // ==========================================
 if (isset($_POST['simpan_distribusi'])) {
     $id_praktek     = mysqli_real_escape_string($conn, $_POST['id_praktek'] ?? '');
     $id_lab         = mysqli_real_escape_string($conn, $_POST['id_lab'] ?? ''); 
     $id_permintaan  = mysqli_real_escape_string($conn, $_POST['id_permintaan'] ?? '');
+    
+    // REVISI PENTING: Tangkap ID Jurusan agar redirect bisa kembali ke posisi semula
+    $id_jur         = mysqli_real_escape_string($conn, $_POST['id_jurusan_id'] ?? ''); 
+    
     $kode           = mysqli_real_escape_string($conn, $_POST['kode_distribusi'] ?? '');
     $jumlah         = (int)($_POST['jumlah'] ?? 0);
     $tanggal        = $_POST['tanggal_distribusi'] ?? date('Y-m-d');
     
-    // Ambil data spesifikasi dan kondisi dari form
     $spesifikasi    = mysqli_real_escape_string($conn, $_POST['spesifikasi'] ?? '-');
     $kondisi        = mysqli_real_escape_string($conn, $_POST['kondisi'] ?? 'Baik');
 
@@ -200,7 +203,7 @@ if (isset($_POST['simpan_distribusi'])) {
                 ('$id_praktek', '$id_lab', '$kode', '$jumlah', '$tanggal', '$spesifikasi', '$kondisi', 'dikirim')";
             
             if (!mysqli_query($conn, $query_ins)) {
-                throw new Exception(mysqli_error($conn)); // Melempar error spesifik
+                throw new Exception(mysqli_error($conn));
             }
 
             // Update stok
@@ -212,14 +215,17 @@ if (isset($_POST['simpan_distribusi'])) {
             }
 
             mysqli_commit($conn);
-            header("Location: ../distribusi/index.php?id_lab=$id_lab&status=sukses");
+            
+            // REVISI: Pastikan id_jurusan disertakan di URL agar sistem bisa auto-klik tab yang benar
+            header("Location: ../distribusi/index.php?id_jurusan=$id_jur&id_lab=$id_lab&status=sukses");
         } catch (Exception $e) {
             mysqli_rollback($conn);
-            // DEBUG: Jika masih error, matikan header di bawah dan gunakan die($e->getMessage());
-            header("Location: ../distribusi/index.php?id_lab=$id_lab&status=gagal");
+            // Jika gagal, tetap sertakan ID agar tidak kembali ke halaman kosong
+            header("Location: ../distribusi/index.php?id_jurusan=$id_jur&id_lab=$id_lab&status=gagal");
         }
     } else {
-        header("Location: ../distribusi/index.php?id_lab=$id_lab&status=stok_kurang");
+        // Jika stok kurang, tetap sertakan ID agar tidak kembali ke halaman kosong
+        header("Location: ../distribusi/index.php?id_jurusan=$id_jur&id_lab=$id_lab&status=stok_kurang");
     }
     exit();
 }

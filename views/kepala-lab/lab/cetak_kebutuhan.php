@@ -13,9 +13,7 @@ $id_kepala_session = $_SESSION['id_user'];
 $tgl_awal  = mysqli_real_escape_string($conn, $_GET['tgl_awal']);
 $tgl_akhir = mysqli_real_escape_string($conn, $_GET['tgl_akhir']);
 
-/** * 1. AMBIL DATA KEPALA LAB & NAMA LAB SECARA OTOMATIS
- * Kita hubungkan tabel kepala_lab dengan tabel lab berdasarkan id_lab
- */
+/** * 1. AMBIL DATA KEPALA LAB & NAMA LAB SECARA OTOMATIS */
 $user_sql = "SELECT k.nama_kepala, k.nip, l.nama_lab 
              FROM kepala_lab k 
              LEFT JOIN lab l ON k.id_lab = l.id_lab 
@@ -24,14 +22,11 @@ $user_sql = "SELECT k.nama_kepala, k.nip, l.nama_lab
 $user_res = mysqli_query($conn, $user_sql);
 $user_data = mysqli_fetch_assoc($user_res);
 
-// Simpan ke variabel agar mudah digunakan di HTML
 $nama_lab    = $user_data['nama_lab'] ?? 'Laboratorium';
 $nama_kepala = $user_data['nama_kepala'] ?? 'Nama Tidak Terdaftar';
 $nip_kepala  = $user_data['nip'] ?? '...........................';
 
-/**
- * 2. AMBIL DATA PERMINTAAN BARANG
- */
+/** * 2. AMBIL DATA PERMINTAAN BARANG */
 $sql = "SELECT p.*, b.nama_bahan, b.satuan, b.kode_bahan 
         FROM permintaan_barang p 
         LEFT JOIN bahan_praktek b ON p.id_barang = b.id_praktek 
@@ -47,37 +42,86 @@ $query = mysqli_query($conn, $sql);
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Cetak_Laporan_<?= str_replace(' ', '_', $nama_lab) ?></title>
+    <title>Laporan_<?= str_replace(' ', '_', $nama_lab) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: white; font-family: 'Times New Roman', Times, serif; color: black; }
-        .kop-surat { border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 20px; }
-        .table-bordered th, .table-bordered td { border: 1px solid black !important; padding: 6px; font-size: 10pt; }
-        .table th { background-color: #f2f2f2 !important; text-align: center; font-weight: bold; }
-        @media print { .no-print { display: none; } @page { size: portrait; margin: 1cm; } }
+        body { background: white; font-family: Arial, Helvetica, sans-serif; color: black; line-height: 1.2; }
+        
+        /* --- STYLING KOP SURAT STABIL (FIXED SIZE) --- */
+        .kop-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none !important;
+            margin-bottom: 0px;
+        }
+        .kop-table td { border: none !important; vertical-align: middle; padding: 0; }
+        
+        /* KUNCI UKURAN LOGO DALAM CM */
+        .logo-container { 
+            width: 5.5cm !important; 
+            text-align: left; 
+        }
+        .logo-container img {
+            width: 5.5cm !important; /* Ukuran menyesuaikan logo panjang Kemenperin */
+            height: auto;
+            display: block;
+        }
+        
+        .teks-kop { 
+            text-align: center; 
+            padding-right: 1.5cm; /* Menyeimbangkan posisi teks agar ke tengah kertas */
+        }
+        .teks-kop h4 { font-size: 11pt; margin: 0; font-weight: normal; text-transform: uppercase; }
+        .teks-kop h2 { font-size: 16pt; margin: 2px 0; font-weight: bold; }
+        .teks-kop p { font-size: 8.5pt; margin: 0; }
+
+        .garis-kop {
+            border-top: 1px solid black;
+            border-bottom: 3.5px solid black;
+            height: 3px;
+            margin-top: 5px;
+            margin-bottom: 25px;
+        }
+
+        /* --- STYLING TABEL --- */
+        .table-bordered th, .table-bordered td { border: 1px solid black !important; padding: 6px; font-size: 9pt; }
+        .table th { background-color: #f2f2f2 !important; text-align: center; vertical-align: middle; font-weight: bold; }
+        
+        @media print { 
+            .no-print { display: none; } 
+            @page { size: portrait; margin: 1cm; } 
+            body { -webkit-print-color-adjust: exact; }
+            .logo-container { width: 5.5cm !important; }
+            .logo-container img { width: 5.5cm !important; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container mt-3">
+<div class="container-fluid px-4 mt-3">
     <div class="no-print mb-4 text-end">
         <button onclick="window.print()" class="btn btn-sm btn-primary">Cetak / Simpan PDF</button>
         <button onclick="window.close()" class="btn btn-sm btn-secondary">Tutup</button>
     </div>
 
-    <div class="kop-surat d-flex align-items-center">
-        <img src="../../../images/logo.png" alt="Logo" style="width: 70px;" class="me-3">
-        <div class="text-center w-100">
-            <h6 class="mb-0 fw-bold">KEMENTERIAN PERINDUSTRIAN REPUBLIK INDONESIA</h6>
-            <h5 class="mb-0 fw-bold">POLITEKNIK ATI MAKASSAR</h5>
-            <p class="mb-0 fw-bold text-uppercase" style="font-size: 11pt;">UNIT: <?= $nama_lab ?></p>
-            <p class="mb-0 small" style="font-size: 8pt;">Jl. Sunu No.221, Makassar, Sulawesi Selatan | www.atim.ac.id</p>
-        </div>
-    </div>
+    <table class="kop-table">
+        <tr>
+            <td class="logo-container">
+                <img src="../../../images/imaages.png" alt="Logo Kemenperin">
+            </td>
+            <td class="teks-kop">
+                <h4>BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h4>
+                <h2>POLITEKNIK ATI MAKASSAR</h2>
+                <p>Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
+            </td>
+        </tr>
+    </table>
+    <div class="garis-kop"></div>
 
     <div class="text-center mb-4">
-        <h6 class="text-decoration-underline fw-bold mb-1">LAPORAN DAFTAR TUNGGU (PENDING) KEBUTUHAN BAHAN</h6>
-        <p class="small">Periode: <?= date('d/m/Y', strtotime($tgl_awal)) ?> - <?= date('d/m/Y', strtotime($tgl_akhir)) ?></p>
+        <h5 class="text-decoration-underline fw-bold mb-1">LAPORAN DAFTAR TUNGGU (PENDING) KEBUTUHAN BAHAN</h5>
+        <p class="mb-0">Unit: <strong><?= strtoupper($nama_lab) ?></strong></p>
+        <p class="small">Periode: <?= date('d/m/Y', strtotime($tgl_awal)) ?> s/d <?= date('d/m/Y', strtotime($tgl_akhir)) ?></p>
     </div>
 
     <table class="table table-bordered align-middle">
@@ -86,11 +130,11 @@ $query = mysqli_query($conn, $sql);
                 <th width="3%">NO</th>
                 <th width="12%">TANGGAL</th>
                 <th width="10%">KODE</th>
-                <th width="20%">NAMA BAHAN</th>
-                <th width="20%">SPESIFIKASI</th>
-                <th width="8%">QTY</th>
-                <th width="7%">SAT</th>
+                <th width="18%">NAMA BAHAN</th>
+                <th>SPESIFIKASI</th>
                 <th width="10%">KONDISI</th>
+                <th width="6%">QTY</th>
+                <th width="6%">SAT</th>
                 <th width="10%">STATUS</th>
             </tr>
         </thead>
@@ -102,14 +146,14 @@ $query = mysqli_query($conn, $sql);
             ?>
             <tr>
                 <td class="text-center"><?= $no++; ?></td>
-                <td class="text-center"><?= date('d/m/Y', strtotime($row['tgl_permintaan'])) ?></td>
+                <td class="text-center"><?= date('d/m/y', strtotime($row['tgl_permintaan'])) ?></td>
                 <td class="text-center small"><?= $row['kode_bahan'] ?: '-' ?></td>
                 <td><?= $row['nama_bahan'] ?></td>
-                <td style="font-size: 9pt;"><?= $row['spesifikasi'] ?: '-' ?></td>
+                <td style="font-size: 8.5pt;"><?= $row['spesifikasi'] ?: '-' ?></td>
+                <td class="text-center"><?= $row['kondisi'] ?></td>
                 <td class="text-center"><?= $row['jumlah_minta'] ?></td>
                 <td class="text-center"><?= $row['satuan'] ?></td>
-                <td class="text-center"><?= $row['kondisi'] ?></td>
-                <td class="text-center text-uppercase fw-bold" style="font-size: 8pt;"><?= $row['status'] ?></td>
+                <td class="text-center text-uppercase fw-bold" style="font-size: 8pt; color: red;"><?= $row['status'] ?></td>
             </tr>
             <?php endwhile; else: ?>
             <tr><td colspan="9" class="text-center py-4 text-muted">Data permintaan berstatus PENDING tidak ditemukan.</td></tr>
@@ -117,21 +161,22 @@ $query = mysqli_query($conn, $sql);
         </tbody>
     </table>
 
-    <div class="row mt-4">
+    <div class="row mt-5">
         <div class="col-7"></div>
-        <div class="col-5 text-center">
-            <p class="mb-0 small">Makassar, <?= date('d F Y') ?></p>
-            <p class="small mb-0">Kepala <?= $nama_lab ?>,</p>
+        <div class="col-5 text-center" style="font-size: 10pt;">
+            <p class="mb-0">Makassar, <?= date('d F Y') ?></p>
+            <p class="mb-0">Kepala <?= $nama_lab ?>,</p>
             <div style="height: 70px;"></div>
-            <p class="fw-bold mb-0 text-decoration-underline small"><?= strtoupper($nama_kepala) ?></p>
-            <p class="small">NIP. <?= $nip_kepala ?></p>
+            <p class="fw-bold mb-0 text-decoration-underline"><?= strtoupper($nama_kepala) ?></p>
+            <p>NIP. <?= $nip_kepala ?></p>
         </div>
     </div>
 </div>
 
 <script>
+    // Jalankan perintah print otomatis saat halaman dimuat
     window.onload = function() {
-        window.print();
+        // window.print(); // Aktifkan jika ingin langsung cetak
     }
 </script>
 

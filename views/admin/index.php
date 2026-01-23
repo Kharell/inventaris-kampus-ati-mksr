@@ -89,12 +89,12 @@ for ($i = 6; $i >= 0; $i--) {
     </style>
 </head>
 <body>
-<div class="main-wrapper">
+<div class="d-flex">
     <?php include "../../includes/sidebar.php"; ?>
 
-    <div class="content-area">
+    <div class="main-content w-100"> 
         <?php include "../../includes/header.php"; ?>
-
+    <main class="p-3 p-md-4" style="margin-top: 30px;"></main>
         <main class="p-4">
             <div class="welcome-banner shadow-sm mb-4">
                 <div class="row align-items-center">

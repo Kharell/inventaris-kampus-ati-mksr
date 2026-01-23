@@ -51,11 +51,58 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
             position: relative; overflow: hidden;
         }
 
-        /* Nav Tab Jurusan (Utama) */
-        .nav-jurusan .nav-link { 
-            color: #6c757d; border: none; padding: 12px 25px; font-weight: 700; 
-            border-radius: 10px; transition: 0.3s; margin-right: 5px;
-        }
+    /* --- PERBAIKAN NAV JURUSAN AGAR JELAS SEBELUM DIKLIK --- */
+    .nav-jurusan {
+        background: #ffffff;
+        padding: 12px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Shadow lebih tegas agar area menonjol */
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 12px;
+        margin-bottom: 30px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .nav-jurusan .nav-link { 
+        /* Warna teks saat BELUM diklik: Dibuat Navy agar kontras */
+        color: var(--navy) !important; 
+        background: #ffffff; 
+        border: 2px solid #e2e8f0; /* Border lebih tebal agar bentuk tombol jelas */
+        padding: 12px 24px; 
+        font-weight: 700; /* Tulisan tebal */
+        border-radius: 10px; 
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        opacity: 0.85; /* Sedikit transparan agar beda dengan yang aktif */
+    }
+
+    /* Efek Hover (Saat kursor di atas tombol tapi belum diklik) */
+    .nav-jurusan .nav-link:hover:not(.active) {
+        background: #f0f4f8;
+        border-color: var(--navy);
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+
+    /* Saat Jurusan AKTIF (Sudah diklik) */
+    .nav-jurusan .nav-link.active { 
+        background: var(--navy) !important; 
+        color: var(--gold) !important; /* Teks jadi emas */
+        border-color: var(--navy) !important;
+        box-shadow: 0 5px 15px rgba(10, 25, 47, 0.3);
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+
+    /* Indikator Merah (Pulse) agar tidak menutupi teks */
+    .nav-jurusan .nav-link .pulse-dot {
+        right: -5px;
+        top: -5px;
+    }
+
+
         .nav-jurusan .nav-link.active { background: var(--navy); color: var(--gold); }
 
         /* Nav Tab Lab (Sub-Tab) */
@@ -120,7 +167,7 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
 
     <div class="main-content">
         <?php include "../../includes/header.php"; ?>
-
+    <main class="p-3 p-md-4" style="margin-top: 30px;"></main>
         <div class="p-4">
             <div class="hero-banner shadow-sm">
                 <div class="row align-items-center">
@@ -133,41 +180,42 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
                 </div>
             </div>
 
-            <ul class="nav nav-pills nav-jurusan mb-4" id="pills-tab" role="tablist">
-    <?php 
-    $active_j = true;
+            <div class="container-fluid px-0">
+    <ul class="nav nav-pills nav-jurusan mb-4" id="pills-tab" role="tablist">
+        <?php 
+        $active_j = true;
         mysqli_data_seek($query_jurusan, 0);
         while($j = mysqli_fetch_assoc($query_jurusan)): 
             $id_jur = $j['id_jurusan'];
             
-            // Query untuk cek apakah ada salah satu lab di jurusan ini yang punya permintaan pending
             $check_req = mysqli_query($conn, "SELECT p.id_permintaan 
                 FROM permintaan_barang p
                 JOIN kepala_lab kl ON p.id_kepala = kl.id_kepala
                 JOIN lab l ON kl.id_lab = l.id_lab
                 WHERE l.id_jurusan = '$id_jur' AND p.status = 'pending' 
-                LIMIT 1"); // Limit 1 karena kita hanya butuh tahu "ada atau tidak"
+                LIMIT 1"); 
                 
             $has_pending = (mysqli_num_rows($check_req) > 0);
         ?>
-        <li class="nav-item">
+        <li class="nav-item" role="presentation">
             <button class="nav-link position-relative <?= $active_j ? 'active' : ''; ?>" 
+                    id="tab-jur-<?= $id_jur; ?>"
                     data-bs-toggle="pill" 
                     data-bs-target="#jur-<?= $id_jur; ?>" 
-                    type="button">
+                    type="button" 
+                    role="tab">
                 
-                <?= $j['nama_jurusan']; ?>
+                <i class="bi bi-mortarboard me-2"></i><?= $j['nama_jurusan']; ?>
 
                 <?php if ($has_pending) : ?>
-                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle pulse-dot">
-                        <span class="visually-hidden">New alerts</span>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle pulse-dot" style="margin-left: -10px; margin-top: 5px;">
                     </span>
                 <?php endif; ?>
-                
             </button>
         </li>
         <?php $active_j = false; endwhile; ?>
     </ul>
+</div>
 
 
 
@@ -249,11 +297,15 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-           <div class="modal-body p-4">
+<div class="modal-body p-4">
     <input type="hidden" name="id_lab" id="modIdLab">
     <input type="hidden" name="id_permintaan" id="modIdReq">
+    
+    <input type="hidden" name="id_jurusan_id" id="modIdJurHidden"> 
+    
     <input type="hidden" name="nama_jurusan" id="modJurusan">
     <input type="hidden" name="nama_lab" id="modLab">   
+    
     
     <div class="mb-3">
         <label class="form-label fw-bold small" style="color: #0a192f;">PILIH BAHAN PRAKTEK</label>
@@ -370,35 +422,47 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
 
 <script>
 
-    function viewLabDetails(id, labName, jurName) {
-        currentLabId = id;
-        currentLabName = labName;
-        currentJurName = jurName;
+// Tambahkan parameter keempat: idJurusan
+function viewLabDetails(id, labName, jurName, idJurusan) { 
+    currentLabId = id;
+    currentLabName = labName;
+    currentJurName = jurName;
 
-        const view = document.getElementById('distribusi-view');
-        // Render Container Utama
-        // Kode baru dengan tema Navy
-        view.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm border-start border-4" style="border-left-color: #0a192f !important;">
-                <div>
-                    <h4 class="fw-bold mb-0" style="color: #0a192f;">${labName}</h4>
-                    <span class="badge" style="background-color: #ffcc00; color: #0a192f;">${jurName}</span>
-                </div>
-                <div class="d-flex gap-2">
-                    <div class="input-group input-group-sm" style="width: 200px;">
-                        <input type="text" class="form-control" placeholder="Cari..." onkeyup="handleSearch(this.value)">
-                    </div>
-                    <button class="btn btn-sm btn-add-dist shadow-sm" onclick="openDistModal('${id}', '${labName}', '${jurName}')" style="background-color: #0a192f; color: #ffcc00;">
-                        <i class="bi bi-plus-lg me-1"></i>Kirim
-                    </button>
-                </div>
-            </div>
-            <div id="table-content">
-                <div class="text-center p-5"><div class="spinner-border" style="color: #0a192f;"></div></div>
-            </div>
-        `;
-        loadDistribusi(id, 1, '');
+    // REVISI 1: Isi input hidden modal supaya data ini terkirim ke proses/tambah.php
+    if(document.getElementById('modIdLab')) document.getElementById('modIdLab').value = id;
+    if(document.getElementById('modLab')) document.getElementById('modLab').value = labName;
+    if(document.getElementById('modJurusan')) document.getElementById('modJurusan').value = jurName;
+    
+    // REVISI 2: Simpan ID Jurusan ke input hidden (buat input ini di dalam modal)
+    if(document.getElementById('modIdJurHidden')) {
+        document.getElementById('modIdJurHidden').value = idJurusan;
     }
+
+    const view = document.getElementById('distribusi-view');
+    
+    // Render Container Utama
+    view.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm border-start border-4" style="border-left-color: #0a192f !important;">
+            <div>
+                <h4 class="fw-bold mb-0" style="color: #0a192f;">${labName}</h4>
+                <span class="badge" style="background-color: #ffcc00; color: #0a192f;">${jurName}</span>
+            </div>
+            <div class="d-flex gap-2">
+                <div class="input-group input-group-sm" style="width: 200px;">
+                    <input type="text" class="form-control" placeholder="Cari..." onkeyup="handleSearch(this.value)">
+                </div>
+                <button class="btn btn-sm btn-add-dist shadow-sm" onclick="openDistModal('${id}', '${labName}', '${jurName}', '${idJurusan}')" style="background-color: #0a192f; color: #ffcc00;">
+                    <i class="bi bi-plus-lg me-1"></i>Kirim
+                </button>
+            </div>
+        </div>
+        <div id="table-content">
+            <div class="text-center p-5"><div class="spinner-border" style="color: #0a192f;"></div></div>
+        </div>
+    `;
+    loadDistribusi(id, 1, '');
+}
+
 
     function loadDistribusi(id_lab, page = 1, keyword = '') {
         // Pastikan ID ini SAMA dengan ID tempat tabel muncul

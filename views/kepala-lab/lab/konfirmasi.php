@@ -46,11 +46,11 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
 <body>
 
 <div class="d-flex">
-    <?php if(file_exists("../../../includes/sidebar.php")) include "../../../includes/sidebar.php"; ?>
+    <?php include "../../../includes/sidebar.php"; ?>
 
-    <div class="flex-grow-1" style="min-height: 100vh;">
-        <?php if(file_exists("../../../includes/header.php")) include "../../../includes/header.php"; ?>
-
+    <div class="main-content w-100"> 
+        <?php include "../../../includes/header.php"; ?>
+            <main class="p-3 p-md-4" style="margin-top: 30px;"></main>
         <main class="p-4">
             <div class="page-header d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded-4 border-start border-5 mb-4" style="border-color: var(--navy) !important;">
                 <div class="d-flex align-items-center">

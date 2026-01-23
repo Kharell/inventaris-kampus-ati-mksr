@@ -135,13 +135,13 @@ $data = mysqli_fetch_assoc($query);
 </head>
 <body>
 
-<div class="wrapper">
+<div class="d-flex">
     <?php include "../../includes/sidebar.php"; ?>
 
-    <div class="content-area">
+    <div class="main-content w-100"> 
         <?php include "../../includes/header.php"; ?>
-
-        <main class="p-4 p-lg-5">
+        <main class="p-3 p-md-4" style="margin-top: 30px;"></main>
+        <main class="p-4 p-lg-4">
             <div class="identity-banner mb-5">
                 <div class="row align-items-center">
                     <div class="col-lg-9">

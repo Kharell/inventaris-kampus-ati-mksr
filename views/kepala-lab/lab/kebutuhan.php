@@ -71,9 +71,9 @@ if (isset($_GET['edit_id'])) {
 <div class="d-flex">
     <?php include "../../../includes/sidebar.php"; ?>
 
-    <!-- card heder -->
-    <div class="flex-grow-1" style="min-height: 100vh;">
-        <?php if(file_exists("../../../includes/header.php")) include "../../../includes/header.php"; ?>
+    <div class="main-content w-100"> 
+        <?php include "../../../includes/header.php"; ?>
+        <main class="p-3 p-md-4" style="margin-top: 30px;"></main>
         <main class="p-4">
             <div class="page-header d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded-4 border-start border-5" style="border-color: var(--navy) !important; position: relative; overflow: hidden;">
                 <div style="position: absolute; right: -20px; top: -20px; width: 150px; height: 150px; background: rgba(0, 31, 63, 0.03); border-radius: 50%;"></div>

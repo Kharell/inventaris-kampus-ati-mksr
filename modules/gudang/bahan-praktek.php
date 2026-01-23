@@ -50,14 +50,13 @@ $res = mysqli_query($conn, $query);
     </style>
 </head>
 <body>
-
-<div class="main-wrapper">
+<div class="d-flex">
     <?php include "../../includes/sidebar.php"; ?>
 
-    <div class="content-area">
+    <div class="main-content w-100"> 
         <?php include "../../includes/header.php"; ?>
 
-        <main class="p-4">
+        <main class="p-3 p-md-4" style="margin-top: 70px;">
             <div class="header-card d-flex justify-content-between align-items-center shadow-sm">
                 <div>
                     <h2 class="fw-bold mb-1"><i class="bi bi-tools text-warning me-2"></i> Bahan Praktek Pusat</h2>
