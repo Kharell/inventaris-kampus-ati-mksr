@@ -25,49 +25,54 @@ if ($role_user == 'admin') {
 ?>
 
 <header class="topbar shadow-sm">
-    <div class="container-fluid h-100 px-0"> 
-        <div class="row h-100 g-0 align-items-center">
+    <div class="container-fluid h-100"> 
+        <div class="row h-100 align-items-center">
             
-            <div class="col-auto ps-4"> 
+            <div class="col col-md-auto ps-3 ps-md-4"> 
                 <div class="header-left">
-                    <div class="d-none d-md-block">
-                        <h5 class="mb-0 fw-bold text-dark" style="letter-spacing: -0.5px; line-height: 1.2;">
-                            Selamat Datang, <span class="text-primary"><?= $nama_user; ?></span>
+                    <div class="d-none d-sm-block">
+                        <h5 class="mb-0 fw-bold text-dark text-truncate" style="max-width: 250px; letter-spacing: -0.5px; line-height: 1.2;">
+                            Halo, <span class="text-primary"><?= explode(' ', trim($nama_user))[0]; ?></span>
                         </h5>
-                        <small class="text-muted fw-medium" style="font-size: 0.75rem;">
-                            Login sebagai: <span class="text-dark fw-bold"><?= $label_welcome; ?></span>
+                        <small class="text-muted fw-medium" style="font-size: 0.7rem;">
+                            <?= $label_welcome; ?>
                         </small>
                     </div>
-                    <div class="d-md-none ms-5"> 
-                        <small class="fw-bold text-primary">SI-INVENTARIS</small>
+                    
+                    <div class="d-sm-none"> 
+                        <span class="badge bg-primary-subtle text-primary fw-bold">SI-INVENTARIS</span>
                     </div>
                 </div>
             </div>
 
             <div class="col"></div>
 
-            <div class="col-auto pe-4">
+            <div class="col-auto pe-3 pe-md-4">
                 <div class="dropdown">
                     <div class="d-flex align-items-center dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                        <div class="text-end me-3 d-none d-sm-block">
-                            <p class="mb-0 fw-bold text-dark" style="font-size: 0.85rem; line-height: 1;">
+                        <div class="text-end me-2 d-none d-md-block">
+                            <p class="mb-0 fw-bold text-dark" style="font-size: 0.8rem; line-height: 1;">
                                 <?= $nama_user; ?>
                             </p>
-                            <small class="text-success fw-bold text-uppercase" style="font-size: 0.6rem;">Online</small>
+                            <small class="text-success" style="font-size: 0.6rem;"><i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Online</small>
                         </div>
                         <div class="avatar-box shadow-sm">
                             <?= strtoupper(substr($nama_user, 0, 1)); ?>
                         </div>
                     </div>
                     
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 animate slideIn">
-                        <li><h6 class="dropdown-header">Pengaturan Akun</h6></li>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 animate slideIn">
+                        <li><h6 class="dropdown-header">Menu Akun</h6></li>
+                        <li class="d-md-none px-3 py-2 border-bottom mb-2">
+                            <small class="text-muted d-block">Login sebagai:</small>
+                            <span class="fw-bold text-dark"><?= $nama_user; ?></span>
+                        </li>
                         <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#modalKeamanan">
-                            <i class="bi bi-shield-lock me-2 text-primary"></i>Keamanan & Password
+                            <i class="bi bi-shield-lock me-2 text-primary"></i>Keamanan
                         </a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item py-2 text-danger fw-bold" href="javascript:void(0)" onclick="prosesLogout()">
-                            <i class="bi bi-box-arrow-right me-2"></i>Keluar Aplikasi
+                            <i class="bi bi-box-arrow-right me-2"></i>Keluar
                         </a></li>
                     </ul>
                 </div>

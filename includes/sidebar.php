@@ -16,9 +16,11 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
 
 /**
  * Fungsi pembantu untuk indikator aktif
+ * Menggunakan perbandingan path yang lebih spesifik agar tidak bentrok
  */
 function isActive($path) {
     global $current_page;
+    // Jika current_page mengandung path spesifik yang dikirimkan
     return (strpos($current_page, $path) !== false) ? 'active' : '';
 }
 
@@ -39,24 +41,20 @@ function isExpanded($paths) {
         --hover-bg: rgba(255, 204, 0, 0.15);
     }
 
-    /* --- PERBAIKAN WARNA SIDEBAR (DESKTOP & MOBILE) --- */
     .sidebar-wrapper {
         background-color: var(--navy-dark) !important;
         color: white !important;
         border-right: 1px solid rgba(255,255,255,0.1);
     }
 
-    /* Paksa warna Navy pada komponen Offcanvas Bootstrap di Mobile */
     .offcanvas, .offcanvas-lg, .offcanvas-header {
         background-color: var(--navy-dark) !important;
     }
 
-    /* --- RESPONSIVE TOGGLE BUTTON --- */
     .btn-toggle-mobile {
         display: none;
         position: fixed;
-        top: 15px;
-        left: 15px;
+        top: 15px; left: 15px;
         z-index: 1060;
         background: var(--navy-dark);
         color: var(--gold-poly);
@@ -86,7 +84,6 @@ function isExpanded($paths) {
         }
     }
 
-    /* --- MENU STYLING --- */
     .nav-link { 
         color: rgba(255,255,255,0.75) !important; 
         font-size: 0.9rem;
@@ -96,6 +93,7 @@ function isExpanded($paths) {
         border-radius: 8px;
         margin: 2px 10px;
         transition: 0.3s;
+        text-decoration: none;
     }
     
     .nav-link:hover { 
@@ -103,14 +101,14 @@ function isExpanded($paths) {
         background: var(--hover-bg); 
     }
 
-    /* WARNA MENU UTAMA AKTIF */
+    /* MENU UTAMA AKTIF */
     .nav-link.active { 
         color: var(--navy-dark) !important; 
         background-color: var(--gold-poly) !important;
         font-weight: bold;
     }
 
-    /* WARNA SUBMENU AKTIF */
+    /* SUBMENU AKTIF */
     .submenu .nav-link.active {
         background-color: rgba(255, 204, 0, 0.2) !important;
         color: var(--gold-poly) !important;
@@ -145,6 +143,9 @@ function isExpanded($paths) {
     }
 </style>
 
+
+
+
 <button class="btn btn-toggle-mobile d-lg-none shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
     <i class="bi bi-list"></i> Menu
 </button>
@@ -164,7 +165,9 @@ function isExpanded($paths) {
     
     <div class="flex-grow-1 overflow-auto px-2">
         <div class="nav-label-modern">Menu Utama</div>
-        <a class="nav-link <?= isActive('index.php'); ?>" href="<?= $base_url; ?>views/<?= ($role == 'admin') ? 'admin' : 'kepala-lab'; ?>/index.php">
+        
+        <a class="nav-link <?= isActive('views/' . (($role == 'admin') ? 'admin' : 'kepala-lab') . '/index.php'); ?>" 
+           href="<?= $base_url; ?>views/<?= ($role == 'admin') ? 'admin' : 'kepala-lab'; ?>/index.php">
             <i class="bi bi-speedometer2 me-2"></i> Dashboard
         </a>
 
@@ -176,9 +179,9 @@ function isExpanded($paths) {
             </a>
             <div class="collapse <?= isExpanded(['atk.php', 'kebersihan.php', 'bahan-praktek.php']); ?>" id="collapseGudang">
                 <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('atk.php'); ?>" href="<?= $base_url; ?>modules/gudang/atk.php">ATK</a></li>
-                    <li><a class="nav-link <?= isActive('kebersihan.php'); ?>" href="<?= $base_url; ?>modules/gudang/kebersihan.php">Kebersihan</a></li>
-                    <li><a class="nav-link <?= isActive('bahan-praktek.php'); ?>" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php">Bahan Praktek</a></li>
+                    <li><a class="nav-link <?= isActive('gudang/atk.php'); ?>" href="<?= $base_url; ?>modules/gudang/atk.php">ATK</a></li>
+                    <li><a class="nav-link <?= isActive('gudang/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/gudang/kebersihan.php">Kebersihan</a></li>
+                    <li><a class="nav-link <?= isActive('gudang/bahan-praktek.php'); ?>" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php">Bahan Praktek</a></li>
                 </ul>
             </div>
 
@@ -189,12 +192,12 @@ function isExpanded($paths) {
             </a>
             <div class="collapse <?= isExpanded(['jurusan.php', 'kepala-lab.php']); ?>" id="collapseMaster">
                 <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('jurusan.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/jurusan.php">Jurusan & Lab</a></li>
-                    <li><a class="nav-link <?= isActive('kepala-lab.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/kepala-lab.php">Kepala Lab</a></li>
+                    <li><a class="nav-link <?= isActive('bahan-praktek/jurusan.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/jurusan.php">Jurusan & Lab</a></li>
+                    <li><a class="nav-link <?= isActive('bahan-praktek/kepala-lab.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/kepala-lab.php">Kepala Lab</a></li>
                 </ul>
             </div>
 
-            <a class="nav-link <?= isActive('distribusi/index.php'); ?>" href="<?= $base_url; ?>modules/distribusi/index.php">
+            <a class="nav-link <?= isActive('modules/distribusi/'); ?>" href="<?= $base_url; ?>modules/distribusi/index.php">
                 <i class="bi bi-truck me-2"></i> Distribusi Lab
             </a>
 
@@ -205,20 +208,20 @@ function isExpanded($paths) {
             </a>
             <div class="collapse <?= isExpanded(['stok-gudang.php', 'riwayat-distribusi.php', 'permintaan.php']); ?>" id="collapseLaporan">
                 <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('stok-gudang.php'); ?>" href="<?= $base_url; ?>modules/laporan/stok-gudang.php">Stok Gudang</a></li>
-                    <li><a class="nav-link <?= isActive('riwayat-distribusi.php'); ?>" href="<?= $base_url; ?>modules/laporan/riwayat-distribusi.php">Riwayat Distribusi</a></li>
-                    <li><a class="nav-link <?= isActive('permintaan.php'); ?>" href="<?= $base_url; ?>modules/laporan/permintaan.php">Rekap Permintaan</a></li>
+                    <li><a class="nav-link <?= isActive('laporan/stok-gudang.php'); ?>" href="<?= $base_url; ?>modules/laporan/stok-gudang.php">Stok Gudang</a></li>
+                    <li><a class="nav-link <?= isActive('laporan/riwayat-distribusi.php'); ?>" href="<?= $base_url; ?>modules/laporan/riwayat-distribusi.php">Riwayat Distribusi</a></li>
+                    <li><a class="nav-link <?= isActive('laporan/permintaan.php'); ?>" href="<?= $base_url; ?>modules/laporan/permintaan.php">Rekap Permintaan</a></li>
                 </ul>
             </div>
         <?php endif; ?>
 
         <?php if($role == 'kepala_lab' || $role == 'kepala-lab'): ?>
             <div class="nav-label-modern">Aktivitas Lab</div>
-            <a class="nav-link <?= isActive('stok.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/stok.php"><i class="bi bi-archive me-2"></i> Stok Lab</a>
-            <a class="nav-link <?= isActive('kebutuhan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/kebutuhan.php"><i class="bi bi-cart-plus me-2"></i> Input Kebutuhan</a>
-            <a class="nav-link <?= isActive('konfirmasi.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/konfirmasi.php"><i class="bi bi-check2-square me-2"></i> Konfirmasi</a>
-            <a class="nav-link <?= isActive('pemakaian.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/pemakaian.php"><i class="bi bi-clipboard-data me-2"></i> Lapor Pakai</a>
-            <a class="nav-link <?= isActive('laporan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/laporan.php"><i class="bi bi-printer me-2"></i> Cetak Laporan</a>
+            <a class="nav-link <?= isActive('lab/stok.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/stok.php"><i class="bi bi-archive me-2"></i> Stok Lab</a>
+            <a class="nav-link <?= isActive('lab/kebutuhan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/kebutuhan.php"><i class="bi bi-cart-plus me-2"></i> Input Kebutuhan</a>
+            <a class="nav-link <?= isActive('lab/konfirmasi.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/konfirmasi.php"><i class="bi bi-check2-square me-2"></i> Konfirmasi</a>
+            <a class="nav-link <?= isActive('lab/pemakaian.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/pemakaian.php"><i class="bi bi-clipboard-data me-2"></i> Lapor Pakai</a>
+            <a class="nav-link <?= isActive('lab/laporan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/laporan.php"><i class="bi bi-printer me-2"></i> Cetak Laporan</a>
         <?php endif; ?>
     </div>
 
@@ -229,6 +232,9 @@ function isExpanded($paths) {
         </a>
     </div>
 </div>
+
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -242,8 +248,7 @@ function prosesLogout() {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Ya, Keluar',
         cancelButtonText: 'Batal',
-        reverseButtons: true,
-        borderRadius: '15px'
+        reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
             window.location.href = "<?= $base_url; ?>logout.php";
