@@ -26,11 +26,22 @@ if ($role_user == 'admin') {
 
 <header class="topbar shadow-sm">
     <div class="container-fluid h-100"> 
-        <div class="row h-100 align-items-center">
+        <div class="row h-100 align-items-center position-relative">
             
-            <div class="col col-md-auto ps-3 ps-md-4"> 
-                <div class="header-left">
-                    <div class="d-none d-sm-block">
+            <div class="col-auto d-lg-none position-absolute start-0 ps-3" style="z-index: 1060; top: 15px;">
+                <button class="btn d-flex align-items-center shadow-sm" 
+                        type="button" 
+                        data-bs-toggle="offcanvas" 
+                        data-bs-target="#sidebarOffcanvas"
+                        style="background: #001f3f; color: #FFD700; border-radius: 8px; padding: 6px 12px; border: 1px solid #FFD700;">
+                    <i class="bi bi-list fs-4 me-1"></i>
+                    <span class="fw-bold" style="font-size: 0.8rem;">MENU</span>
+                </button>
+            </div>
+
+            <div class="col text-center text-lg-start"> 
+                <div class="header-left ps-lg-4">
+                    <div class="d-none d-lg-block">
                         <h5 class="mb-0 fw-bold text-dark text-truncate" style="max-width: 250px; letter-spacing: -0.5px; line-height: 1.2;">
                             Halo, <span class="text-primary"><?= explode(' ', trim($nama_user))[0]; ?></span>
                         </h5>
@@ -39,41 +50,30 @@ if ($role_user == 'admin') {
                         </small>
                     </div>
                     
-                    <div class="d-sm-none"> 
-                        <span class="badge bg-primary-subtle text-primary fw-bold">SI-INVENTARIS</span>
+                    <div class="d-lg-none"> 
+                        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2" style="font-size: 0.85rem; letter-spacing: 0.5px; border: 1px solid rgba(13, 110, 253, 0.2);">
+                            SI-INVENTARIS
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div class="col"></div>
-
             <div class="col-auto pe-3 pe-md-4">
                 <div class="dropdown">
-                    <div class="d-flex align-items-center dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                    <div class="d-flex align-items-center dropdown-toggle" role="button" data-bs-toggle="dropdown" style="cursor: pointer;">
                         <div class="text-end me-2 d-none d-md-block">
-                            <p class="mb-0 fw-bold text-dark" style="font-size: 0.8rem; line-height: 1;">
-                                <?= $nama_user; ?>
-                            </p>
+                            <p class="mb-0 fw-bold text-dark" style="font-size: 0.8rem; line-height: 1;"><?= $nama_user; ?></p>
                             <small class="text-success" style="font-size: 0.6rem;"><i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Online</small>
                         </div>
                         <div class="avatar-box shadow-sm">
                             <?= strtoupper(substr($nama_user, 0, 1)); ?>
                         </div>
                     </div>
-                    
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 animate slideIn">
                         <li><h6 class="dropdown-header">Menu Akun</h6></li>
-                        <li class="d-md-none px-3 py-2 border-bottom mb-2">
-                            <small class="text-muted d-block">Login sebagai:</small>
-                            <span class="fw-bold text-dark"><?= $nama_user; ?></span>
-                        </li>
-                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#modalKeamanan">
-                            <i class="bi bi-shield-lock me-2 text-primary"></i>Keamanan
-                        </a></li>
+                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#modalKeamanan"><i class="bi bi-shield-lock me-2 text-primary"></i>Keamanan</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="javascript:void(0)" onclick="prosesLogout()">
-                            <i class="bi bi-box-arrow-right me-2"></i>Keluar
-                        </a></li>
+                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="javascript:void(0)" onclick="prosesLogout()"><i class="bi bi-box-arrow-right me-2"></i>Keluar</a></li>
                     </ul>
                 </div>
             </div>
@@ -81,7 +81,6 @@ if ($role_user == 'admin') {
         </div>
     </div>
 </header>
-
 <style>
 /* STYLE TETAP DIPERTAHANKAN SESUAI PERMINTAAN */
 .topbar {
@@ -123,4 +122,18 @@ if ($role_user == 'admin') {
     from { transform: translateY(10px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
+@media (max-width: 991.98px) {
+        /* Hilangkan tombol lama agar tidak double atau menutupi teks */
+        .btn-toggle-mobile { 
+            display: none !important; 
+        }
+        
+        /* Tambahkan padding top pada main content agar tidak tertutup header fixed */
+        .main-content { 
+            margin-left: 0 !important; 
+            padding-top: 80px !important; 
+        }
+    }
 </style>
+

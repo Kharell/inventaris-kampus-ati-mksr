@@ -200,7 +200,7 @@ $count_stok = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total F
                             </div>
                         </div>
                     </div>
-                </form>
+               
 
                 <div class="row g-4">
                     <div class="col-lg-7">
@@ -277,6 +277,7 @@ $count_stok = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total F
                     </div>
                 </div>
             </form>
+             </form>
         </main>
     </div>
 </div>

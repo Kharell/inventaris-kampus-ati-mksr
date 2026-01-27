@@ -123,7 +123,7 @@ $result = mysqli_query($conn, $query);
     <table class="kop-table">
         <tr>
             <td class="logo-container">
-                <img src="../../../images/imaages.png" alt="Logo">
+                <img src="../../../images/images.png" alt="Logo">
             </td>
             <td class="teks-kop">
                 <h4>BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h4>

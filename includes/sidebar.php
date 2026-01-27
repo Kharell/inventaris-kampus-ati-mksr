@@ -150,6 +150,8 @@ function isExpanded($paths) {
     <i class="bi bi-list"></i> Menu
 </button>
 
+
+
 <div class="offcanvas-lg offcanvas-start sidebar-wrapper border-0" tabindex="-1" id="sidebarOffcanvas">
     
     <div class="offcanvas-header d-lg-none border-bottom border-white border-opacity-10">
@@ -179,10 +181,10 @@ function isExpanded($paths) {
             </a>
             <div class="collapse <?= isExpanded(['atk.php', 'kebersihan.php', 'bahan-praktek.php']); ?>" id="collapseGudang">
                 <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('gudang/atk.php'); ?>" href="<?= $base_url; ?>modules/gudang/atk.php">ATK</a></li>
-                    <li><a class="nav-link <?= isActive('gudang/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/gudang/kebersihan.php">Kebersihan</a></li>
-                    <li><a class="nav-link <?= isActive('gudang/bahan-praktek.php'); ?>" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php">Bahan Praktek</a></li>
-                </ul>
+                    <li><a class="nav-link <?= isActive('gudang/bahan-praktek.php'); ?>" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php"><i class="bi bi-tools me-2"></i>Bahan Praktek</a></li>
+                    <li><a class="nav-link <?= isActive('gudang/atk.php'); ?>" href="<?= $base_url; ?>modules/gudang/atk.php"> <i class="bi bi-pencil-fill me-2"></i>Alat Tulis Kantor</a></li>
+                    <li><a class="nav-link <?= isActive('gudang/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/gudang/kebersihan.php"> <i class="bi bi-bucket-fill me-2"></i>Kebersihan</a></li>
+                    </ul>
             </div>
 
             <a class="nav-link btn-toggle-nav <?= isExpanded(['jurusan.php', 'kepala-lab.php']) ? '' : 'collapsed'; ?>" 
@@ -192,25 +194,47 @@ function isExpanded($paths) {
             </a>
             <div class="collapse <?= isExpanded(['jurusan.php', 'kepala-lab.php']); ?>" id="collapseMaster">
                 <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('bahan-praktek/jurusan.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/jurusan.php">Jurusan & Lab</a></li>
-                    <li><a class="nav-link <?= isActive('bahan-praktek/kepala-lab.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/kepala-lab.php">Kepala Lab</a></li>
+                    <li><a class="nav-link <?= isActive('bahan-praktek/jurusan.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/jurusan.php"><i class="bi bi-buildings-fill me-2"></i> Jurusan & Lab</a></li>
+                    <li><a class="nav-link <?= isActive('bahan-praktek/kepala-lab.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/kepala-lab.php"><i class="bi bi-person-badge-fill me-2"></i> Kepala Lab</a></li>
                 </ul>
             </div>
 
-            <a class="nav-link <?= isActive('modules/distribusi/'); ?>" href="<?= $base_url; ?>modules/distribusi/index.php">
-                <i class="bi bi-truck me-2"></i> Distribusi Lab
-            </a>
 
-            <a class="nav-link btn-toggle-nav <?= isExpanded(['stok-gudang.php', 'riwayat-distribusi.php', 'permintaan.php']) ? '' : 'collapsed'; ?>" 
-               data-bs-toggle="collapse" href="#collapseLaporan">
+            <a class="nav-link btn-toggle-nav <?= isExpanded(['distribusi/index.php', 'distribusi/kebersihan.php', 'distribusi/atk.php']) ? '' : 'collapsed'; ?>" 
+                data-bs-toggle="collapse" href="#collapseDistribusi">
+                <span><i class="bi bi-truck me-2"></i> Distribusi Lab</span>
+                <i class="bi bi-chevron-down small"></i>
+            </a>
+            <div class="collapse <?= isExpanded(['distribusi/index.php', 'distribusi/kebersihan.php', 'distribusi/atk.php']); ?>" id="collapseDistribusi">
+                <ul class="submenu">
+                    <li>
+                        <a class="nav-link <?= isActive('modules/distribusi/index.php'); ?>" href="<?= $base_url; ?>modules/distribusi/index.php">
+                            <i class="bi bi-tools me-2"></i> Bahan Praktek
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link <?= isActive('modules/distribusi/atk.php'); ?>" href="<?= $base_url; ?>modules/distribusi/atk.php">
+                            <i class="bi bi-pencil-fill me-2"></i> Alat Tulis Kantor
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link <?= isActive('modules/distribusi/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/distribusi/kebersihan.php">
+                            <i class="bi bi-bucket-fill me-2"></i> Kebersihan
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <a class="nav-link btn-toggle-nav <?= isExpanded(['laporan_stok.php', 'laporan_distribusi.php', 'permintaan.php']) ? '' : 'collapsed'; ?>" 
+                data-bs-toggle="collapse" href="#collapseLaporan">
                 <span><i class="bi bi-file-earmark-text me-2"></i> Laporan</span>
                 <i class="bi bi-chevron-down small"></i>
             </a>
-            <div class="collapse <?= isExpanded(['stok-gudang.php', 'riwayat-distribusi.php', 'permintaan.php']); ?>" id="collapseLaporan">
+            <div class="collapse <?= isExpanded(['laporan_stok.php', 'laporan_distribusi.php', 'permintaan.php']); ?>" id="collapseLaporan">
                 <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('laporan/stok-gudang.php'); ?>" href="<?= $base_url; ?>modules/laporan/stok-gudang.php">Stok Gudang</a></li>
-                    <li><a class="nav-link <?= isActive('laporan/riwayat-distribusi.php'); ?>" href="<?= $base_url; ?>modules/laporan/riwayat-distribusi.php">Riwayat Distribusi</a></li>
-                    <li><a class="nav-link <?= isActive('laporan/permintaan.php'); ?>" href="<?= $base_url; ?>modules/laporan/permintaan.php">Rekap Permintaan</a></li>
+                    <li><a class="nav-link <?= isActive('laporan/laporan_stok.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_stok.php"><i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Stok Gudang</a></li>
+                    <li><a class="nav-link <?= isActive('laporan/laporan_distribusi.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_distribusi.php"><i class="bi bi-clipboard-data-fill me-2"></i> Distribusi Bahan Praktek</a></li>
+                    <li><a class="nav-link <?= isActive('laporan/laporan_pemakaian.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_pemakaian.php"><i class="bi bi-clipboard-data-fill me-2"></i> Pemakaian Kepala Lab</a></li>
                 </ul>
             </div>
         <?php endif; ?>

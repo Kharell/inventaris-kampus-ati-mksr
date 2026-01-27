@@ -190,6 +190,8 @@ $query_history = mysqli_query($conn, $sql_history);
                                     <tr>
                                         <th class="small">Waktu</th>
                                         <th class="small">Item</th>
+                                        <th class="small">Spesifikasi</th>
+                                        <th class="small">Kondisi</th>
                                         <th class="small text-center">Jumlah</th>
                                         <th class="small text-center">Aksi</th>
                                     </tr>
@@ -205,6 +207,12 @@ $query_history = mysqli_query($conn, $sql_history);
                                         <td>
                                             <div class="fw-bold text-navy small"><?= $h['nama_bahan'] ?></div>
                                             <span class="badge badge-kode"><?= $h['kode_distribusi'] ?></span>
+                                        </td>
+                                        <td>
+                                            <div class="text-navy small"><?= $h['spesifikasi'] ?></div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold text-navy small"><?= $h['kondisi'] ?></div>
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-primary-subtle text-primary fw-bold">
