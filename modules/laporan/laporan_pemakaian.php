@@ -134,7 +134,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
 
                         <input type="radio" class="report-selector" name="scope" id="scope_lab" value="lab" onclick="toggleScope('lab')">
                         <label class="report-card w-100" for="scope_lab">
-                            <div class="icon-shape"><i class="bi bi-flask"></i></div>
+                            <div class="icon-shape"><i class="bi bi-buildings"></i></div>
                             <div>
                                 <span class="d-block fw-bold">Per Laboratorium</span>
                                 <span class="small text-muted">Detail penggunaan bahan di lab spesifik</span>

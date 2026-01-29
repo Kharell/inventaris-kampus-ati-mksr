@@ -530,22 +530,30 @@ function viewLabDetails(id, labName, jurName, idJurusan) {
     }
 
     // 7. FUNGSI HAPUS (SWEETALERT2)
-    function hapusDistribusi(id) {
-        Swal.fire({
-            title: 'Batalkan Distribusi?',
-            text: "Stok akan dikembalikan otomatis ke gudang pusat!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#002b5c',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Batalkan!',
-            cancelButtonText: 'Tutup'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = `../proses/hapus.php?hapus_distribusi=${id}`;
-            }
-        });
-    }
+function hapusDistribusi(id) {
+    Swal.fire({
+        title: 'Batalkan Distribusi?',
+        text: "Stok akan dikembalikan otomatis ke gudang pusat!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#002b5c',
+        confirmButtonText: 'Ya, Batalkan!',
+        cancelButtonText: 'Tutup'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // GUNAKAN FETCH (AJAX) - JANGAN window.location.href
+            fetch(`../proses/hapus.php?hapus_distribusi=${id}`)
+            .then(response => {
+                Swal.fire('Terhapus!', 'Distribusi dibatalkan & stok kembali.', 'success');
+                // Refresh tabel saja tanpa refresh halaman
+                loadDistribusi(currentLabId, 1, ''); 
+            })
+            .catch(error => {
+                Swal.fire('Gagal!', 'Terjadi kesalahan sistem.', 'error');
+            });
+        }
+    });
+}
 
     // 8. NOTIFIKASI URL PARAMETER
     // 8. NOTIFIKASI URL PARAMETER (TEMA NAVY GOLD)

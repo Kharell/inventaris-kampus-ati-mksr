@@ -28,7 +28,6 @@ $res = mysqli_query($conn, $query);
     <title>Bahan Praktek - Gudang Pusat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="../../assets/css/style.css" rel="stylesheet">
     <style>
         :root { --navy: #0a192f; --navy-light: #112240; --gold: #ffcc00; }
         body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; }
@@ -109,8 +108,63 @@ $res = mysqli_query($conn, $query);
                             <tbody>
                                 <?php 
                                 $no = $offset + 1;
+                                $html_modals = ""; // Variabel penampung modal
                                 if(mysqli_num_rows($res) > 0):
                                     while($row = mysqli_fetch_assoc($res)): 
+                                        
+                                        // Simpan modal ke dalam variabel agar tidak merusak layout tabel
+                                        ob_start(); ?>
+                                        <div class="modal fade" id="modalEdit<?= $row['id_praktek']; ?>" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <form action="../proses/edit.php" method="POST" class="modal-content shadow-lg border-0">
+                                                    <div class="modal-header border-0">
+                                                        <h5 class="modal-title text-white">
+                                                            <i class="bi bi-pencil-square me-2"></i>Edit Data Bahan
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body p-4 text-start">
+                                                        <input type="hidden" name="id_praktek" value="<?= $row['id_praktek']; ?>">
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold small text-muted text-uppercase">Nama Bahan</label>
+                                                            <input type="text" name="nama_bahan" class="form-control border-2" value="<?= htmlspecialchars($row['nama_bahan']); ?>" required>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold small text-muted text-uppercase">Spesifikasi</label>
+                                                            <textarea name="spesifikasi" class="form-control border-2" rows="3"><?= htmlspecialchars($row['spesifikasi']); ?></textarea>
+                                                        </div>
+                                                        
+                                                        <div class="row g-3 mb-3">
+                                                            <div class="col-6">
+                                                                <label class="form-label fw-bold small text-muted text-uppercase">Stok</label>
+                                                                <input type="number" name="stok" class="form-control border-2" value="<?= $row['stok']; ?>" required>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <label class="form-label fw-bold small text-muted text-uppercase">Kondisi</label>
+                                                                <select name="kondisi" class="form-select border-2">
+                                                                    <option value="Baik" <?= $row['kondisi'] == 'Baik' ? 'selected' : ''; ?>>Baik</option>
+                                                                    <option value="Kurang Baik" <?= $row['kondisi'] == 'Kurang Baik' ? 'selected' : ''; ?>>Kurang Baik</option>
+                                                                    <option value="Rusak" <?= $row['kondisi'] == 'Rusak' ? 'selected' : ''; ?>>Rusak</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="mb-2">
+                                                            <label class="form-label fw-bold small text-muted text-uppercase">Satuan</label>
+                                                            <input type="text" name="satuan" class="form-control border-2" value="<?= htmlspecialchars($row['satuan']); ?>" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-0 bg-light p-3">
+                                                        <button type="button" class="btn btn-secondary rounded-3 px-4" data-bs-dismiss="modal">Batal</button>
+                                                        <button type="submit" name="update_praktek_pusat" class="btn btn-gold px-4 shadow-sm">Simpan Perubahan</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <?php 
+                                        $html_modals .= ob_get_clean();
                                 ?>
                                 <tr>
                                     <td class="ps-4 text-muted fw-bold"><?= $no++; ?></td>
@@ -145,6 +199,7 @@ $res = mysqli_query($conn, $query);
                         </table>
                     </div>
                 </div>
+
                 <div class="card-footer bg-white border-0 py-3">
                     <nav class="d-flex justify-content-between align-items-center">
                         <p class="text-muted small mb-0">Menampilkan <?= mysqli_num_rows($res); ?> dari <?= $total_data; ?> data</p>
@@ -169,21 +224,21 @@ $res = mysqli_query($conn, $query);
                 <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Bahan Baru</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
+            <div class="modal-body p-4 text-start">
                 <div class="mb-3">
                     <label class="form-label fw-bold small">NAMA BAHAN</label>
                     <input type="text" name="nama_bahan" class="form-control border-2" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold small">SPESIFIKASI</label>
-                    <textarea name="spesifikasi" class="form-control border-2" rows="2" placeholder="Contoh: Merk, Ukuran, Voltase, dll"></textarea>
+                    <textarea name="spesifikasi" class="form-control border-2" rows="2" placeholder="Merk, Ukuran, dll"></textarea>
                 </div>
-                <div class="row">
-                    <div class="col-6 mb-3">
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
                         <label class="form-label fw-bold small">STOK AWAL</label>
                         <input type="number" name="stok" class="form-control border-2" required>
                     </div>
-                    <div class="col-6 mb-3">
+                    <div class="col-6">
                         <label class="form-label fw-bold small">KONDISI</label>
                         <select name="kondisi" class="form-select border-2">
                             <option value="Baik">Baik</option>
@@ -191,10 +246,10 @@ $res = mysqli_query($conn, $query);
                             <option value="Rusak">Rusak</option>
                         </select>
                     </div>
-                    <div class="col-12 mb-3">
-                        <label class="form-label fw-bold small">SATUAN</label>
-                        <input type="text" name="satuan" class="form-control border-2" placeholder="Kg / Meter / Pcs" required>
-                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">SATUAN</label>
+                    <input type="text" name="satuan" class="form-control border-2" placeholder="Kg / Meter / Pcs" required>
                 </div>
             </div>
             <div class="modal-footer border-0">
@@ -205,58 +260,7 @@ $res = mysqli_query($conn, $query);
     </div>
 </div>
 
-<?php 
-if(mysqli_num_rows($res) > 0) {
-    mysqli_data_seek($res, 0); 
-    while($row = mysqli_fetch_assoc($res)): 
-?>
-
-Modal Edit
-<div class="modal fade" id="modalEdit<?= $row['id_praktek']; ?>" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <form action="../proses/edit.php" method="POST" class="modal-content shadow">
-            <div class="modal-header">
-                <h5 class="modal-title text-white"><i class="bi bi-pencil-square me-2"></i>Edit Data Bahan</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 text-start">
-                <input type="hidden" name="id_praktek" value="<?= $row['id_praktek']; ?>">
-                <div class="mb-3">
-                    <label class="form-label fw-bold small">NAMA BAHAN</label>
-                    <input type="text" name="nama_bahan" class="form-control border-2" value="<?= $row['nama_bahan']; ?>" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold small">SPESIFIKASI</label>
-                    <textarea name="spesifikasi" class="form-control border-2" rows="2"><?= $row['spesifikasi']; ?></textarea>
-                </div>
-                <div class="row">
-                    <div class="col-6 mb-3">
-                        <label class="form-label fw-bold small">STOK</label>
-                        <input type="number" name="stok" class="form-control border-2" value="<?= $row['stok']; ?>" required>
-                    </div>
-                    <div class="col-6 mb-3">
-                        <label class="form-label fw-bold small">KONDISI</label>
-                        <select name="kondisi" class="form-select border-2">
-                            <option value="Baik" <?= $row['kondisi'] == 'Baik' ? 'selected' : ''; ?>>Baik</option>
-                            <option value="Kurang Baik" <?= $row['kondisi'] == 'Kurang Baik' ? 'selected' : ''; ?>>Kurang Baik</option>
-                            <option value="Rusak" <?= $row['kondisi'] == 'Rusak' ? 'selected' : ''; ?>>Rusak</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-16 mb-4">
-                        <label class="form-label fw-bold small">SATUAN</label>
-                        <input type="text" name="satuan" class="form-control border-2" value="<?= $row['satuan']; ?>" required>
-                    </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" name="update_praktek_pusat" class="btn btn-gold px-4">Simpan Perubahan</button>
-            </div>
-        </form>
-    </div>
-</div>
-<?php endwhile; } ?>
+<?= $html_modals; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

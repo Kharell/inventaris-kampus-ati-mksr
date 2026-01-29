@@ -1,6 +1,7 @@
 <?php
 include "../../config/database.php";
 
+// 1. Inisialisasi & Sanitasi
 $id_lab  = isset($_GET['id_lab']) ? mysqli_real_escape_string($conn, $_GET['id_lab']) : '';
 $keyword = isset($_GET['keyword']) ? mysqli_real_escape_string($conn, $_GET['keyword']) : '';
 $page    = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -12,7 +13,16 @@ if (empty($id_lab)) {
     exit;
 }
 
-// --- BAGIAN A: PERMINTAAN MASUK (ANTRIAN) ---
+// State untuk dikirim kembali ke JavaScript
+echo "<script>
+    window.currentLabId = '$id_lab';
+    window.currentPage = $page;
+    window.currentKeyword = '$keyword';
+</script>";
+
+$search_sql = $keyword ? " AND (b.nama_bahan LIKE '%$keyword%' OR d.kode_distribusi LIKE '%$keyword%')" : "";
+
+// --- BAGIAN A: ANTRIAN PERMINTAAN (ACC) ---
 $sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok as stok_gudang, b.id_praktek, b.spesifikasi, b.kondisi
             FROM permintaan_barang p
             JOIN bahan_praktek b ON p.id_barang = b.id_praktek
@@ -20,176 +30,63 @@ $sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok as stok_gudang, b.id_prak
             WHERE kl.id_lab = '$id_lab' AND p.status = 'pending'
             ORDER BY p.tgl_permintaan ASC";
 $query_req = mysqli_query($conn, $sql_req);
-
-if (mysqli_num_rows($query_req) > 0) : ?>
-    <div class="card border-0 shadow-lg rounded-4 mb-5 overflow-hidden anim-fade-up">
-        <div class="card-header border-0 bg-gradient-warning py-3 px-4 d-flex align-items-center justify-content-between">
-            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-lightning-charge-fill me-2"></i>ANTRIAN PERMINTAAN BARU</h6>
-            <span class="badge bg-dark rounded-pill"><?= mysqli_num_rows($query_req) ?> Permintaan</span>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr class="text-muted small uppercase ls-1">
-                            <th class="ps-4 py-3">Detail Material</th>
-                            <th class="text-center">Spek & Kondisi</th> 
-                            <th class="text-center">Kuantitas</th>
-                            <th class="text-center">Ketersediaan</th>
-                            <th class="text-end pe-4">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($req = mysqli_fetch_assoc($query_req)) : 
-                            $stok_status = ($req['stok_gudang'] < $req['jumlah_minta']) ? 'bg-danger' : 'bg-success';
-                            
-                            // Logika warna badge kondisi (Mencegah error null)
-                            $kon_val = $req['kondisi'] ?? 'Baik';
-                            $kon_color = 'bg-secondary';
-                            if($kon_val == 'Baik') $kon_color = 'bg-success';
-                            elseif($kon_val == 'Kurang Baik') $kon_color = 'bg-warning text-dark';
-                            elseif($kon_val == 'Rusak') $kon_color = 'bg-danger';
-                        ?>
-                        <tr class="transition-all">
-                            <td class="ps-4">
-                                <div class="fw-bold text-navy mb-1"><?= htmlspecialchars($req['nama_bahan'] ?? '') ?></div>
-                                <div class="text-muted smaller"><i class="bi bi-clock me-1"></i><?= date('d M Y, H:i', strtotime($req['tgl_permintaan'])) ?></div>
-                            </td>
-                            
-                            <td class="text-center">
-                                <div class="small fw-semibold text-dark mb-1"><?= !empty($req['spesifikasi']) ? htmlspecialchars($req['spesifikasi']) : '-' ?></div>
-                                <span class="badge <?= $kon_color ?> border-0" style="font-size: 10px; padding: 3px 8px;">
-                                    <i class="bi bi-info-circle me-1"></i><?= htmlspecialchars($kon_val) ?>
-                                </span>
-                            </td>
-
-                            <td class="text-center">
-                                <span class="badge bg-warning-subtle text-dark border border-warning px-3 py-2 rounded-3">
-                                    <strong class="fs-6"><?= $req['jumlah_minta'] ?></strong> <?= htmlspecialchars($req['satuan'] ?? '') ?>
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <div class="d-inline-flex align-items-center">
-                                    <span class="dot <?= $stok_status ?> me-2"></span>
-                                    <span class="small fw-semibold"><?= $req['stok_gudang'] ?> Unit</span>
-                                </div>
-                            </td>
-                            <td class="text-end pe-4">
-                                <button class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm hover-up" 
-                                  onclick="prosesACC(
-                                    '<?= $req['id_permintaan'] ?>', 
-                                    '<?= $req['id_praktek'] ?>', 
-                                    '<?= $req['jumlah_minta'] ?>', 
-                                    '<?= addslashes($req['nama_bahan'] ?? '') ?>',
-                                    '<?= addslashes($req['spesifikasi'] ?? '-') ?>', 
-                                    '<?= addslashes($req['kondisi'] ?? 'Baik') ?>'
-                                )">
-                                <i class="bi bi-check2-circle me-1"></i> Validasi & ACC
-                            </button>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-<?php endif; ?>
-
-<?php
-$where_clause = "WHERE d.id_lab = '$id_lab'";
-if ($keyword != '') $where_clause .= " AND (b.nama_bahan LIKE '%$keyword%' OR d.kode_distribusi LIKE '%$keyword%')";
-
-$total_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM distribusi_lab d JOIN bahan_praktek b ON d.id_praktek = b.id_praktek $where_clause");
-$total_data  = mysqli_fetch_assoc($total_query)['total'];
-$total_page  = ceil($total_data / $limit);
-
-$sql = "SELECT d.*, b.nama_bahan, b.satuan FROM distribusi_lab d 
-        JOIN bahan_praktek b ON d.id_praktek = b.id_praktek 
-        $where_clause ORDER BY d.id_distribusi DESC LIMIT $limit OFFSET $offset";
-$query = mysqli_query($conn, $sql);
 ?>
 
-<div class="section-title d-flex align-items-center mb-4 anim-fade-up" style="animation-delay: 0.1s;">
-    <div class="bg-navy p-2 rounded-3 me-3"><i class="bi bi-archive-fill text-gold"></i></div>
-    <h5 class="fw-bold text-navy mb-0">Riwayat Distribusi Selesai</h5>
+<div class="row align-items-center mb-4 anim-fade-up">
+    <div class="col-md-6">
+        <h5 class="fw-bold text-navy mb-1"><i class="bi bi-cpu-fill me-2"></i>Manajemen Distribusi Lab</h5>
+        <p class="text-muted small mb-0">Halaman otomatis diperbarui tanpa muat ulang (No Refresh).</p>
+    </div>
+    <div class="col-md-6">
+        <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border">
+            <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="searchInput" class="form-control border-0 py-2" placeholder="Cari material..." value="<?= htmlspecialchars($keyword) ?>" onkeyup="if(event.key==='Enter') executeSearch()">
+            <button class="btn btn-navy px-4" onclick="executeSearch()">Cari</button>
+        </div>
+    </div>
 </div>
 
-<?php if (mysqli_num_rows($query) > 0) : ?>
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden anim-fade-up" style="animation-delay: 0.2s;">
+<?php if (mysqli_num_rows($query_req) > 0) : ?>
+    <div class="card border-0 shadow-lg rounded-4 mb-5 overflow-hidden anim-fade-up border-top border-warning border-5">
+        <div class="card-header border-0 bg-white py-3 px-4 d-flex align-items-center justify-content-between">
+            <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>PERLU VALIDASI (ACC)</h6>
+            <span class="badge bg-warning text-dark rounded-pill px-3"><?= mysqli_num_rows($query_req) ?> Baru</span>
+        </div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="table-history">
-                <thead class="bg-navy text-white">
-                    <tr class="ls-1">
-                        <th class="ps-4 py-3">#</th>
-                        <th>Kode Distribusi</th>
-                        <th>Material</th>
-                        <th>Spesifikasi</th>
-                        <th>Kondisi</th>
-                        <th class="text-center">Kuantitas</th>
-                        <th>Status</th>
-                        <th class="text-center pe-4">Kontrol</th>
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light small fw-bold text-muted">
+                    <tr>
+                        <th class="ps-4">MATERIAL</th>
+                        <th class="text-center">SPEK & KONDISI</th>
+                        <th class="text-center">KUANTITAS</th>
+                        <th class="text-center">STOK GUDANG</th>
+                        <th class="text-end pe-4">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php 
-                    $no = $offset + 1;
-                    while ($row = mysqli_fetch_assoc($query)) : 
-                        $is_received = ($row['status'] == 'diterima');
-                        $nama_bahan  = $row['nama_bahan'] ?? 'Tanpa Nama';
-                        $initial     = strtoupper(substr($nama_bahan, 0, 1));
-                        
-                        // PERBAIKAN BARIS 141: Mencegah error strtolower null
-                        $kondisi_raw = strtolower($row['kondisi'] ?? '');
-                        $badge_kondisi = ($kondisi_raw == 'baik' || $kondisi_raw == 'baru') ? 'text-success' : 'text-danger';
-                    ?>
+                    <?php while ($req = mysqli_fetch_assoc($query_req)) : ?>
                     <tr>
-                        <td class="ps-4 text-muted small"><?= $no++ ?></td>
-                        <td><code class="kode-modern"><?= htmlspecialchars($row['kode_distribusi'] ?? '') ?></code></td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-table me-3"><?= $initial ?></div>
-                                <div class="fw-bold text-navy"><?= htmlspecialchars($nama_bahan) ?></div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="small text-muted text-wrap" style="max-width: 200px;">
-                                <i class="bi bi-info-circle me-1"></i><?= !empty($row['spesifikasi']) ? htmlspecialchars($row['spesifikasi']) : '-' ?>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="fw-bold small <?= $badge_kondisi ?>">
-                                <i class="bi bi-patch-check-fill me-1"></i><?= htmlspecialchars($row['kondisi'] ?? 'Baik') ?>
-                            </div>
+                        <td class="ps-4">
+                            <div class="fw-bold text-navy"><?= htmlspecialchars($req['nama_bahan']) ?></div>
+                            <div class="smaller text-muted"><?= date('d/m/Y H:i', strtotime($req['tgl_permintaan'])) ?></div>
                         </td>
                         <td class="text-center">
-                            <span class="fw-bold text-dark"><?= $row['jumlah'] ?></span> 
-                            <small class="text-muted"><?= htmlspecialchars($row['satuan'] ?? '') ?></small>
+                            <div class="small text-dark mb-1"><?= htmlspecialchars($req['spesifikasi'] ?: '-') ?></div>
+                            <span class="badge bg-info-subtle text-info border border-info rounded-pill" style="font-size: 10px;"><?= $req['kondisi'] ?></span>
                         </td>
-                        <td>
-                            <?php if ($is_received) : ?>
-                                <span class="status-pill status-success"><i class="bi bi-check2-all me-1"></i>Selesai</span>
-                            <?php else : ?>
-                                <span class="status-pill status-warning"><i class="bi bi-truck me-1"></i>In Transit</span>
-                            <?php endif; ?>
+                        <td class="text-center">
+                            <span class="badge bg-warning-subtle text-dark px-3 py-2">
+                                <b><?= $req['jumlah_minta'] ?></b> <?= $req['satuan'] ?>
+                            </span>
                         </td>
-                        <td class="text-center pe-4">
-                            <?php if (!$is_received) : ?>
-                                <div class="btn-group shadow-sm rounded-3 overflow-hidden">
-                                    <button class="btn btn-white btn-sm px-3" title="Edit" 
-                                            onclick="openEditDist('<?= $row['id_distribusi'] ?>', '<?= addslashes($nama_bahan) ?>', '<?= $row['jumlah'] ?>')">
-                                        <i class="bi bi-pencil-square text-warning"></i>
-                                    </button>
-                                    <button class="btn btn-white btn-sm px-3" title="Hapus" 
-                                            onclick="hapusDistribusi('<?= $row['id_distribusi'] ?>')">
-                                        <i class="bi bi-trash3 text-danger"></i>
-                                    </button>
-                                </div>
-                            <?php else : ?>
-                                <div class="text-muted small">
-                                    <i class="bi bi-lock-fill me-1"></i>Terkunci
-                                </div>
-                            <?php endif; ?>
+                        <td class="text-center small fw-bold <?= ($req['stok_gudang'] < $req['jumlah_minta']) ? 'text-danger' : 'text-success' ?>">
+                            <i class="bi bi-box-seam me-1"></i><?= $req['stok_gudang'] ?>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-navy btn-sm rounded-pill px-3 shadow-sm hover-up" 
+                                onclick="prosesACC('<?= $req['id_permintaan'] ?>', '<?= $req['id_praktek'] ?>', '<?= $req['jumlah_minta'] ?>', '<?= addslashes($req['nama_bahan']) ?>')">
+                                <i class="bi bi-check2-circle me-1"></i> ACC
+                            </button>
                         </td>
                     </tr>
                     <?php endwhile; ?>
@@ -197,98 +94,185 @@ $query = mysqli_query($conn, $sql);
             </table>
         </div>
     </div>
-    ```
-
-    <?php if ($total_page > 1) : ?>
-    <nav class="mt-4 anim-fade-up">
-        <ul class="pagination justify-content-center gap-2">
-            <?php for ($i = 1; $i <= $total_page; $i++) : ?>
-                <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-                    <a class="page-link border-0 rounded-3 shadow-sm" href="javascript:void(0)" onclick="loadDistribusi('<?= $id_lab ?>', <?= $i ?>, '<?= $keyword ?>')"><?= $i ?></a>
-                </li>
-            <?php endfor; ?>
-        </ul>
-    </nav>
-    <?php endif; ?>
-
-<?php else : ?>
-    <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-        <img src="../../assets/img/no-data.svg" class="img-fluid mb-3" style="max-height: 150px;" alt="No Data">
-        <p class="text-muted">Tidak ada riwayat distribusi ditemukan.</p>
-    </div>
 <?php endif; ?>
 
+<ul class="nav nav-pills mb-4 gap-2 anim-fade-up" id="distTab" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active rounded-pill px-4 fw-bold shadow-sm text-dark border" id="tab-dikirim" data-bs-toggle="tab" data-bs-target="#transit-pane">
+            <i class="bi bi-truck me-2"></i>In Transit
+        </button>
+    </li>
+
+    <li class="nav-item">
+        <button class="nav-link rounded-pill px-4 fw-bold shadow-sm text-dark border-danger" id="tab-ditolak" data-bs-toggle="tab" data-bs-target="#reject-pane">
+            <i class="bi bi-x-circle me-2"></i>Ditolak
+        </button>
+    </li>
+
+    <li class="nav-item">
+        <button class="nav-link rounded-pill px-4 fw-bold shadow-sm text-dark border-success" id="tab-diterima" data-bs-toggle="tab" data-bs-target="#done-pane">
+            <i class="bi bi-check-all me-2"></i>Selesai
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content anim-fade-up">
+    <div class="tab-pane fade show active" id="transit-pane">
+        <?php renderTableDistribusi($conn, $id_lab, 'dikirim', $search_sql, 'warning', $limit, $offset, true); ?>
+    </div>
+    <div class="tab-pane fade" id="reject-pane">
+        <?php renderTableDistribusi($conn, $id_lab, 'ditolak', $search_sql, 'danger', $limit, $offset, true); ?>
+    </div>
+    <div class="tab-pane fade" id="done-pane">
+        <?php renderTableDistribusi($conn, $id_lab, 'diterima', $search_sql, 'success', $limit, $offset, false); ?>
+    </div>
+</div>
+
+<?php
+function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $limit, $offset, $hasAction) {
+    $sql = "SELECT d.*, b.nama_bahan, b.satuan FROM distribusi_lab d 
+            JOIN bahan_praktek b ON d.id_praktek = b.id_praktek 
+            WHERE d.id_lab = '$id_lab' AND d.status = '$status' $search_sql 
+            ORDER BY d.id_distribusi DESC LIMIT $limit OFFSET $offset";
+    $query = mysqli_query($conn, $sql);
+
+    $count_sql = mysqli_query($conn, "SELECT COUNT(*) as total FROM distribusi_lab d JOIN bahan_praktek b ON d.id_praktek = b.id_praktek WHERE d.id_lab = '$id_lab' AND d.status = '$status' $search_sql");
+    $total_data = mysqli_fetch_assoc($count_sql)['total'];
+    $total_page = ceil($total_data / $limit);
+
+    if (mysqli_num_rows($query) > 0) : ?>
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden border-start border-<?= $theme ?> border-5">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light small fw-bold">
+                        <tr>
+                            <th class="ps-4 py-3">KODE & MATERIAL</th>
+                            <th>SPEK & KONDISI</th>
+                            <th class="text-center">KUANTITAS</th>
+                            <?php if($status == 'ditolak') echo '<th>ALASAN</th>'; ?>
+                            <th class="text-center pe-4"><?= $hasAction ? 'KONTROL' : 'STATUS' ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($query)) : ?>
+                        <tr>
+                            <td class="ps-4">
+                                <code class="kode-modern mb-1 d-inline-block"><?= $row['kode_distribusi'] ?></code>
+                                <div class="fw-bold text-navy"><?= htmlspecialchars($row['nama_bahan']) ?></div>
+                            </td>
+                            <td>
+                                <div class="small text-muted"><?= htmlspecialchars($row['spesifikasi'] ?: '-') ?></div>
+                                <div class="smaller fw-bold text-<?= ($row['kondisi'] == 'Baik') ? 'success' : 'warning' ?>"><?= $row['kondisi'] ?></div>
+                            </td>
+                            <td class="text-center"><b><?= $row['jumlah'] ?></b> <small><?= $row['satuan'] ?></small></td>
+                            <?php if($status == 'ditolak') : ?>
+                                <td><div class="alert alert-danger py-1 px-2 mb-0 smaller">"<?= $row['keterangan'] ?>"</div></td>
+                            <?php endif; ?>
+                            <td class="text-center pe-4">
+                                <?php if($hasAction) : ?>
+                                    <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white">
+                                        <button class="btn btn-sm btn-outline-danger border-0 px-3" onclick="hapusDistribusi('<?= $row['id_distribusi'] ?>')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                <?php else : ?>
+                                    <span class="status-pill status-success"><i class="bi bi-check-circle-fill me-1"></i>Selesai</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <?php if ($total_page > 1) : ?>
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center gap-1">
+                    <?php for ($i = 1; $i <= $total_page; $i++) : ?>
+                        <li class="page-item <?= ($i == ($offset/$limit)+1) ? 'active' : '' ?>">
+                            <a class="page-link border-0 rounded-pill shadow-sm" href="javascript:void(0)" 
+                               onclick="loadDistribusi(window.currentLabId, <?= $i ?>, window.currentKeyword)">
+                               <?= $i ?>
+                            </a>
+                        </li>
+                    <?php endfor; ?>
+                </ul>
+            </nav>
+        <?php endif; ?>
+    <?php else : ?>
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+            <p class="text-muted small mb-0">Tidak ada data ditemukan.</p>
+        </div>
+    <?php endif;
+} ?>
+
+<script>
+// 1. Fungsi Pencarian
+function executeSearch() {
+    const key = document.getElementById('searchInput').value;
+    loadDistribusi(window.currentLabId, 1, key);
+}
+
+// 2. Fungsi Refresh Konten Saja (Kunci agar tidak kembali ke menu utama)
+function refreshContentOnly() {
+    loadDistribusi(window.currentLabId, window.currentPage, window.currentKeyword);
+}
+
+// 3. Logic ACC dengan AJAX
+function prosesACC(idPermintaan, idPraktek, jumlah, nama) {
+    if (confirm("Setujui permintaan " + nama + "?")) {
+        $.ajax({
+            url: "controllers/proses_acc.php", // SESUAIKAN DENGAN FILE PROSES ANDA
+            type: "POST",
+            data: { id_permintaan: idPermintaan, id_praktek: idPraktek, jumlah: jumlah },
+            success: function(response) {
+                alert("Permintaan berhasil di-ACC!");
+                refreshContentOnly(); // REFRESH TABEL TANPA RELOAD HALAMAN
+            }
+        });
+    }
+}
+
+// 4. Logic Hapus dengan AJAX
+function hapusDistribusi(idDistribusi) {
+    if (confirm("Hapus data distribusi ini?")) {
+        $.ajax({
+            url: "controllers/hapus_distribusi.php", // SESUAIKAN DENGAN FILE HAPUS ANDA
+            type: "POST",
+            data: { id: idDistribusi },
+            success: function(response) {
+                refreshContentOnly();
+            }
+        });
+    }
+}
+
+// 5. Menjaga Tab Tetap Aktif setelah Refresh AJAX
+$(document).ready(function(){
+    $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        localStorage.setItem('activeTab', $(e.target).attr('id'));
+    });
+    var activeTab = localStorage.getItem('activeTab');
+    if(activeTab){
+        $('#' + activeTab).tab('show');
+    }
+});
+</script>
+
 <style>
-/* Dashboard Styling */
-:root {
-    --navy: #002b5c;
-    --gold: #FFD700;
+.nav-pills .nav-link {
+    color: #000000 !important; 
+    background-color: #ffffff !important; 
+    border: 1px solid #004594;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
-
-.bg-gradient-warning { background: linear-gradient(45deg, #ffc107, #ffdb6e); }
-.text-navy { color: var(--navy); }
-.smaller { font-size: 0.75rem; }
-.ls-1 { letter-spacing: 0.5px; }
-
-/* Avatar & Icons */
-.avatar-table {
-    width: 38px; height: 38px; background: #eef2f7; color: var(--navy);
-    border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    font-weight: 800; border: 1px solid #dee2e6;
-}
-
-/* Status Pills */
-.status-pill {
-    padding: 6px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700;
-    display: inline-flex; align-items: center;
-}
-.status-success { background: #d1e7dd; color: #0f5132; }
-.status-warning { background: #fff3cd; color: #664d03; }
-
-/* Dot Indicator */
-.dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; }
-
-/* Kode Modern */
-.kode-modern {
-    background: #f8f9fa; border: 1px solid #e9ecef; color: #495057;
-    padding: 3px 8px; border-radius: 5px; font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-}
-
-/* Transitions */
-.transition-all { transition: all 0.3s ease; }
-.hover-up:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-
-/* Animation */
-.anim-fade-up {
-    animation: fadeUp 0.5s ease backwards;
-}
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.pagination .page-link { color: var(--navy); font-weight: 600; padding: 10px 18px; }
-.pagination .page-item.active .page-link { background-color: var(--navy); color: var(--gold); }
-
-/* Warna dasar Navy */
-.btn-navy {
-    background-color: #001f3f;
-    color: white;
-    border: none;
-    transition: all 0.3s ease; /* Membuat transisi halus */
-}
-
-/* Aksi saat di-hover */
-.btn-navy:hover {
-    background-color: #004080; /* Warna biru yang lebih terang saat hover */
-    color: #ffffff;
-    transform: translateY(-2px); /* Efek melayang sedikit ke atas (hover-up) */
-    box-shadow: 0 5px 15px rgba(0, 31, 63, 0.3); /* Bayangan lebih tegas */
-}
-
-/* Efek saat diklik */
-.btn-navy:active {
-    transform: translateY(0);
-}
+/* Styling tetap sama seperti sebelumnya */
+.text-navy { color: #002b5c; }
+.btn-navy { background: #002b5c; color: white; border: none; }
+.btn-navy:hover { background: #004080; color: white; }
+.kode-modern { background: #f1f3f5; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; }
+.nav-pills .nav-link.active { background: #002b5c !important; color: #FFD700 !important; }
+.anim-fade-up { animation: fadeUp 0.4s ease-out backwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 </style>
