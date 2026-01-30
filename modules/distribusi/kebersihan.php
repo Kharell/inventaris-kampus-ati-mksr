@@ -1,7 +1,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 // Kita tetap biarkan logic PHP di atas jika suatu saat Anda ingin mengaktifkan fiturnya kembali
 ?>

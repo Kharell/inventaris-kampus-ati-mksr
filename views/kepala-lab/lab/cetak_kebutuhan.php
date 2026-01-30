@@ -107,7 +107,7 @@ $query = mysqli_query($conn, $sql);
     <table class="kop-table">
         <tr>
             <td class="logo-container">
-                <img src="../../../images/imaages.png" alt="Logo Kemenperin">
+                <img src="../../../images/images.png" alt="Logo Kemenperin">
             </td>
             <td class="teks-kop">
                 <h4>BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h4>

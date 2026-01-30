@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 error_reporting(E_ALL & ~E_NOTICE); 
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 // 1. TANGKAP PARAMETER
 $scope        = $_GET['scope'] ?? 'semua';
@@ -142,7 +142,7 @@ if ($format == 'excel') {
                 <th width="65">KONDISI</th>
                 <th width="140">TUJUAN (LAB)</th>
                 <th width="40">QTY</th>
-                <th width="45">SAT</th>
+                <th width="60">SAT</th>
             </tr>
         </thead>
         <tbody>

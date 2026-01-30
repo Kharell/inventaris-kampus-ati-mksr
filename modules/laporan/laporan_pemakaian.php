@@ -2,7 +2,7 @@
 // laporan_pemakaian.php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 // Ambil data untuk filter dropdown
 $jurusan_query = mysqli_query($conn, "SELECT * FROM jurusan ORDER BY nama_jurusan ASC");

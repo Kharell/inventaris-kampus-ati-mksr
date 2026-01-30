@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 error_reporting(E_ALL & ~E_NOTICE); 
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 // 1. TANGKAP PARAMETER
 $kategori   = isset($_GET['kategori']) ? $_GET['kategori'] : 'semua';
@@ -138,7 +138,7 @@ $result = mysqli_query($conn, $sql);
     <table class="table-laporan">
         <thead>
             <tr>
-                <th rowspan="2" width="25">NO</th>
+                <th rowspan="2" width="30">NO</th>
                 <th rowspan="2" width="60">TGL INPUT</th>
                 <th rowspan="2" width="70">KODE</th>
                 <th rowspan="2">NAMA BARANG</th>

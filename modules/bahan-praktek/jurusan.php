@@ -1,7 +1,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -178,7 +178,7 @@ checkLogin();
                                     <div class="icon-circle me-3"><?= $no_lab++ ?></div>
                                     <div>
                                         <h6 class="mb-0 fw-bold"><?= $rl['nama_lab'] ?></h6>
-                                        <small class="text-muted">Database ID: #LAB-<?= $rl['id_lab'] ?></small>
+                                        <small class="text-muted">Kode Lab : #LAB-<?= $rl['id_lab'] ?></small>
                                     </div>
                                 </div>
                                 <div>

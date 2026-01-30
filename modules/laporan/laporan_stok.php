@@ -1,7 +1,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 // Ambil statistik ringkas untuk card
 $count_atk = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM barang WHERE kategori = 'ATK'"))['total'];
@@ -100,7 +100,7 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                     <div class="col-lg-7">
                         <h6 class="fw-bold mb-3 text-muted text-uppercase small">1. Pilih Kategori Barang</h6>
                         
-                        <input type="radio" class="report-selector" name="kategori" id="kat_semua" value="semua" checked>
+                        <!-- <input type="radio" class="report-selector" name="kategori" id="kat_semua" value="semua" checked>
                         <label class="report-card w-100" for="kat_semua">
                             <div class="icon-shape"><i class="bi bi-grid-fill"></i></div>
                             <div>
@@ -125,7 +125,7 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                                 <span class="d-block fw-bold">Alat Kebersihan</span>
                                 <span class="small text-muted"><?= $count_kebersihan ?> Item aktif</span>
                             </div>
-                        </label>
+                        </label> -->
 
                         <input type="radio" class="report-selector" name="kategori" id="kat_praktek" value="praktek">
                         <label class="report-card w-100" for="kat_praktek">

@@ -190,19 +190,8 @@ function isExpandedByFolder($folder_name) {
         </a>
 
         <?php if($role == 'admin'): ?>
-            <button class="btn-toggle-nav <?= isExpandedByFolder('gudang') ? '' : 'collapsed'; ?>" 
-                    data-bs-toggle="collapse" data-bs-target="#collapseGudang">
-                <span><i class="bi bi-box-seam me-3"></i> Gudang</span>
-            </button>
-            <div class="collapse <?= isExpandedByFolder('gudang'); ?>" id="collapseGudang">
-                <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('gudang/bahan-praktek.php'); ?>" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php"><i class="bi bi-tools me-2"></i> Bahan Praktek</a></li>
-                    <li><a class="nav-link <?= isActive('gudang/atk.php'); ?>" href="<?= $base_url; ?>modules/gudang/atk.php"><i class="bi bi-pencil-fill me-2"></i> ATK</a></li>
-                    <li><a class="nav-link <?= isActive('gudang/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/gudang/kebersihan.php"><i class="bi bi-bucket-fill me-2"></i> Kebersihan</a></li>
-                </ul>
-            </div>
 
-            <button class="btn-toggle-nav <?= isExpandedByFolder('bahan-praktek') ? '' : 'collapsed'; ?>" 
+              <button class="btn-toggle-nav <?= isExpandedByFolder('bahan-praktek') ? '' : 'collapsed'; ?>" 
                     data-bs-toggle="collapse" data-bs-target="#collapseMaster">
                 <span><i class="bi bi-database me-3"></i> Data Master</span>
             </button>
@@ -213,15 +202,27 @@ function isExpandedByFolder($folder_name) {
                 </ul>
             </div>
 
+            <button class="btn-toggle-nav <?= isExpandedByFolder('gudang') ? '' : 'collapsed'; ?>" 
+                    data-bs-toggle="collapse" data-bs-target="#collapseGudang">
+                <span><i class="bi bi-box-seam me-3"></i> Gudang</span>
+            </button>
+            <div class="collapse <?= isExpandedByFolder('gudang'); ?>" id="collapseGudang">
+                <ul class="submenu">
+                    <li><a class="nav-link <?= isActive('gudang/bahan-praktek.php'); ?>" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php"><i class="bi bi-tools me-2"></i> Input Bahan Praktek</a></li>
+                    <!-- <li><a class="nav-link <?= isActive('gudang/atk.php'); ?>" href="<?= $base_url; ?>modules/gudang/atk.php"><i class="bi bi-pencil-fill me-2"></i> ATK</a></li>
+                    <li><a class="nav-link <?= isActive('gudang/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/gudang/kebersihan.php"><i class="bi bi-bucket-fill me-2"></i> Kebersihan</a></li> -->
+                </ul>
+            </div>
+
             <button class="btn-toggle-nav <?= isExpandedByFolder('distribusi') ? '' : 'collapsed'; ?>" 
                     data-bs-toggle="collapse" data-bs-target="#collapseDistribusi">
                 <span><i class="bi bi-truck me-3"></i> Distribusi Lab</span>
             </button>
             <div class="collapse <?= isExpandedByFolder('distribusi'); ?>" id="collapseDistribusi">
                 <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('distribusi/index.php'); ?>" href="<?= $base_url; ?>modules/distribusi/index.php"><i class="bi bi-tools me-2"></i> Bahan Praktek</a></li>
-                    <li><a class="nav-link <?= isActive('distribusi/atk.php'); ?>" href="<?= $base_url; ?>modules/distribusi/atk.php"><i class="bi bi-pencil-fill me-2"></i> ATK</a></li>
-                    <li><a class="nav-link <?= isActive('distribusi/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/distribusi/kebersihan.php"><i class="bi bi-bucket-fill me-2"></i> Kebersihan</a></li>
+                    <li><a class="nav-link <?= isActive('distribusi/index.php'); ?>" href="<?= $base_url; ?>modules/distribusi/index.php"><i class="bi bi-tools me-2"></i>Konfirmasi Bahan Praktek</a></li>
+                    <!-- <li><a class="nav-link <?= isActive('distribusi/atk.php'); ?>" href="<?= $base_url; ?>modules/distribusi/atk.php"><i class="bi bi-pencil-fill me-2"></i> ATK</a></li>
+                    <li><a class="nav-link <?= isActive('distribusi/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/distribusi/kebersihan.php"><i class="bi bi-bucket-fill me-2"></i> Kebersihan</a></li> -->
                 </ul>
             </div>
 
@@ -240,9 +241,9 @@ function isExpandedByFolder($folder_name) {
 
         <?php if($role == 'kepala_lab' || $role == 'kepala-lab'): ?>
             <div class="nav-label-modern">Aktivitas Lab</div>
-            <a class="nav-link <?= isActive('lab/stok.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/stok.php"><i class="bi bi-archive me-3"></i> Stok Lab</a>
             <a class="nav-link <?= isActive('lab/kebutuhan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/kebutuhan.php"><i class="bi bi-cart-plus me-3"></i> Input Kebutuhan</a>
             <a class="nav-link <?= isActive('lab/konfirmasi.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/konfirmasi.php"><i class="bi bi-check2-square me-3"></i> Konfirmasi</a>
+            <a class="nav-link <?= isActive('lab/stok.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/stok.php"><i class="bi bi-archive me-3"></i> Stok Lab</a>
             <a class="nav-link <?= isActive('lab/pemakaian.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/pemakaian.php"><i class="bi bi-clipboard-data me-3"></i> Lapor Pakai</a>
             <a class="nav-link <?= isActive('lab/laporan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/laporan.php"><i class="bi bi-printer me-3"></i> Cetak Laporan</a>
         <?php endif; ?>

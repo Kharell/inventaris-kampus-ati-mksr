@@ -191,7 +191,7 @@ if (!$query_stok) {
                                     <?= number_format($row['qty_awal'], 0, ',', '.'); ?>
                                 </td>
                                 <td class="text-center text-danger fw-semibold">
-                                    - <?= number_format($row['total_terpakai'], 0, ',', '.'); ?>
+                                     <?= number_format($row['total_terpakai'], 0, ',', '.'); ?>
                                 </td>
                                 <td class="text-center">
                                     <span class="stok-badge <?= $status_class; ?>">

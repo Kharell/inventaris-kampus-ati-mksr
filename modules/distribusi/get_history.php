@@ -23,7 +23,7 @@ echo "<script>
 $search_sql = $keyword ? " AND (b.nama_bahan LIKE '%$keyword%' OR d.kode_distribusi LIKE '%$keyword%')" : "";
 
 // --- BAGIAN A: ANTRIAN PERMINTAAN (ACC) ---
-$sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok as stok_gudang, b.id_praktek, b.spesifikasi, b.kondisi
+$sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok as stok_gudang, b.id_praktek, b.spesifikasi, b.kondisi, b.kode_bahan
             FROM permintaan_barang p
             JOIN bahan_praktek b ON p.id_barang = b.id_praktek
             JOIN kepala_lab kl ON p.id_kepala = kl.id_kepala
@@ -38,11 +38,11 @@ $query_req = mysqli_query($conn, $sql_req);
         <p class="text-muted small mb-0">Halaman otomatis diperbarui tanpa muat ulang (No Refresh).</p>
     </div>
     <div class="col-md-6">
-        <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border">
+        <!-- <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border">
             <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-muted"></i></span>
             <input type="text" id="searchInput" class="form-control border-0 py-2" placeholder="Cari material..." value="<?= htmlspecialchars($keyword) ?>" onkeyup="if(event.key==='Enter') executeSearch()">
             <button class="btn btn-navy px-4" onclick="executeSearch()">Cari</button>
-        </div>
+        </div> -->
     </div>
 </div>
 
@@ -52,7 +52,7 @@ $query_req = mysqli_query($conn, $sql_req);
             <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>PERLU VALIDASI (ACC)</h6>
             <span class="badge bg-warning text-dark rounded-pill px-3"><?= mysqli_num_rows($query_req) ?> Baru</span>
         </div>
-        <div class="table-responsive">
+        <div class="table-responsive"> 
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light small fw-bold text-muted">
                     <tr>
@@ -84,7 +84,15 @@ $query_req = mysqli_query($conn, $sql_req);
                         </td>
                         <td class="text-end pe-4">
                             <button class="btn btn-navy btn-sm rounded-pill px-3 shadow-sm hover-up" 
-                                onclick="prosesACC('<?= $req['id_permintaan'] ?>', '<?= $req['id_praktek'] ?>', '<?= $req['jumlah_minta'] ?>', '<?= addslashes($req['nama_bahan']) ?>')">
+                                onclick="prosesACC(
+                                    '<?= $req['id_permintaan'] ?>', 
+                                    '<?= $req['id_praktek'] ?>', 
+                                    '<?= $req['jumlah_minta'] ?>', 
+                                    '<?= addslashes($req['nama_bahan']) ?>', 
+                                    '<?= addslashes($req['spesifikasi']) ?>', 
+                                    '<?= $req['kondisi'] ?>', 
+                                    '<?= $req['kode_bahan'] ?>'
+                                )">
                                 <i class="bi bi-check2-circle me-1"></i> ACC
                             </button>
                         </td>
@@ -247,6 +255,7 @@ function hapusDistribusi(idDistribusi) {
         });
     }
 }
+
 
 // 5. Menjaga Tab Tetap Aktif setelah Refresh AJAX
 $(document).ready(function(){

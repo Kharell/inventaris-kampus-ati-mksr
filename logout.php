@@ -1,7 +1,9 @@
 <?php
+
 session_start();
 session_unset();
 session_destroy();
+header("Location: login.php");
 
 // Hapus cookie session jika ada
 if (ini_get("session.use_cookies")) {

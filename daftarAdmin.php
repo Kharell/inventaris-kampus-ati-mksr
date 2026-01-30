@@ -122,7 +122,7 @@ if (isset($_POST['daftar'])) {
                     </div>
 
                     <div class="text-center">
-                        <p class="small text-muted">Sudah punya akun? <a href="/login.php" class="text-decoration-none fw-bold" style="color: #001f3f;">Silakan Login</a></p>
+                        <p class="small text-muted">Sudah punya akun? <a href="login.php" class="text-decoration-none fw-bold" style="color: #001f3f;">Silakan Login</a></p>
                     </div>
                 </form>
             </div>

@@ -10,11 +10,11 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
 
 $id_user = $_SESSION['id_user'];
 
-// 2. Query Ambil Barang dari tabel bahan_praktek
-// Tambahkan kode_bahan, spesifikasi, dan kondisi ke dalam SELECT
+// 2. Query Ambil Barang dari tabel bahan_praktek (Ditambahkan Kondisi)
 $query_barang = mysqli_query($conn, "SELECT id_praktek, kode_bahan, nama_bahan, spesifikasi, kondisi, satuan FROM bahan_praktek ORDER BY nama_bahan ASC");
-// 3. Query Ambil Riwayat Permintaan (Gunakan LEFT JOIN agar data p.id_barang tetap muncul)
-$sql_riwayat = "SELECT p.*, b.nama_bahan 
+
+// 3. Query Ambil Riwayat Permintaan (LEFT JOIN untuk ambil spesifikasi & kondisi bahan)
+$sql_riwayat = "SELECT p.*, b.nama_bahan, b.spesifikasi, b.kondisi 
                 FROM permintaan_barang p 
                 LEFT JOIN bahan_praktek b ON p.id_barang = b.id_praktek 
                 WHERE p.id_kepala = '$id_user' 
@@ -24,8 +24,8 @@ $riwayat = mysqli_query($conn, $sql_riwayat);
 // 4. Logika Ambil Data untuk Modal Edit
 $edit_data = null;
 if (isset($_GET['edit_id'])) {
-    $id_edit = $_GET['edit_id'];
-    $query_edit = mysqli_query($conn, "SELECT p.*, b.nama_bahan 
+    $id_edit = mysqli_real_escape_string($conn, $_GET['edit_id']);
+    $query_edit = mysqli_query($conn, "SELECT p.*, b.nama_bahan, b.spesifikasi, b.kondisi 
                                        FROM permintaan_barang p 
                                        LEFT JOIN bahan_praktek b ON p.id_barang = b.id_praktek 
                                        WHERE p.id_permintaan = '$id_edit'");
@@ -38,32 +38,25 @@ if (isset($_GET['edit_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Kebutuhan | Inventory Lab</title>
+    <title>Manajemen Kebutuhan | Inventory Lab</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 
-    
     <style>
-        :root { --navy: #001f3f; --bg: #f4f7fa; }
-        body { background-color: var(--bg); font-family: 'Inter', sans-serif; }
-        .card { border: none; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .btn-navy { background: var(--navy); color: white; border-radius: 8px; font-weight: 600; }
-        .btn-navy:hover { background: #003366; color: white; }
-        
-        .table thead th { 
-            background-color: #f8f9fa; 
-            text-transform: uppercase; 
-            font-size: 0.75rem; 
-            letter-spacing: 1px;
-            color: #6c757d;
-            border: none;
-        }
-        .badge-status { font-size: 0.75rem; padding: 6px 12px; border-radius: 30px; font-weight: 600; }
-        .bg-pending { background: #fff3cd; color: #856404; }
-        .bg-disetujui { background: #d4edda; color: #155724; }
-        .bg-ditolak { background: #f8d7da; color: #721c24; }
+        :root { --navy: #001f3f; --bg: #f8fafc; }
+        body { background-color: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; }
+        .card-custom { border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); background: #ffffff; }
+        .btn-navy { background: var(--navy); color: white; border-radius: 10px; padding: 10px 20px; transition: 0.3s; }
+        .btn-navy:hover { background: #003366; transform: translateY(-2px); color: white; }
+        .badge-status { padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; }
+        .bg-pending { background: #fef3c7; color: #92400e; }
+        .bg-disetujui { background: #dcfce7; color: #166534; }
+        .bg-ditolak { background: #fee2e2; color: #991b1b; }
+        table.dataTable thead th { background-color: #f8fafc; color: #475569; font-weight: 700; border-bottom: 2px solid #eee!important; }
     </style>
 </head>
 <body>
@@ -71,176 +64,174 @@ if (isset($_GET['edit_id'])) {
 <div class="d-flex">
     <?php include "../../../includes/sidebar.php"; ?>
 
-    <div class="main-content w-100"> 
+    <div class="main-content w-100 p-4"> 
         <?php include "../../../includes/header.php"; ?>
-        <main class="p-3 p-md-4" style="margin-top: 30px;"></main>
-        <main class="p-4">
-            <div class="page-header d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded-4 border-start border-5" style="border-color: var(--navy) !important; position: relative; overflow: hidden;">
-                <div style="position: absolute; right: -20px; top: -20px; width: 150px; height: 150px; background: rgba(0, 31, 63, 0.03); border-radius: 50%;"></div>
-                
-                <div class="d-flex align-items-center">
-                    <div class="icon-shape bg-primary-subtle p-3 rounded-3 me-4 text-primary shadow-sm" style="background: linear-gradient(135deg, #f0f7ff 0%, #e0ebf5 100%);">
-                        <i class="bi bi-box-seam-fill" style="font-size: 1.8rem; color: var(--navy);"></i>
+        
+        <div class="container-fluid" style="margin-top: 70px;">
+            <div class="card-custom p-4 mb-4 border-start border-5" style="border-color: var(--navy) !important;">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h3 class="fw-bold mb-1">Pengajuan Logistik</h3>
+                        <p class="text-muted mb-0">Kelola permintaan bahan praktek laboratorium Anda</p>
                     </div>
-                    <div>
-                        <h4 class="fw-bold mb-1" style="color: var(--navy); letter-spacing: -0.5px;">Manajemen Kebutuhan</h4>
-                        <div class="d-flex align-items-center">
-                            <span class="badge bg-soft-primary text-primary me-2" style="background: #e8f0fe; font-size: 0.65rem;">LOGISTIK</span>
-                            <p class="text-muted mb-0 small">Ajukan permintaan bahan sesuai data inventaris</p>
+                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                        <div class="btn-group shadow-sm">
+                             <button type="button" class="btn btn-white border" onclick="location.href='kebutuhan.php'"><i class="bi bi-arrow-clockwise"></i> Reset</button>
+                             <button type="button" class="btn btn-navy" data-bs-toggle="collapse" data-bs-target="#formCollapse">
+                                <i class="bi bi-plus-circle me-2"></i>Buat Pengajuan
+                             </button>
                         </div>
                     </div>
-                </div>
-                <div class="d-none d-md-block text-end">
-                    <small class="text-muted d-block mb-1">Status Sistem</small>
-                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">
-                        <i class="bi bi-check-circle-fill me-1"></i> Terhubung
-                    </span>
                 </div>
             </div>
-            
 
-            
-
-            <div class="row g-4 mt-1">
-                <div class="col-lg-4">
-                    <div class="card p-4">
-                        <?php if($edit_data): ?>
-                            <h6 class="fw-bold mb-4 text-uppercase text-primary">Edit Permintaan</h6>
-                            <form action="../proses/edit.php" method="POST">
+            <div class="row g-4">
+                <div class="col-lg-12 collapse <?= $edit_data ? 'show' : '' ?>" id="formCollapse">
+                    <div class="card-custom p-4 border-bottom border-4 border-warning">
+                        <h5 class="fw-bold mb-4"><i class="bi bi-pencil-square me-2 text-warning"></i><?= $edit_data ? 'Update' : 'Form Baru' ?> Permintaan</h5>
+                        
+                        <form action="../proses/<?= $edit_data ? 'edit.php' : 'tambah.php' ?>" method="POST">
+                            <?php if($edit_data): ?>
                                 <input type="hidden" name="id_permintaan" value="<?= $edit_data['id_permintaan']; ?>">
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold text-muted">BAHAN</label>
-                                    <input type="text" class="form-control border-0 bg-light py-2" value="<?= $edit_data['nama_bahan'] ?? 'Bahan Tidak Ditemukan'; ?>" readonly>
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label small fw-bold">JUMLAH BARU</label>
-                                    <input type="number" name="jumlah_minta" class="form-control border-0 bg-light py-2" value="<?= $edit_data['jumlah_minta']; ?>" min="1" required>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button type="submit" name="update_permintaan" class="btn btn-navy w-100">Update</button>
-                                    <a href="kebutuhan.php" class="btn btn-light w-100">Batal</a>
-                                </div>
-                            </form>
-                        <?php else: ?>
-                            
-                        <h6 class="fw-bold mb-4 text-uppercase">Form Pengajuan</h6>
-                        <form action="../proses/tambah.php" method="POST">
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">PILIH BAHAN</label>
-                                <select name="id_barang" id="pilih_bahan" class="form-select border-0 bg-light py-2" required>
-                                    <option value="" disabled selected>Pilih bahan...</option>
-                                    <?php while($b = mysqli_fetch_assoc($query_barang)): ?>
-                                        <option value="<?= $b['id_praktek']; ?>" 
-                                                data-spesifikasi="<?= htmlspecialchars($b['spesifikasi'] ?? '-'); ?>" 
-                                                data-kondisi="<?= htmlspecialchars($b['kondisi'] ?? '-'); ?>">
-                                            <?= $b['nama_bahan']; ?> | <?= $b['kode_bahan']; ?> (<?= $b['satuan']; ?>)
-                                        </option>
-                                    <?php endwhile; ?>
-                                </select>
-                            </div>
+                            <?php endif; ?>
 
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">SPESIFIKASI</label>
-                                <textarea id="display_spesifikasi" name="spesifikasi" class="form-control border-0 bg-light py-2" rows="2" readonly placeholder="Otomatis terisi..."></textarea>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label small fw-bold">JUMLAH</label>
-                                    <input type="number" name="jumlah_minta" class="form-control border-0 bg-light py-2" min="1" required placeholder="0">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small text-muted">CARI & PILIH BAHAN</label>
+                                    <?php if($edit_data): ?>
+                                        <input type="text" class="form-control bg-light" value="<?= $edit_data['nama_bahan']; ?>" readonly>
+                                    <?php else: ?>
+                                        <select name="id_barang" id="pilih_bahan" class="form-select select2-pencarian" required>
+                                            <option value="">Ketik nama atau kode bahan...</option>
+                                            <?php 
+                                            mysqli_data_seek($query_barang, 0);
+                                            while($b = mysqli_fetch_assoc($query_barang)): ?>
+                                                <option value="<?= $b['id_praktek']; ?>" 
+                                                        data-spesifikasi="<?= htmlspecialchars($b['spesifikasi'] ?? '-'); ?>" 
+                                                        data-kondisi="<?= htmlspecialchars($b['kondisi'] ?? '-'); ?>">
+                                                    <?= $b['kode_bahan']; ?> - <?= $b['nama_bahan']; ?> (<?= $b['satuan']; ?>)
+                                                </option>
+                                            <?php endwhile; ?>
+                                        </select>
+                                    <?php endif; ?>
                                 </div>
 
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label small fw-bold text-muted">KONDISI</label>
-                                    <input type="text" id="display_kondisi" name="kondisi" class="form-control border-0 bg-light py-2" readonly placeholder="-">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small text-muted">SPESIFIKASI</label>
+                                    <input type="text" id="display_spesifikasi" class="form-control bg-light" value="<?= $edit_data['spesifikasi'] ?? ''; ?>" readonly placeholder="Otomatis...">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold small text-muted">KONDISI</label>
+                                    <input type="text" id="display_kondisi" class="form-control bg-light" value="<?= $edit_data['kondisi'] ?? ''; ?>" readonly placeholder="Otomatis...">
+                                </div>
+
+                                <div class="col-md-1">
+                                    <label class="form-label fw-bold small text-muted">QTY</label>
+                                    <input type="number" name="jumlah_minta" class="form-control" value="<?= $edit_data['jumlah_minta'] ?? ''; ?>" min="1" required>
+                                </div>
+
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" name="<?= $edit_data ? 'update_permintaan' : 'kirim_permintaan' ?>" class="btn btn-navy w-100">
+                                        <i class="bi bi-send-check me-2"></i><?= $edit_data ? 'Update' : 'Kirim' ?>
+                                    </button>
                                 </div>
                             </div>
-
-                            <button type="submit" name="kirim_permintaan" class="btn btn-navy w-100 py-2">
-                                <i class="bi bi-plus-lg me-2"></i>Tambah Permintaan
-                            </button>
                         </form>
-
-                        <?php endif; ?>
                     </div>
                 </div>
 
-                <div class="col-lg-8">
-                    <div class="card p-4">
-                        <div class="card p-3 mb-4 bg-light border-0">
-                            <form action="cetak_kebutuhan.php" method="GET" target="_blank" class="row g-3 align-items-end">
-                                <div class="col-md-4">
-                                    <label class="form-label small fw-bold">DARI TANGGAL</label>
-                                    <input type="date" name="tgl_awal" class="form-control" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label small fw-bold">SAMPAI TANGGAL</label>
-                                    <input type="date" name="tgl_akhir" class="form-control" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <button type="submit" class="btn btn-danger w-100">
-                                        <i class="bi bi-file-earmark-pdf me-2"></i>Cetak PDF
-                                    </button>
-                                </div>
-                            </form>
+                <div class="col-lg-12">
+                    <div class="card-custom p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold m-0">Riwayat Pengajuan</h5>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalCetak">
+                                <i class="bi bi-printer me-2"></i>Cetak Laporan
+                            </button>
                         </div>
 
-                        <h6 class="fw-bold mb-4 text-uppercase">Riwayat Permintaan Saya</h6>
                         <div class="table-responsive">
-                            <table id="tabelKebutuhan" class="table table-hover align-middle mb-0">
+                            <table id="tabelKebutuhan" class="table table-hover w-100">
                                 <thead>
                                     <tr>
-                                        <th width="5%">No</th>
+                                        <th>No</th>
                                         <th>Tanggal</th>
-                                        <th>Nama Bahan</th>
-                                        <th>Spesifikasi</th> <th class="text-center">Minta</th>
-                                        <th class="text-center">Kondisi</th> <th class="text-center">Status</th>
+                                        <th>Bahan</th>
+                                        <th>Spesifikasi</th>
+                                        <th>Kondisi</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-center">Status</th>
                                         <th class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php 
-                                        $no = 1;
-                                        while($r = mysqli_fetch_assoc($riwayat)): ?>
-                                            <tr>
-                                                <td><?= $no++; ?></td>
-                                                <td><small class="text-muted"><?= date('d/m/Y', strtotime($r['tgl_permintaan'])); ?></small></td>
-                                                <td>
-                                                    <div class="fw-bold text-navy"><?= $r['nama_bahan'] ?? '<span class="text-danger">Bahan dihapus</span>'; ?></div>
-                                                </td>
-                                                <td>
-                                                    <small class="text-muted" style="font-size: 0.75rem;"><?= $r['spesifikasi'] ?: '-'; ?></small>
-                                                </td>
-                                                <td class="text-center"><?= $r['jumlah_minta']; ?></td>
-                                                <td class="text-center">
-                                                    <small class="badge bg-light text-dark border" style="font-size: 0.7rem;"><?= $r['kondisi'] ?: '-'; ?></small>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge-status bg-<?= $r['status']; ?>">
-                                                        <?= ucfirst($r['status']); ?>
+                                    <?php $no = 1; while($r = mysqli_fetch_assoc($riwayat)): ?>
+                                    <tr>
+                                        <td class="text-muted"><?= $no++; ?></td>
+                                        <td><span class="small fw-semibold"><?= date('d/m/Y', strtotime($r['tgl_permintaan'])); ?></span></td>
+                                        <td class="fw-bold text-navy"><?= $r['nama_bahan'] ?? 'N/A'; ?></td><td>
+                                            <div class="text-wrap" style="max-width: 200px; font-size: 0.85rem; line-height: 1.4;">
+                                                <?php if (!empty($r['spesifikasi'])): ?>
+                                                    <span class="text-dark" title="<?= htmlspecialchars($r['spesifikasi']); ?>">
+                                                        <?= $r['spesifikasi']; ?>
                                                     </span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <?php if($r['status'] == 'pending'): ?>
-                                                        <a href="?edit_id=<?= $r['id_permintaan']; ?>" class="btn btn-sm btn-outline-primary border-0">
-                                                            <i class="bi bi-pencil-square"></i>
-                                                        </a>
-                                                        <a href="javascript:void(0)" onclick="confirmDelete('<?= $r['id_permintaan']; ?>')" class="btn btn-sm btn-outline-danger border-0">
-                                                            <i class="bi bi-trash3"></i>
-                                                        </a>
-                                                    <?php else: ?>
-                                                        <span class="text-muted small"><i class="bi bi-lock-fill"></i></span>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
+                                                <?php else: ?>
+                                                    <span class="text-muted small italic">Tidak ada spesifikasi</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge bg-light text-dark border"><?= $r['kondisi'] ?: '-'; ?></span></td>
+                                        <td class="text-center fw-bold"><?= $r['jumlah_minta']; ?></td>
+                                        <td class="text-center">
+                                            <span class="badge-status bg-<?= $r['status']; ?>"><?= $r['status']; ?></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if($r['status'] == 'pending'): ?>
+                                                <div class="btn-group">
+                                                    <a href="?edit_id=<?= $r['id_permintaan']; ?>" class="btn btn-sm btn-light text-primary"><i class="bi bi-pencil"></i></a>
+                                                    <button onclick="confirmDelete('<?= $r['id_permintaan']; ?>')" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                                                </div>
+                                            <?php else: ?>
+                                                <i class="bi bi-lock-fill text-muted"></i>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endwhile; ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCetak" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="fw-bold m-0 text-danger"><i class="bi bi-file-pdf me-2"></i>Cetak Laporan PDF</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="cetak_kebutuhan.php" method="GET" target="_blank">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted">DARI TANGGAL</label>
+                            <input type="date" name="tgl_awal" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted">SAMPAI TANGGAL</label>
+                            <input type="date" name="tgl_akhir" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="submit" class="btn btn-danger w-100 py-2 fw-bold">GENERATE PDF</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -248,61 +239,44 @@ if (isset($_GET['edit_id'])) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     $(document).ready(function() {
-        // 1. Inisialisasi DataTable
         $('#tabelKebutuhan').DataTable({
             "language": { "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json" },
             "pageLength": 10
         });
 
-        // 2. Logika Auto-Fill (Pindahkan ke sini agar selalu terbaca)
-        const pilihBahan = document.getElementById('pilih_bahan');
-        if (pilihBahan) {
-            pilihBahan.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                
-                // Ambil data dari atribut data- yang kita buat di PHP
-                const spesifikasi = selectedOption.getAttribute('data-spesifikasi') || '-';
-                const kondisi = selectedOption.getAttribute('data-kondisi') || '-';
+        $('.select2-pencarian').select2({
+            theme: 'bootstrap-5',
+            allowClear: true
+        });
 
-                // Masukkan data ke dalam field input/textarea
-                document.getElementById('display_spesifikasi').value = spesifikasi;
-                document.getElementById('display_kondisi').value = kondisi;
-            });
-        }
+        // Logika Auto-Fill Spesifikasi & Kondisi saat bahan dipilih
+        $('#pilih_bahan').on('change', function() {
+            const selected = $(this).find(':selected');
+            const spesifikasi = selected.data('spesifikasi');
+            const kondisi = selected.data('kondisi');
+            
+            $('#display_spesifikasi').val(spesifikasi || '-');
+            $('#display_kondisi').val(kondisi || '-');
+        });
     });
 
-    // 3. Fungsi Hapus Data
     function confirmDelete(id) {
         Swal.fire({
-            title: 'Hapus Permintaan?',
-            text: "Data akan dibatalkan.",
+            title: 'Hapus data?',
+            text: "Aksi ini tidak dapat dibatalkan!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#001f3f',
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal'
+            confirmButtonText: 'Ya, Hapus'
         }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = "../proses/hapus.php?id=" + id;
-            }
+            if (result.isConfirmed) window.location.href = "../proses/hapus.php?id=" + id;
         });
     }
 </script>
-
-<?php if(isset($_SESSION['alert'])): ?>
-<script>
-    Swal.fire({ 
-        icon: 'success', 
-        title: 'Berhasil!', 
-        text: 'Proses berhasil dilakukan.', 
-        timer: 2000, 
-        showConfirmButton: false 
-    });
-</script>
-<?php unset($_SESSION['alert']); endif; ?>
-
 </body>
 </html>

@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 error_reporting(E_ALL & ~E_NOTICE); 
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 // 1. TANGKAP PARAMETER
 $scope        = $_GET['scope'] ?? 'semua';

@@ -1,7 +1,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 $query_jurusan = mysqli_query($conn, "SELECT * FROM jurusan ORDER BY nama_jurusan ASC");
 // Pastikan query ini menyertakan spesifikasi dan kondisi
@@ -447,14 +447,7 @@ function viewLabDetails(id, labName, jurName, idJurusan) {
                 <h4 class="fw-bold mb-0" style="color: #0a192f;">${labName}</h4>
                 <span class="badge" style="background-color: #ffcc00; color: #0a192f;">${jurName}</span>
             </div>
-            <div class="d-flex gap-2">
-                <div class="input-group input-group-sm" style="width: 200px;">
-                    <input type="text" class="form-control" placeholder="Cari..." onkeyup="handleSearch(this.value)">
-                </div>
-                <button class="btn btn-sm btn-add-dist shadow-sm" onclick="openDistModal('${id}', '${labName}', '${jurName}', '${idJurusan}')" style="background-color: #0a192f; color: #ffcc00;">
-                    <i class="bi bi-plus-lg me-1"></i>Kirim
-                </button>
-            </div>
+         
         </div>
         <div id="table-content">
             <div class="text-center p-5"><div class="spinner-border" style="color: #0a192f;"></div></div>
@@ -602,37 +595,37 @@ let currentLabId = '';
 let currentLabName = '';
 let currentJurName = '';
 
-function viewLabDetails(id, labName, jurName) {
-    // 1. Simpan ke variabel global
-    currentLabId = id;
-    currentLabName = labName;
-    currentJurName = jurName;
+// function viewLabDetails(id, labName, jurName) {
+//     // 1. Simpan ke variabel global
+//     currentLabId = id;
+//     currentLabName = labName;
+//     currentJurName = jurName;
 
-    // 2. Langsung isi input hidden di modal supaya 'siaga'
-    document.getElementById('modIdLab').value = id;
-    document.getElementById('modLab').value = labName;
-    document.getElementById('modJurusan').value = jurName;
+//     // 2. Langsung isi input hidden di modal supaya 'siaga'
+//     document.getElementById('modIdLab').value = id;
+//     document.getElementById('modLab').value = labName;
+//     document.getElementById('modJurusan').value = jurName;
 
-    // ... kode fetch/loadDistribusi Anda yang sudah ada ...
-    const view = document.getElementById('distribusi-view');
-    view.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm border-start border-4" style="border-left-color: #0a192f !important;">
-            <div>
-                <h4 class="fw-bold mb-0" style="color: #0a192f;">${labName}</h4>
-                <span class="badge" style="background-color: #ffcc00; color: #0a192f;">${jurName}</span>
-            </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-add-dist shadow-sm" onclick="openDistModal('${id}', '${labName}', '${jurName}')" style="background-color: #0a192f; color: #ffcc00;">
-                    <i class="bi bi-plus-lg me-1"></i>Kirim
-                </button>
-            </div>
-        </div>
-        <div id="table-content">
-            <div class="text-center p-5"><div class="spinner-border" style="color: #0a192f;"></div></div>
-        </div>
-    `;
-    loadDistribusi(id, 1, '');
-}
+//     // ... kode fetch/loadDistribusi Anda yang sudah ada ...
+//     const view = document.getElementById('distribusi-view');
+//     view.innerHTML = `
+//         <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm border-start border-4" style="border-left-color: #0a192f !important;">
+//             <div>
+//                 <h4 class="fw-bold mb-0" style="color: #0a192f;">${labName}</h4>
+//                 <span class="badge" style="background-color: #ffcc00; color: #0a192f;">${jurName}</span>
+//             </div>
+//             <div class="d-flex gap-2">
+//                 <button class="btn btn-sm btn-add-dist shadow-sm" onclick="openDistModal('${id}', '${labName}', '${jurName}')" style="background-color: #0a192f; color: #ffcc00;">
+//                     <i class="bi bi-plus-lg me-1"></i>Kirimmm
+//                 </button>
+//             </div>
+//         </div>
+//         <div id="table-content">
+//             <div class="text-center p-5"><div class="spinner-border" style="color: #0a192f;"></div></div>
+//         </div>
+//     `;
+//     loadDistribusi(id, 1, '');
+// }
 
 function prosesACC(idPermintaan, idBahan, jmlMinta, namaBahan, spek, kondisi) {
     if (!currentLabId) {

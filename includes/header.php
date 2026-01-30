@@ -28,7 +28,7 @@ if ($role_user == 'admin') {
     <div class="container-fluid h-100"> 
         <div class="row h-100 align-items-center position-relative">
             
-            <div class="col-auto d-lg-none position-absolute start-0 ps-3" style="z-index: 1060; top: 15px;">
+            <div class="col-auto d-lg-none ps-3" style="z-index: 1060;">
                 <button class="btn d-flex align-items-center shadow-sm" 
                         type="button" 
                         data-bs-toggle="offcanvas" 
@@ -71,9 +71,13 @@ if ($role_user == 'admin') {
                     </div>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 animate slideIn">
                         <li><h6 class="dropdown-header">Menu Akun</h6></li>
-                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#modalKeamanan"><i class="bi bi-shield-lock me-2 text-primary"></i>Keamanan</a></li>
+                  
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="javascript:void(0)" onclick="prosesLogout()"><i class="bi bi-box-arrow-right me-2"></i>Keluar</a></li>
+                        <li>
+                            <a class="dropdown-item py-2 text-danger fw-bold" href="javascript:void(0)" onclick="prosesLogout()">
+                                <i class="bi bi-box-arrow-right me-2"></i>Keluar
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>

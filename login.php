@@ -21,24 +21,28 @@ if (isset($_POST['login'])) {
         $nama_key = 'nama_kepala';
     }
 
+    // ... kode query Anda ...
+
     if ($data && password_verify($password, $data['password'])) {
-        $_SESSION['id_user']    = $data[$id_key];
-        $_SESSION['username']   = $data['username'];
-        $_SESSION['role']       = $role_input;
-        $_SESSION['nama']       = $data[$nama_key];
+        // PROTEKSI: Ganti ID sesi lama dengan yang baru setiap login
+        session_regenerate_id(true); 
+
+        $_SESSION['id_user']  = $data[$id_key];
+        $_SESSION['username'] = $data['username'];
+        $_SESSION['role']     = $role_input;
+        $_SESSION['nama']     = $data[$nama_key];
         
+        // Simpan sidik jari browser
+        $_SESSION['secure_fingerprint'] = md5($_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR']);
+
         if($role_input == 'kepala_lab') {
             $_SESSION['id_lab'] = $data['id_lab'];
         }
 
-        if ($role_input == 'admin') {
-            header("Location: views/admin/index.php");
-        } else {
-            header("Location: views/kepala-lab/index.php");
-        }
+        // Redirect
+        $redirect = ($role_input == 'admin') ? "views/admin/index.php" : "views/kepala-lab/index.php";
+        header("Location: " . $redirect);
         exit();
-    } else {
-        $error = "Akses ditolak! Periksa kembali Username & Password anda.";
     }
 }
 ?>
@@ -266,14 +270,14 @@ if (isset($_POST['login'])) {
              <div class="text-center mt-2">
                 <p class="text-muted small">
                     Belum punya akun? 
-                    <a href="/daftarAdmin.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
+                    <a href="daftarAdmin.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
                         Daftar Admin
                     </a>
                 </p>
 
                   <p class="text-muted small">
                     Admin lupa password? 
-                    <a href="/resestPassword.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
+                    <a href="resestPassword.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
                         Reset Password
                     </a>
                 </p>

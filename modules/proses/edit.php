@@ -1,7 +1,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 // ==========================================
 // LOGIKA UPDATE KHUSUS ATK

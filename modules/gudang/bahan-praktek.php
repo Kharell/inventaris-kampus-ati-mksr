@@ -1,7 +1,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 // --- Logika Pagination & Pencarian ---
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;

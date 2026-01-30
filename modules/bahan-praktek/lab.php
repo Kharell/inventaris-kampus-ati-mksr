@@ -1,7 +1,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkLogin();
+checkAccess('admin');
 
 if (isset($_POST['tambah'])) {
     $id_jurusan = $_POST['id_jurusan'];
