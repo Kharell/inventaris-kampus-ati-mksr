@@ -63,13 +63,19 @@ $riwayat = mysqli_query($conn, $sql_history);
         <?php include "../../../includes/header.php"; ?>
         
         <div class="container-fluid" style="margin-top: 70px;">
+            
             <div class="card-custom p-4 mb-4 border-start border-5" style="border-color: var(--navy) !important;">
                 <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h3 class="fw-bold mb-1">Lapor Pemakaian</h3>
-                        <p class="text-muted mb-0">Catat penggunaan bahan dari stok laboratorium Anda</p>
+                   <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-pencil-square fs-3 me-3 text-dark"></i>
+                        <div>
+                            <h3 class="fw-bold mb-1">Lapor Pemakaian</h3>
+                            <p class="text-muted mb-0">Catat penggunaan bahan dari stok laboratorium Anda</p>
+                        </div>
                     </div>
-                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                </div>
+                                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
                         <div class="btn-group shadow-sm">
                              <button type="button" class="btn btn-white border" onclick="location.href='pemakaian.php'"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
                              <button type="button" class="btn btn-navy" data-bs-toggle="collapse" data-bs-target="#formCollapse">
@@ -83,8 +89,9 @@ $riwayat = mysqli_query($conn, $sql_history);
             <div class="row g-4">
                 <div class="col-lg-12 collapse" id="formCollapse">
                     <div class="card-custom p-4 border-bottom border-4 border-primary">
-                        <h5 class="fw-bold mb-4"><i class="bi bi-pencil-square me-2 text-primary"></i>Form Laporan Pemakaian</h5>
-                        
+                      <h5 class="fw-bold mb-4">
+                            <i class="bi bi-pencil-square me-2 text-warning"></i>Form Laporan Pemakaian
+                        </h5>  
                         <form action="../proses/tambah.php" method="POST">
                             <div class="row g-3">
                                 <div class="col-md-4">

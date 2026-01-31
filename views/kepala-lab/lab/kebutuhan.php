@@ -70,10 +70,18 @@ if (isset($_GET['edit_id'])) {
         <div class="container-fluid" style="margin-top: 70px;">
             <div class="card-custom p-4 mb-4 border-start border-5" style="border-color: var(--navy) !important;">
                 <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h3 class="fw-bold mb-1">Pengajuan Logistik</h3>
-                        <p class="text-muted mb-0">Kelola permintaan bahan praktek laboratorium Anda</p>
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3 d-flex align-items-center justify-content-center rounded-3" 
+                            style="width: 50px; height: 50px; background-color: rgba(0, 31, 63, 0.1); color: var(--navy);">
+                            <i class="bi bi-box-seam fs-3"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-1">Pengajuan Logistik</h3>
+                            <p class="text-muted mb-0 small">Kelola permintaan bahan praktek laboratorium Anda</p>
+                        </div>
                     </div>
+                </div>
                     <div class="col-md-6 text-md-end mt-3 mt-md-0">
                         <div class="btn-group shadow-sm">
                              <button type="button" class="btn btn-white border" onclick="location.href='kebutuhan.php'"><i class="bi bi-arrow-clockwise"></i> Reset</button>

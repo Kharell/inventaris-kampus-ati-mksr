@@ -7,6 +7,7 @@ $pendaftaran_sukses = false;
 
 if (isset($_POST['daftar'])) {
     $nama = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
+    $nip  = mysqli_real_escape_string($conn, $_POST['nip']); // Input NIP Baru
     $user = mysqli_real_escape_string($conn, $_POST['username']);
     $pass = $_POST['password'];
     $konfirmasi_pass = $_POST['konfirmasi_password'];
@@ -30,10 +31,10 @@ if (isset($_POST['daftar'])) {
         if (mysqli_num_rows($cek_user) > 0) {
             $pesan_error = "Username sudah digunakan!";
         } else {
-            // 4. Hash Password dan Simpan
+            // 4. Hash Password dan Simpan (Termasuk NIP)
             $pass_hashed = password_hash($pass, PASSWORD_BCRYPT);
-            $query = "INSERT INTO users (username, password, role, nama_lengkap) 
-                      VALUES ('$user', '$pass_hashed', 'admin', '$nama')";
+            $query = "INSERT INTO users (username, password, role, nama_lengkap, nip) 
+                      VALUES ('$user', '$pass_hashed', 'admin', '$nama', '$nip')";
             
             if (mysqli_query($conn, $query)) {
                 $pendaftaran_sukses = true;
@@ -77,6 +78,11 @@ if (isset($_POST['daftar'])) {
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Nama Lengkap</label>
                         <input type="text" name="nama_lengkap" class="form-control" required placeholder="Nama Lengkap">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">NIP</label>
+                        <input type="text" name="nip" class="form-control" required placeholder="Masukkan NIP">
                     </div>
 
                     <div class="mb-3">
@@ -132,7 +138,6 @@ if (isset($_POST['daftar'])) {
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Fungsi untuk toggle lihat password
     function toggleView(inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
@@ -151,11 +156,11 @@ if (isset($_POST['daftar'])) {
         title: 'Berhasil!',
         html: 'Akun Admin telah dibuat. <br> Menuju halaman login dalam <b></b> milidetik.',
         icon: 'success',
-        timer: 3000, // Popup akan menutup otomatis dalam 3 detik
-        timerProgressBar: true, // Garis loading di bawah popup
+        timer: 3000,
+        timerProgressBar: true,
         confirmButtonColor: '#001f3f',
         didOpen: () => {
-            Swal.showLoading(); // Menampilkan ikon memutar (spinner) di dalam popup
+            Swal.showLoading();
             const b = Swal.getHtmlContainer().querySelector('b');
             timerInterval = setInterval(() => {
                 b.textContent = Swal.getTimerLeft();
@@ -165,7 +170,6 @@ if (isset($_POST['daftar'])) {
             clearInterval(timerInterval);
         }
     }).then((result) => {
-        // Otomatis pindah halaman setelah timer habis atau tombol ditekan
         window.location.href = 'login.php';
     });
     <?php endif; ?>
@@ -179,7 +183,5 @@ if (isset($_POST['daftar'])) {
     });
     <?php endif; ?>
 </script>
-
-
 </body>
 </html>

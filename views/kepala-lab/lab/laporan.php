@@ -127,9 +127,6 @@ $count_stok = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total F
                             <p class="text-muted small mb-0">Kelola dan ekspor data stok serta pemakaian bahan.</p>
                         </div>
                     </div>
-                    <span class="badge rounded-pill bg-success-subtle text-success border px-3 d-none d-md-block">
-                        <i class="bi bi-check-circle-fill me-1"></i> Terhubung
-                    </span>
                 </div>
             </div>
                 <form action="export.php" method="GET" target="_blank">

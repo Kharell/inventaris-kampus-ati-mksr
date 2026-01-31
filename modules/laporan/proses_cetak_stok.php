@@ -11,6 +11,12 @@ $tgl_awal   = isset($_GET['tgl_awal']) ? mysqli_real_escape_string($conn, $_GET[
 $tgl_akhir  = isset($_GET['tgl_akhir']) ? mysqli_real_escape_string($conn, $_GET['tgl_akhir']) : date('Y-m-d');
 $format     = isset($_GET['format']) ? $_GET['format'] : 'print';
 
+// --- TAMBAHAN FITUR CUSTOM NAMA & NIP ---
+$opsi_nama   = isset($_GET['opsi_nama']) ? $_GET['opsi_nama'] : 'default';
+$custom_nama = isset($_GET['custom_nama']) ? $_GET['custom_nama'] : '';
+$custom_nip  = isset($_GET['custom_nip']) ? $_GET['custom_nip'] : '';
+// ----------------------------------------
+
 // 2. LOGIKA EXCEL & WORD
 if ($format === 'excel') {
     header("Content-type: application/vnd-ms-excel");
@@ -30,9 +36,15 @@ if (!$admin_data) {
     $admin_data  = mysqli_fetch_assoc($admin_query);
 }
 
-$nama_admin  = !empty($admin_data['nama_lengkap']) ? $admin_data['nama_lengkap'] : "Administrator";
-$nip_admin   = !empty($admin_data['nip']) ? $admin_data['nip'] : "..........................";
-
+// --- LOGIKA PENENTUAN NAMA PENANDATANGAN ---
+if ($opsi_nama === 'custom' && !empty($custom_nama)) {
+    $nama_admin = $custom_nama;
+    $nip_admin  = !empty($custom_nip) ? $custom_nip : "..........................";
+} else {
+    $nama_admin  = !empty($admin_data['nama_lengkap']) ? $admin_data['nama_lengkap'] : "Administrator";
+    $nip_admin   = !empty($admin_data['nip']) ? $admin_data['nip'] : "..........................";
+}
+// --------------------------------------------
 
 // 3. LOGIKA QUERY (Menambahkan spesifikasi dan kondisi)
 $q_barang = "SELECT b.id_barang as id, b.kode_barang as kode, b.nama_barang as nama, b.kategori as kat, b.satuan, b.stok as stok_akhir, b.tgl_masuk, 
@@ -220,4 +232,4 @@ $result = mysqli_query($conn, $sql);
 </div>
 
 </body>
-</html>x
+</html>

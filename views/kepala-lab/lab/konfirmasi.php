@@ -53,10 +53,10 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
     <div class="main-content w-100"> 
         <?php include "../../../includes/header.php"; ?>
         <main class="p-4" style="margin-top: 70px;">
-            <div class="page-header d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded-4 border-start border-5 mb-4" style="border-color: var(--navy) !important;">
+           <div class="page-header d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded-4 border-start border-5 mb-4" style="border-color: var(--navy) !important;">
                 <div class="d-flex align-items-center">
-                    <div class="icon-shape bg-warning-subtle p-3 rounded-3 me-4 text-warning shadow-sm">
-                        <i class="bi bi-truck" style="font-size: 1.8rem;"></i>
+                    <div class="icon-shape bg-light p-3 rounded-3 me-4 shadow-sm" style="border: 1px solid #e9ecef;">
+                        <i class="bi bi-truck text-dark" style="font-size: 1.8rem;"></i>
                     </div>
                     <div>
                         <h4 class="fw-bold mb-1" style="color: var(--navy);">Konfirmasi Barang Masuk</h4>

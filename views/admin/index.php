@@ -87,6 +87,7 @@ while($row = mysqli_fetch_assoc($res_status)) {
         <?php include "../../includes/header.php"; ?>
         
         <main class="p-4 mt-3">
+            
             <div class="welcome-banner shadow-sm mb-4">
                 <div class="row align-items-center">
                     <div class="col-md-8">

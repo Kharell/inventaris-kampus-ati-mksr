@@ -40,7 +40,6 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
             background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); 
             color: white; border-radius: 15px; padding: 30px; margin-bottom: 25px; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
-            border-bottom: 4px solid var(--gold);
         }
 
         .report-selector { display: none; }
@@ -112,8 +111,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                 <div class="row g-4">
                     
                     <div class="col-lg-7">
-                        <h6 class="fw-bold mb-3 text-navy"><i class="bi bi-filter-square-fill me-2"></i>CAKUPAN LAPORAN</h6>
-                        
+                                          
                         <input type="radio" class="report-selector" name="scope" id="scope_semua" value="semua" checked onclick="toggleScope('semua')">
                         <label class="report-card w-100" for="scope_semua">
                             <div class="icon-shape"><i class="bi bi-collection"></i></div>

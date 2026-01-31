@@ -103,6 +103,7 @@ if(mysqli_num_rows($check_b) > 0) {
 
         .stat-number { font-size: 1.5rem; font-weight: 800; color: var(--navy-deep); }
         .chart-box { height: 250px; width: 100%; }
+
     </style>
 </head>
 <body>
@@ -113,21 +114,31 @@ if(mysqli_num_rows($check_b) > 0) {
     <div class="main-content w-100 p-3 p-lg-4">
         <?php include "../../includes/header.php"; ?>
 
-       <div class="hero-banner mb-4" style="margin-top: 70px;">
-            <div class="row align-items-center">
-                <div class="col-md-9">
-                    <span class="badge-role mb-2 d-inline-block">Kepala Laboratorium</span>
-                    <h2 class="fw-800 mb-1"><?= $data['nama_lab'] ?? 'Lab Tidak Terdaftar'; ?></h2>
-                    <p class="opacity-75 small mb-0">
-                        Pengelolaan data jurusan <strong><?= $data['nama_jurusan'] ?? '-'; ?></strong> terpusat dan efisien.
-                    </p>
-                </div>
-                <div class="col-md-3 text-end d-none d-md-block">
+    <div class="hero-banner mb-4 p-4 rounded-4 shadow-sm" style="margin-top: 70px; background: linear-gradient(135deg, #001f3f 0%, #112240 100%); color: white;">
+        <div class="row align-items-center">
+            <div class="col-md-9">
+                <span class="badge bg-warning text-dark mb-2 px-3">Kepala Laboratorium</span>
+                <h2 class="fw-bold mb-1 text-white"><?= $data['nama_lab'] ?? 'Lab Tidak Terdaftar'; ?></h2>
+                <p class="opacity-75 small mb-0">
+                    Pengelolaan data jurusan <strong class="text-warning"><?= $data['nama_jurusan'] ?? '-'; ?></strong> terpusat dan efisien.
+                </p>
+            </div>
+
+            <div class="col-md-3 text-end d-none d-md-block">
+                <div class="position-relative d-inline-block">
                     <img src="https://ui-avatars.com/api/?name=<?= urlencode($data['nama'] ?? 'User'); ?>&background=ffcc00&color=001f3f&size=100&bold=true" 
-                         class="rounded-circle avatar-img shadow-lg" alt="Avatar">
+                        class="rounded-circle shadow-lg border border-3 border-white" 
+                        alt="Avatar" 
+                        style="width: 80px; height: 80px; object-fit: cover;">
+                    
+                    <span class="position-absolute bottom-0 end-0 p-2 bg-success border border-2 border-white rounded-circle" 
+                        style="margin-right: 5px; margin-bottom: 5px;">
+                        <span class="visually-hidden">Active</span>
+                    </span>
                 </div>
             </div>
         </div>
+    </div>
 
         <div class="row g-4">
             <div class="col-xl-7">

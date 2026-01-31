@@ -126,12 +126,6 @@ if (!$query_stok) {
                         <i class="bi bi-printer me-2"></i> Cetak Laporan
                     </a>
 
-                    <div class="d-none d-md-block text-end border-start ps-3">
-                        <small class="text-muted d-block mb-1">Status Sistem</small>
-                        <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">
-                            <i class="bi bi-check-circle-fill me-1"></i> Terhubung
-                        </span>
-                    </div>
                 </div>
             </div>
             <div class="card p-4">

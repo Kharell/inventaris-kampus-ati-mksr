@@ -194,11 +194,12 @@ if (isset($_POST['login'])) {
         <img src="images/logo.png" alt="Logo Politeknik ATI Makassar" onerror="this.src='https://upload.wikimedia.org/wikipedia/id/0/05/Logo_Politeknik_ATI_Makassar.png'">
         
         <h2 class="fw-bold text-white mb-2">INVENTARIS</h2>
-        <p class="text-white-50 small px-4">Sistem Informasi Manajemen Laboratorium & Bahan Praktek Terpadu</p>
+        <p class="text-white-50 small px-4">Sistem Informasi Manajemen Laboratorium & Bahan Praktek Terpadu <br>
+          KEMENTERIAN PERINDUSTRIAN RI </p>
         
         <div class="mt-4 pt-4 border-top border-white border-opacity-10">
             <span class="badge rounded-pill px-3 py-2" style="background: var(--poltek-gold); color: var(--poltek-navy);">
-                KEMENTERIAN PERINDUSTRIAN RI
+                POLITEKNIK ATI MAKASSAR
             </span>
         </div>
     </div>

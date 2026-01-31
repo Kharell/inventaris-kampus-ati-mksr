@@ -42,7 +42,7 @@ $total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t
             background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); 
             color: white; border-radius: 15px; padding: 30px; margin-bottom: 25px; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
-            border-bottom: 4px solid var(--gold);
+          
         }
 
         .report-selector { display: none; }

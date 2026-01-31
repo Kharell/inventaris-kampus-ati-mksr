@@ -73,6 +73,14 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
             background-color: #e7f1ff; color: #084298; border-radius: 8px;
             padding: 12px; font-size: 0.85rem; border: 1px solid #b8daff;
         }
+
+        /* Style tambahan untuk opsi custom nama */
+        .custom-option-card {
+            border: 2px solid #e9ecef; transition: 0.3s; cursor: pointer;
+        }
+        .btn-check:checked + .custom-option-card {
+            border-color: var(--navy) !important; background-color: #f8faff !important;
+        }
     </style>
 </head>
 <body>
@@ -98,36 +106,7 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
             <form action="proses_cetak_stok.php" method="GET" target="_blank">
                 <div class="row g-4">
                     <div class="col-lg-7">
-                        <h6 class="fw-bold mb-3 text-muted text-uppercase small">1. Pilih Kategori Barang</h6>
-                        
-                        <!-- <input type="radio" class="report-selector" name="kategori" id="kat_semua" value="semua" checked>
-                        <label class="report-card w-100" for="kat_semua">
-                            <div class="icon-shape"><i class="bi bi-grid-fill"></i></div>
-                            <div>
-                                <span class="d-block fw-bold">Semua Inventaris</span>
-                                <span class="small text-muted">Gabungan seluruh data stok pusat</span>
-                            </div>
-                        </label>
-
-                        <input type="radio" class="report-selector" name="kategori" id="kat_atk" value="ATK">
-                        <label class="report-card w-100" for="kat_atk">
-                            <div class="icon-shape"><i class="bi bi-pencil-fill"></i></div>
-                            <div>
-                                <span class="d-block fw-bold">Alat Tulis Kantor (ATK)</span>
-                                <span class="small text-muted"><?= $count_atk ?> Item aktif</span>
-                            </div>
-                        </label>
-
-                        <input type="radio" class="report-selector" name="kategori" id="kat_kebersihan" value="Kebersihan">
-                        <label class="report-card w-100" for="kat_kebersihan">
-                            <div class="icon-shape"><i class="bi bi-bucket-fill"></i></div>
-                            <div>
-                                <span class="d-block fw-bold">Alat Kebersihan</span>
-                                <span class="small text-muted"><?= $count_kebersihan ?> Item aktif</span>
-                            </div>
-                        </label> -->
-
-                        <input type="radio" class="report-selector" name="kategori" id="kat_praktek" value="praktek">
+                        <input type="radio" class="report-selector" name="kategori" id="kat_praktek" value="praktek" checked>
                         <label class="report-card w-100" for="kat_praktek">
                             <div class="icon-shape"><i class="bi bi-tools"></i></div>
                             <div>
@@ -168,7 +147,42 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                                 </div>
 
                                 <div class="mb-4">
-                                    <label class="form-label small fw-bold text-muted d-block">FORMAT OUTPUT</label>
+                                    <h6 class="fw-bold mb-3 text-navy text-uppercase small">
+                                        <i class="bi bi-pen-fill me-2"></i>Verifikasi Penandatangan
+                                    </h6>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <input type="radio" class="btn-check" name="opsi_nama" id="nama_asli" value="default" checked onchange="toggleInputNama(false)">
+                                            <label class="btn btn-outline-light w-100 p-2 custom-option-card text-start" for="nama_asli">
+                                                <i class="bi bi-patch-check-fill mb-1 d-block" style="color: var(--navy);"></i>
+                                                <span class="d-block fw-bold text-navy small">Default</span>
+                                                <small class="text-muted" style="font-size: 0.6rem;"><?= $_SESSION['nama_user'] ?? 'User Aktif' ?></small>
+                                            </label>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="radio" class="btn-check" name="opsi_nama" id="nama_custom" value="custom" onchange="toggleInputNama(true)">
+                                            <label class="btn btn-outline-light w-100 p-2 custom-option-card text-start" for="nama_custom">
+                                                <i class="bi bi-pencil-square mb-1 d-block" style="color: var(--navy);"></i>
+                                                <span class="d-block fw-bold text-navy small">Ganti Nama</span>
+                                                <small class="text-muted" style="font-size: 0.6rem;">Manual NIP</small>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="wrapper_custom_nama" class="animate-fade-in" style="display: none;">
+                                        <div class="row g-2">
+                                            <div class="col-12 mb-2">
+                                                <input type="text" name="custom_nama" id="input_custom_nama" class="form-control form-control-sm bg-light border-0" placeholder="Nama & Gelar Penandatangan">
+                                            </div>
+                                            <div class="col-12">
+                                                <input type="text" name="custom_nip" id="input_custom_nip" class="form-control form-control-sm bg-light border-0" placeholder="NIP Penandatangan">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label small fw-bold text-muted d-block">FORMAT DOKUMEN</label>
                                     <div class="row g-2">
                                         <div class="col-4">
                                             <input type="radio" class="btn-check" name="format" id="pdf" value="pdf" checked>
@@ -178,9 +192,9 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                                             <input type="radio" class="btn-check" name="format" id="excel" value="excel">
                                             <label class="format-pill" for="excel"><i class="bi bi-file-excel"></i> EXCEL</label>
                                         </div>
-                                        <div class="col-3">
+                                        <div class="col-4">
                                             <input type="radio" class="btn-check" name="format" id="word" value="word">
-                                            <label class="format-pill" for="word"><i class="bi bi-file-word"></i> DOC</label>
+                                            <label class="format-pill" for="word"><i class="bi bi-file-word"></i> WORD</label>
                                         </div>
                                     </div>
                                 </div>
@@ -198,6 +212,12 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
 </div>
 
 <script>
+    // Fungsi tambahan untuk toggle input nama custom
+    function toggleInputNama(show) {
+        const wrapper = document.getElementById('wrapper_custom_nama');
+        wrapper.style.display = show ? 'block' : 'none';
+    }
+
     function handlePeriodeChange(val) {
         const colAkhir = document.getElementById('col_akhir');
         const autoInfo = document.getElementById('auto_info');
@@ -205,13 +225,11 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
         const tglAwal = document.getElementById('tgl_awal');
         const tglAkhir = document.getElementById('tgl_akhir');
 
-        // Jika CUSTOM, tampilkan input Sampai Tanggal
         if (val === 'custom') {
             colAkhir.classList.remove('d-none');
             autoInfo.classList.add('d-none');
             labelAwal.innerText = "DARI TANGGAL";
         } else {
-            // Jika selain Custom (Bulan/Triwulan/Semester), sembunyikan input Sampai Tanggal
             colAkhir.classList.add('d-none');
             autoInfo.classList.remove('d-none');
             labelAwal.innerText = "TANGGAL PATOKAN (MULAI)";
@@ -231,13 +249,10 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
         let dEnd = new Date(tglAwalVal);
         
         if (tipe === 'bulan') {
-            // Ambil hari terakhir di bulan yang sama
             dEnd = new Date(dStart.getFullYear(), dStart.getMonth() + 1, 0);
         } else if (tipe === 'triwulan') {
-            // Tambah 3 bulan
             dEnd.setMonth(dStart.getMonth() + 3);
         } else if (tipe === 'semester') {
-            // Tambah 6 bulan
             dEnd.setMonth(dStart.getMonth() + 6);
         }
 
@@ -246,7 +261,6 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
         infoText.innerText = "Laporan akan ditarik dari " + tglAwalVal + " sampai " + formattedEnd;
     }
 
-    // Jalankan saat load pertama kali
     window.onload = function() {
         handlePeriodeChange(document.getElementById('periode_tipe').value);
     };
