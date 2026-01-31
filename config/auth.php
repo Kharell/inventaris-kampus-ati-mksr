@@ -10,6 +10,14 @@ function checkAccess($required_role) {
     // Pastikan session jalan
     if (session_status() === PHP_SESSION_NONE) { session_start(); }
     
+    // --- TAMBAHKAN HEADER ANTI-CACHE ---
+    // Memaksa browser untuk selalu meminta data baru ke server (bukan dari cache)
+    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+    header("Cache-Control: post-check=0, pre-check=0", false);
+    header("Pragma: no-cache");
+    header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Tanggal di masa lalu
+    // ------------------------------------
+
     $loginPage = BASE_URL . "login.php";
 
     // 1. Cek Login
@@ -21,17 +29,30 @@ function checkAccess($required_role) {
     }
 
     // --- LOGIKA LOGOUT OTOMATIS (SERVER SIDE) ---
-    $timeout_duration = 900; // 15 Menit,900,900000
+    // 900 detik = 15 menit. Gunakan angka kecil (3 atau 10) hanya untuk tes.
+    $timeout_duration = 900; 
+    
     if (isset($_SESSION['last_activity'])) {
         $elapsed_time = time() - $_SESSION['last_activity'];
         if ($elapsed_time >= $timeout_duration) {
             session_unset();
             session_destroy();
+            
+            // Cek jika ini request dari fetch/AJAX
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                header('HTTP/1.1 401 Unauthorized');
+                exit();
+            }
+
             header("Location: " . $loginPage . "?pesan=sesi_habis");
             exit();
         }
     }
-    $_SESSION['last_activity'] = time(); // Update aktivitas setiap refresh halaman
+    
+    // Update aktivitas hanya jika bukan request background
+    if (!isset($_GET['keep_alive'])) {
+        $_SESSION['last_activity'] = time();
+    }
     // --------------------------------------------
 
     // 2. Cek Role
@@ -40,7 +61,7 @@ function checkAccess($required_role) {
         exit();
     }
 
-    // 3. Cek Fingerprint (Anti-Hijacking)
+    // 3. Fingerprint Keamanan
     $fingerprint = md5($_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR']);
     if (!isset($_SESSION['secure_fingerprint'])) {
         $_SESSION['secure_fingerprint'] = $fingerprint;

@@ -261,8 +261,15 @@ function isExpandedByFolder($folder_name) {
 
 <script>
 /**
+ * TAMBAHAN: CEGAH TOMBOL BACK
+ * Menghapus jejak navigasi agar user tidak bisa kembali ke halaman sebelumnya
+ */
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
+
+/**
  * 1. FUNGSI LOGOUT MANUAL
- * Dipicu saat tombol "Keluar Sistem" diklik
  */
 function prosesLogout() {
     Swal.fire({
@@ -276,43 +283,52 @@ function prosesLogout() {
         reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
-            // Mengarah ke file logout.php di folder root
-            window.location.href = "<?= $base_url; ?>logout.php";
+            // Paksa ganti state history sebelum pindah halaman
+            window.history.pushState(null, null, '<?= $base_url; ?>login.php');
+            window.location.replace("<?= $base_url; ?>logout.php");
         }
     })
 }
 
 /**
- * 2. LOGIKA LOGOUT OTOMATIS (IDLE TIMEOUT)
- * Menggunakan teknik IIFE untuk menghindari bentrok variabel
+ * 2. LOGIKA LOGOUT OTOMATIS & KEEP-ALIVE
  */
 (function() {
-    // KONFIGURASI WAKTU
-    // 10000 ms = 10 detik (UNTUK TESTING)
-    // Ganti ke 1800000 jika ingin kembali ke 30 menit
+    // 10000 ms = 10 detik (TESTING)
     const maxInactivityTime = 10000; 
     let logoutTimer;
+    let lastKeepAlive = 0;
 
-    function resetTimer() {
-        // Hapus timer sebelumnya setiap kali ada aktivitas
-        clearTimeout(logoutTimer);
-        
-        // Pasang timer baru
-        logoutTimer = setTimeout(() => {
-            // Arahkan ke login.php di root dengan parameter pesan
-            window.location.href = "<?= $base_url; ?>login.php?pesan=sesi_habis";
-        }, maxInactivityTime);
+    function perbaruiSesiServer() {
+        fetch("<?= $base_url; ?>config/refresh_session.php")
+        .then(response => {
+            if (response.status === 401) {
+                // Gunakan location.replace agar halaman dashboard tidak masuk history
+                window.location.replace("<?= $base_url; ?>login.php?pesan=sesi_habis");
+            }
+        })
+        .catch(err => console.log("Koneksi terputus"));
     }
 
-    // LIST AKTIVITAS YANG DIPANTAU (Mouse, Keyboard, Scroll, Touch)
+    function resetTimer() {
+        clearTimeout(logoutTimer);
+        logoutTimer = setTimeout(() => {
+            // Gunakan location.replace agar halaman dashboard tidak masuk history
+            window.location.replace("<?= $base_url; ?>login.php?pesan=sesi_habis");
+        }, maxInactivityTime);
+
+        let now = Date.now();
+        if (now - lastKeepAlive > 2000) { 
+            perbaruiSesiServer();
+            lastKeepAlive = now;
+        }
+    }
+
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
-    // Daftarkan semua event ke browser
     events.forEach(function(name) {
         document.addEventListener(name, resetTimer, true);
     });
 
-    // Jalankan timer pertama kali saat halaman dibuka
     resetTimer();
 })();
 </script>
