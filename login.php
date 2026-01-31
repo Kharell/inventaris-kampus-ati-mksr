@@ -4,6 +4,28 @@ include "config/database.php";
 
 $error = ""; 
 
+// 1. Tangkap pesan dari URL (agar muncul tulisan Sesi Habis)
+if (isset($_GET['pesan'])) {
+    if ($_GET['pesan'] == 'sesi_habis') {
+        $error = "Sesi Anda telah berakhir. Silakan login kembali.";
+        $alert_class = "alert-warning"; // Warna kuning untuk sesi habis
+        $icon = "bi-clock-history";
+    } else if ($_GET['pesan'] == 'gagal') {
+        $error = "Username atau Password salah!";
+        $alert_class = "alert-danger"; // Warna merah untuk gagal login
+        $icon = "bi-x-circle";
+    } else if ($_GET['pesan'] == 'wajib_login') {
+        $error = "Anda harus login untuk mengakses sistem.";
+        $alert_class = "alert-info"; // Warna biru untuk informasi
+        $icon = "bi-info-circle";
+    } else if ($_GET['pesan'] == 'logout_berhasil') {
+        $error = "Anda telah berhasil keluar sistem.";
+        $alert_class = "alert-success"; // Warna hijau untuk sukses logout
+        $icon = "bi-check-circle";
+    }
+}
+
+// ... (Kode POST Login tetap sama seperti yang kamu kirim) ...
 if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
@@ -21,27 +43,24 @@ if (isset($_POST['login'])) {
         $nama_key = 'nama_kepala';
     }
 
-    // ... kode query Anda ...
-
     if ($data && password_verify($password, $data['password'])) {
-        // PROTEKSI: Ganti ID sesi lama dengan yang baru setiap login
         session_regenerate_id(true); 
-
         $_SESSION['id_user']  = $data[$id_key];
         $_SESSION['username'] = $data['username'];
         $_SESSION['role']     = $role_input;
         $_SESSION['nama']     = $data[$nama_key];
-        
-        // Simpan sidik jari browser
+        $_SESSION['last_activity'] = time(); 
         $_SESSION['secure_fingerprint'] = md5($_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR']);
 
         if($role_input == 'kepala_lab') {
             $_SESSION['id_lab'] = $data['id_lab'];
         }
 
-        // Redirect
         $redirect = ($role_input == 'admin') ? "views/admin/index.php" : "views/kepala-lab/index.php";
         header("Location: " . $redirect);
+        exit();
+    } else {
+        header("Location: login.php?pesan=gagal"); // Sesuaikan nama file ini jika index.php
         exit();
     }
 }
@@ -206,7 +225,10 @@ if (isset($_POST['login'])) {
 
     <div class="login-form">
         <div class="mb-4">
+            <center>
             <h2 class="welcome-title mb-1">Login</h2>
+            </center> 
+            <br>
             <p class="text-muted">Gunakan akun anda untuk mengakses dashboard.</p>
         </div>
 

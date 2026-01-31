@@ -1,0 +1,6 @@
+Durasi,Angka di PHP (auth.php),Angka di JS (sidebar.php)
+10 Detik (Test),10,10000
+1 Menit,60,60000
+15 Menit,900,900000
+30 Menit (Ideal),1800,1800000
+1 Jam,3600,3600000

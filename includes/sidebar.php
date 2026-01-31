@@ -258,7 +258,12 @@ function isExpandedByFolder($folder_name) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
+/**
+ * 1. FUNGSI LOGOUT MANUAL
+ * Dipicu saat tombol "Keluar Sistem" diklik
+ */
 function prosesLogout() {
     Swal.fire({
         title: 'Konfirmasi Keluar',
@@ -271,8 +276,43 @@ function prosesLogout() {
         reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
+            // Mengarah ke file logout.php di folder root
             window.location.href = "<?= $base_url; ?>logout.php";
         }
     })
 }
+
+/**
+ * 2. LOGIKA LOGOUT OTOMATIS (IDLE TIMEOUT)
+ * Menggunakan teknik IIFE untuk menghindari bentrok variabel
+ */
+(function() {
+    // KONFIGURASI WAKTU
+    // 10000 ms = 10 detik (UNTUK TESTING)
+    // Ganti ke 1800000 jika ingin kembali ke 30 menit
+    const maxInactivityTime = 10000; 
+    let logoutTimer;
+
+    function resetTimer() {
+        // Hapus timer sebelumnya setiap kali ada aktivitas
+        clearTimeout(logoutTimer);
+        
+        // Pasang timer baru
+        logoutTimer = setTimeout(() => {
+            // Arahkan ke login.php di root dengan parameter pesan
+            window.location.href = "<?= $base_url; ?>login.php?pesan=sesi_habis";
+        }, maxInactivityTime);
+    }
+
+    // LIST AKTIVITAS YANG DIPANTAU (Mouse, Keyboard, Scroll, Touch)
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    // Daftarkan semua event ke browser
+    events.forEach(function(name) {
+        document.addEventListener(name, resetTimer, true);
+    });
+
+    // Jalankan timer pertama kali saat halaman dibuka
+    resetTimer();
+})();
 </script>
