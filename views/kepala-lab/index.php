@@ -7,6 +7,10 @@ if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'kepala_lab' && $_SESSIO
 }
 
 include "../../config/database.php";
+include "../../config/auth.php";
+
+checkAccess('kepala_lab');
+
 
 $id_user = $_SESSION['id_user'];
 

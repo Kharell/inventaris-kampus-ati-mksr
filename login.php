@@ -239,7 +239,10 @@ if (isset($_POST['login'])) {
         <?php endif; ?>
 
         <form method="POST">
+            <center>
             <label class="form-label text-uppercase mb-2">Pilih Akses</label>
+            </center>
+            <br>
             <div class="role-selector">
                 <label class="role-option">
                     <input type="radio" name="role" value="admin" required checked>
