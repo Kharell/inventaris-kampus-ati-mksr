@@ -7,7 +7,7 @@ $error = "";
 // 1. Tangkap pesan dari URL (agar muncul tulisan Sesi Habis)
 if (isset($_GET['pesan'])) {
     if ($_GET['pesan'] == 'sesi_habis') {
-        $error = "Sesi Anda telah berakhir. Silakan login kembali.";
+        $error = "Sesi Kepala Lab telah berakhir, Silakan login kembali.";
         $alert_class = "alert-warning"; // Warna kuning untuk sesi habis
         $icon = "bi-clock-history";
     } else if ($_GET['pesan'] == 'gagal') {
@@ -353,6 +353,11 @@ function togglePassword() {
         icon.classList.add("bi-eye-fill");
     }
 }
+// Kunci agar tidak bisa kembali ke dashboard setelah berada di halaman login
+window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function () {
+        window.history.go(1);
+    };
 </script>
 
 <style>

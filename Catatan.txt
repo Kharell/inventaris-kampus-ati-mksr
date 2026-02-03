@@ -1,6 +1,21 @@
-Durasi,Angka di PHP (auth.php),Angka di JS (sidebar.php)
-10 Detik (Test),10,10000
-1 Menit,60,60000
-15 Menit,900,900000
-30 Menit (Ideal),1800,1800000
-1 Jam,3600,3600000
+ -------------
+    CATATAN
+--------------
+
+Halaman Login Local
+http://localhost/inventaris-kampus-ati/login.php
+
+
+1 . Waktu Logout OTOMATIS 30 menit untuk kepala_lab
+Komponen,Nilai Konfigurasi,Satuan,Efek pada Sistem
+Server (auth.php),         timeout_duration,   1800,     Detik,PHP menghancurkan sesi di server jika tidak ada aktivitas selama 30 menit.
+Browser (sidebar.php),     maxInactivityTime,  1800000,  Milidetik,JavaScript memicu forceLogout() jika pengguna diam total selama 30 menit.
+Keep-Alive (sidebar.php),  lastKeepAlive,      300000,   Milidetik,Browser mengirim sinyal ke server setiap 5 menit untuk menjaga sesi tetap hidup selama user aktif.
+
+
+
+2 . Waktu Ideal untuk testing Fiture Logout OTOMATIS dengan 5 detik
+Konfigurasi,Nilai,Efek pada Sistem
+Server (auth.php),        timeout_duration,   5,            PHP akan menghancurkan sesi jika tidak ada request dalam 5 detik.
+Browser (sidebar.php),    maxInactivityTime,  5000,         JavaScript akan memicu forceLogout() jika diam selama 5 detik.
+Keep-Alive (sidebar.php), lastKeepAlive,      1000,         Setiap gerakan akan mengirim sinyal ke server maksimal 1 detik sekali.

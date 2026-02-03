@@ -257,21 +257,35 @@ function isExpandedByFolder($folder_name) {
     </div>
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 /**
- * TAMBAHAN: CEGAH TOMBOL BACK
- * Menghapus jejak navigasi agar user tidak bisa kembali ke halaman sebelumnya
+ * 1. CEGAH TOMBOL BACK (Global)
  */
-if (window.history.replaceState) {
-    window.history.replaceState(null, null, window.location.href);
+function trapBack() {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function() {
+        window.history.pushState(null, null, window.location.href);
+        // Tambahan: Paksa browser tetap di posisi saat ini
+        window.history.forward();
+    };
 }
+trapBack();
 
 /**
- * 1. FUNGSI LOGOUT MANUAL
+ * 2. FUNGSI LOGOUT MANUAL (Sudah diperbaiki)
  */
 function prosesLogout() {
+    // Pastikan Swal terdefinisi
+    if (typeof Swal === 'undefined') {
+        if(confirm("Sesi anda akan diakhiri dari sistem?")) {
+             window.location.replace("<?= $base_url; ?>logout.php");
+        }
+        return;
+    }
+
     Swal.fire({
         title: 'Konfirmasi Keluar',
         text: "Sesi anda akan diakhiri dari sistem",
@@ -283,28 +297,38 @@ function prosesLogout() {
         reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
-            // Paksa ganti state history sebelum pindah halaman
-            window.history.pushState(null, null, '<?= $base_url; ?>login.php');
+            // Menggunakan replace agar history halaman ini terhapus
             window.location.replace("<?= $base_url; ?>logout.php");
         }
-    })
+    });
 }
 
 /**
- * 2. LOGIKA LOGOUT OTOMATIS & KEEP-ALIVE
+ * 3. LOGIKA LOGOUT OTOMATIS (Hanya Kepala Lab)
  */
+<?php if ($role !== 'admin'): ?>
 (function() {
-    // 10000 ms = 10 detik (TESTING)
-    const maxInactivityTime = 10000; 
+    const maxInactivityTime = 5000; // 30 menit dalam milidetik
     let logoutTimer;
     let lastKeepAlive = 0;
+
+    function forceLogout() {
+        // Tambahan: Hapus jejak dashboard dari riwayat sebelum pindah ke login
+        window.history.pushState(null, null, '<?= $base_url; ?>login.php');
+        
+        window.location.replace("<?= $base_url; ?>login.php?pesan=sesi_habis");
+
+        // Tambahan: Cegah user menekan tombol kembali saat proses redirect
+        setTimeout(function() {
+            window.history.forward();
+        }, 0);
+    }
 
     function perbaruiSesiServer() {
         fetch("<?= $base_url; ?>config/refresh_session.php")
         .then(response => {
             if (response.status === 401) {
-                // Gunakan location.replace agar halaman dashboard tidak masuk history
-                window.location.replace("<?= $base_url; ?>login.php?pesan=sesi_habis");
+                forceLogout();
             }
         })
         .catch(err => console.log("Koneksi terputus"));
@@ -312,13 +336,12 @@ function prosesLogout() {
 
     function resetTimer() {
         clearTimeout(logoutTimer);
-        logoutTimer = setTimeout(() => {
-            // Gunakan location.replace agar halaman dashboard tidak masuk history
-            window.location.replace("<?= $base_url; ?>login.php?pesan=sesi_habis");
-        }, maxInactivityTime);
+        logoutTimer = setTimeout(forceLogout, maxInactivityTime);
 
         let now = Date.now();
-        if (now - lastKeepAlive > 2000) { 
+        // Milidetik,Browser mengirim sinyal ke server setiap 5 menit untuk menjaga sesi tetap hidup selama user aktif.
+        if (now - lastKeepAlive > 1000) // 30 menit = 1800000 ms
+         { 
             perbaruiSesiServer();
             lastKeepAlive = now;
         }
@@ -331,4 +354,5 @@ function prosesLogout() {
 
     resetTimer();
 })();
+<?php endif; ?>
 </script>
