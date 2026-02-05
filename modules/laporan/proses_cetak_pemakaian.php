@@ -6,26 +6,32 @@ include "../../config/auth.php";
 checkAccess('admin');
 
 // 1. TANGKAP PARAMETER
-$scope        = $_GET['scope'] ?? 'semua';
-$id_jurusan   = $_GET['id_jurusan'] ?? '';
-$id_lab       = $_GET['id_lab'] ?? '';
-$tgl_awal     = isset($_GET['tgl_awal']) ? mysqli_real_escape_string($conn, $_GET['tgl_awal']) : date('Y-m-01');
-$tgl_akhir    = isset($_GET['tgl_akhir']) ? mysqli_real_escape_string($conn, $_GET['tgl_akhir']) : date('Y-m-d');
-$format       = $_GET['format'] ?? 'pdf';
+$scope         = $_GET['scope'] ?? 'semua';
+$id_jurusan    = $_GET['id_jurusan'] ?? '';
+$id_lab        = $_GET['id_lab'] ?? '';
+$tgl_awal      = isset($_GET['tgl_awal']) ? mysqli_real_escape_string($conn, $_GET['tgl_awal']) : date('Y-m-01');
+$tgl_akhir     = isset($_GET['tgl_akhir']) ? mysqli_real_escape_string($conn, $_GET['tgl_akhir']) : date('Y-m-d');
+$format        = $_GET['format'] ?? 'pdf';
 
-// 2. LOGIKA DOWNLOAD FILE
-$filename = "Laporan_Pemakaian_" . date('Ymd');
-if ($format == 'excel') {
-    header("Content-type: application/vnd-ms-excel");
-    header("Content-Disposition: attachment; filename=$filename.xls");
+// --- LOGIKA PENANDATANGAN (MANUAL ATAU DEFAULT) ---
+$opsi_nama    = $_GET['opsi_nama'] ?? 'default';
+$custom_nama  = $_GET['custom_nama'] ?? '';
+$custom_nip   = $_GET['custom_nip'] ?? '';
+
+if ($opsi_nama === 'custom' && !empty($custom_nama)) {
+    // Jika memilih Ganti Nama (Manual)
+    $nama_admin = $custom_nama;
+    $nip_admin  = $custom_nip ?: "..........................";
+    $status_verifikasi = "Terverifikasi (Input Manual oleh Kepala Lab)";
+} else {
+    // 3. DATA ADMIN DINAMIS (Logika Default Anda dengan Tambahan Status)
+    $id_user_session = $_SESSION['id_user'] ?? $_SESSION['id_admin'] ?? 1;
+    $admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users WHERE id_user = '$id_user_session'");
+    $admin_data  = mysqli_fetch_assoc($admin_query);
+    $nama_admin = $admin_data['nama_lengkap'] ?? "Administrator";
+    $nip_admin  = $admin_data['nip'] ?? "..........................";
+    $status_verifikasi = "Terverifikasi secara Sistem (Admin)";
 }
-
-// 3. DATA ADMIN DINAMIS
-$id_user_session = $_SESSION['id_user'] ?? $_SESSION['id_admin'] ?? 1;
-$admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users WHERE id_user = '$id_user_session'");
-$admin_data  = mysqli_fetch_assoc($admin_query);
-$nama_admin = $admin_data['nama_lengkap'] ?? "Administrator";
-$nip_admin  = $admin_data['nip'] ?? "..........................";
 
 // 4. LOGIKA QUERY (Menambahkan d.jumlah sebagai Stok Awal)
 $query = "SELECT p.*, 
@@ -91,6 +97,17 @@ $result = mysqli_query($conn, $query);
         .table-laporan th, .table-laporan td { border: 1px solid black !important; padding: 5px 3px; vertical-align: middle; word-wrap: break-word; }
         .table-laporan th { background-color: #f2f2f2 !important; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 8pt; }
         
+        /* Style Verifikasi Digital Sesuai Permintaan */
+        .verif-box {
+            border: 1px solid #ddd;
+            padding: 5px;
+            font-size: 7pt;
+            color: #666;
+            display: inline-block;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
         .no-print { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; gap: 10px; }
         @media print {
             @page { size: landscape; margin: 0.5cm; } 
@@ -187,19 +204,31 @@ $result = mysqli_query($conn, $query);
             <?php if ($show_double_ttd): ?>
                 <td style="width: 50%;">
                     <p class="mb-0">Mengetahui,</p><p class="mb-0">Petugas Logistik,</p>
-                    <div style="height: 70px;"></div>
+                    <div style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                         <div class="verif-box">
+                            <small>Ditandatangani secara digital oleh:</small><br>
+                            <b><?= $nama_admin ?></b><br>
+                            <small><?= $status_verifikasi ?></small>
+                         </div>
+                    </div>
                     <p class="fw-bold mb-0 text-decoration-underline"><?= strtoupper($nama_admin) ?></p><p>NIP. <?= $nip_admin ?></p>
                 </td>
                 <td style="width: 50%;">
                     <p class="mb-0">Menyetujui,</p><p class="mb-0"><?= $jabatan_kepala ?>,</p>
-                    <div style="height: 70px;"></div>
+                    <div style="height: 80px;"></div>
                     <p class="fw-bold mb-0 text-decoration-underline"><?= strtoupper($nama_kepala) ?></p><p>NIP. <?= $nip_kepala ?></p>
                 </td>
             <?php else: ?>
                 <td style="width: 50%;"></td>
                 <td style="width: 50%;">
                     <p class="mb-0">Mengetahui,</p><p class="mb-0">Petugas Logistik,</p>
-                    <div style="height: 70px;"></div>
+                    <div style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                         <div class="verif-box">
+                            <small>Ditandatangani secara digital oleh:</small><br>
+                            <b><?= $nama_admin ?></b><br>
+                            <small><?= $status_verifikasi ?></small>
+                         </div>
+                    </div>
                     <p class="fw-bold mb-0 text-decoration-underline"><?= strtoupper($nama_admin) ?></p><p>NIP. <?= $nip_admin ?></p>
                 </td>
             <?php endif; ?>

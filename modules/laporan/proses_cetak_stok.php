@@ -36,13 +36,15 @@ if (!$admin_data) {
     $admin_data  = mysqli_fetch_assoc($admin_query);
 }
 
-// --- LOGIKA PENENTUAN NAMA PENANDATANGAN ---
+// --- LOGIKA PENENTUAN NAMA PENANDATANGAN & STATUS VERIFIKASI ---
 if ($opsi_nama === 'custom' && !empty($custom_nama)) {
     $nama_admin = $custom_nama;
     $nip_admin  = !empty($custom_nip) ? $custom_nip : "..........................";
+    $status_verifikasi = "Terverifikasi (Input Manual oleh Kepala Lab)";
 } else {
     $nama_admin  = !empty($admin_data['nama_lengkap']) ? $admin_data['nama_lengkap'] : "Administrator";
     $nip_admin   = !empty($admin_data['nip']) ? $admin_data['nip'] : "..........................";
+    $status_verifikasi = "Terverifikasi secara Sistem (Admin)";
 }
 // --------------------------------------------
 
@@ -107,6 +109,17 @@ $result = mysqli_query($conn, $sql);
         .table-laporan th { background-color: #f2f2f2 !important; text-align: center; font-weight: bold; }
         .row-subtotal { background-color: #f9f9f9 !important; font-weight: bold; }
         .row-grandtotal { background-color: #000 !important; color: #fff !important; font-weight: bold; }
+
+        /* Style Verifikasi Digital */
+        .verif-box {
+            border: 1px solid #ddd;
+            padding: 5px;
+            font-size: 7pt;
+            color: #666;
+            display: inline-block;
+            margin-top: 5px;
+            font-style: italic;
+        }
         
         .no-print { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; gap: 10px; }
         @media print {
@@ -224,7 +237,13 @@ $result = mysqli_query($conn, $sql);
         <div class="col-4 text-center" style="font-size: 9pt;">
             <p class="mb-0">Makassar, <?= date('d F Y') ?></p>
             <p class="mb-0">Petugas Logistik / Gudang,</p>
-            <div style="height: 70px;"></div>
+            <div style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                 <div class="verif-box">
+                    <small>Ditandatangani secara digital oleh:</small><br>
+                    <b><?= $nama_admin ?></b><br>
+                    <small><?= $status_verifikasi ?></small>
+                 </div>
+            </div>
             <p class="fw-bold mb-0 text-decoration-underline"><?= strtoupper($nama_admin) ?></p>
             <p>NIP. <?= $nip_admin ?></p>
         </div>

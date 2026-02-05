@@ -84,6 +84,25 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
             background-color: #e7f1ff; color: #084298; border-radius: 8px;
             padding: 12px; font-size: 0.85rem; border: 1px solid #b8daff;
         }
+
+        /* CSS Tambahan untuk Opsi Kartu */
+        .custom-option-card {
+            border: 2px solid #e9ecef !important;
+            border-radius: 12px !important;
+            color: #666 !important;
+            transition: 0.3s;
+        }
+        .btn-check:checked + .custom-option-card {
+            border-color: var(--navy) !important;
+            background-color: #f8f9fa !important;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -186,6 +205,40 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                                     </div>
                                 </div>
 
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3 text-navy text-uppercase small">
+                                        <i class="bi bi-pen-fill me-2"></i>Verifikasi Penandatanganan
+                                    </h6>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <input type="radio" class="btn-check" name="opsi_nama" id="nama_asli" value="default" checked onchange="toggleInputNama(false)">
+                                            <label class="btn btn-outline-light w-100 p-2 custom-option-card text-start" for="nama_asli">
+                                                <i class="bi bi-patch-check-fill mb-1 d-block" style="color: var(--navy);"></i>
+                                                <span class="d-block fw-bold text-navy small">Default</span>
+                                                <small class="text-muted" style="font-size: 0.6rem;"><?= $_SESSION['nama_user'] ?? 'User Aktif' ?></small>
+                                            </label>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="radio" class="btn-check" name="opsi_nama" id="nama_custom" value="custom" onchange="toggleInputNama(true)">
+                                            <label class="btn btn-outline-light w-100 p-2 custom-option-card text-start" for="nama_custom">
+                                                <i class="bi bi-pencil-square mb-1 d-block" style="color: var(--navy);"></i>
+                                                <span class="d-block fw-bold text-navy small">Ganti Nama</span>
+                                                <small class="text-muted" style="font-size: 0.6rem;">Manual NIP</small>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="wrapper_custom_nama" class="animate-fade-in" style="display: none;">
+                                        <div class="row g-2">
+                                            <div class="col-12 mb-2">
+                                                <input type="text" name="custom_nama" id="input_custom_nama" class="form-control form-control-sm bg-light border-0" placeholder="Nama & Gelar Penandatangan">
+                                            </div>
+                                            <div class="col-12">
+                                                <input type="text" name="custom_nip" id="input_custom_nip" class="form-control form-control-sm bg-light border-0" placeholder="NIP Penandatangan">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div id="info_box" class="info-badge mb-4 d-none">
                                     <i class="bi bi-info-circle-fill me-2"></i> <span id="info_txt"></span>
                                 </div>
@@ -209,7 +262,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                                 </div>
 
                                 <button type="submit" class="btn btn-gold w-100 shadow-sm py-3">
-                                    <i class="bi bi-file-earmark-arrow-down-fill me-2"></i> GENERATE LAPORAN
+                                     <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN
                                 </button>
                             </div>
                         </div>
@@ -221,6 +274,25 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
 </div>
 
 <script>
+    // Fungsi untuk memunculkan input Nama & NIP manual
+    function toggleInputNama(show) {
+        const wrapper = document.getElementById('wrapper_custom_nama');
+        const inputNama = document.getElementById('input_custom_nama');
+        const inputNip = document.getElementById('input_custom_nip');
+        
+        if (show) {
+            wrapper.style.display = 'block';
+            inputNama.setAttribute('required', 'required');
+            inputNip.setAttribute('required', 'required');
+        } else {
+            wrapper.style.display = 'none';
+            inputNama.removeAttribute('required');
+            inputNip.removeAttribute('required');
+            inputNama.value = '';
+            inputNip.value = '';
+        }
+    }
+
     function toggleScope(val) {
         const panel = document.getElementById('panel_wilayah');
         const dJurusan = document.getElementById('div_jurusan');

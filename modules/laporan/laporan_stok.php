@@ -146,9 +146,10 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                                     <i class="bi bi-info-circle-fill me-2"></i> <span id="info_text"></span>
                                 </div>
 
+                                
                                 <div class="mb-4">
                                     <h6 class="fw-bold mb-3 text-navy text-uppercase small">
-                                        <i class="bi bi-pen-fill me-2"></i>Verifikasi Penandatangan
+                                        <i class="bi bi-pen-fill me-2"></i>Verifikasi Penandatanganan
                                     </h6>
                                     <div class="row g-2 mb-3">
                                         <div class="col-6">
@@ -168,6 +169,7 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                                             </label>
                                         </div>
                                     </div>
+
 
                                     <div id="wrapper_custom_nama" class="animate-fade-in" style="display: none;">
                                         <div class="row g-2">
@@ -200,7 +202,7 @@ $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as tota
                                 </div>
 
                                 <button type="submit" class="btn btn-gold w-100 shadow-sm py-3">
-                                    <i class="bi bi-printer-fill me-2"></i> GENERATE LAPORAN
+                                    <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN
                                 </button>
                             </div>
                         </div>

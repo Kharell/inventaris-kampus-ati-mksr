@@ -13,21 +13,33 @@ $tgl_awal     = isset($_GET['tgl_awal']) ? mysqli_real_escape_string($conn, $_GE
 $tgl_akhir    = isset($_GET['tgl_akhir']) ? mysqli_real_escape_string($conn, $_GET['tgl_akhir']) : date('Y-m-d');
 $format       = $_GET['format'] ?? 'pdf';
 
-// 2. DATA ADMIN DINAMIS
-$id_user_session = $_SESSION['id_user'] ?? ($_SESSION['id_admin'] ?? null);
-$admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users WHERE id_user = '$id_user_session'");
-$admin_data  = mysqli_fetch_assoc($admin_query);
+// --- LOGIKA PENANDATANGAN (MANUAL ATAU DEFAULT) ---
+$opsi_nama    = $_GET['opsi_nama'] ?? 'default';
+$custom_nama  = $_GET['custom_nama'] ?? '';
+$custom_nip   = $_GET['custom_nip'] ?? '';
 
-if (!$admin_data) {
-    $admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users LIMIT 1");
+if ($opsi_nama === 'custom' && !empty($custom_nama)) {
+    // Jika memilih Ganti Nama (Manual)
+    $nama_admin = $custom_nama;
+    $nip_admin  = $custom_nip ?: "..........................";
+    $status_verifikasi = "Terverifikasi (Input Manual oleh Kepala Lab)";
+} else {
+    // 2. DATA ADMIN DINAMIS (Logika Default)
+    $id_user_session = $_SESSION['id_user'] ?? ($_SESSION['id_admin'] ?? null);
+    $admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users WHERE id_user = '$id_user_session'");
     $admin_data  = mysqli_fetch_assoc($admin_query);
+
+    if (!$admin_data) {
+        $admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users LIMIT 1");
+        $admin_data  = mysqli_fetch_assoc($admin_query);
+    }
+
+    $nama_admin = $admin_data['nama_lengkap'] ?? "Administrator";
+    $nip_admin  = $admin_data['nip'] ?? "..........................";
+    $status_verifikasi = "Terverifikasi secara Sistem (Admin)";
 }
 
-$nama_admin  = $admin_data['nama_lengkap'] ?? "Administrator";
-$nip_admin   = $admin_data['nip'] ?? "..........................";
-
 // 3. LOGIKA FILTER QUERY
-// Base Query
 $query = "SELECT d.*, b.nama_bahan, b.satuan, l.nama_lab, j.nama_jurusan 
           FROM distribusi_lab d
           JOIN bahan_praktek b ON d.id_praktek = b.id_praktek
@@ -37,7 +49,6 @@ $query = "SELECT d.*, b.nama_bahan, b.satuan, l.nama_lab, j.nama_jurusan
 
 $title_suffix = "SEMUA UNIT / JURUSAN";
 
-// Kondisi Filter
 if ($scope == 'jurusan' && !empty($id_jurusan)) {
     $query .= " AND j.id_jurusan = '$id_jurusan'";
     $res_j = mysqli_query($conn, "SELECT nama_jurusan FROM jurusan WHERE id_jurusan = '$id_jurusan'");
@@ -92,6 +103,17 @@ if ($format == 'excel') {
         }
         .table-laporan th { background-color: #f2f2f2 !important; text-align: center; font-weight: bold; }
         
+        /* Style Verifikasi Digital */
+        .verif-box {
+            border: 1px solid #ddd;
+            padding: 5px;
+            font-size: 7pt;
+            color: #666;
+            display: inline-block;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
         .no-print { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; gap: 10px; }
         
         @media print {
@@ -183,7 +205,13 @@ if ($format == 'excel') {
         <div class="col-4 text-center">
             <p class="mb-0">Makassar, <?= date('d F Y') ?></p>
             <p class="mb-0">Petugas Gudang,</p>
-            <div style="height: 80px;"></div>
+            <div style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                 <div class="verif-box">
+                    <small>Dandatangani secara digital oleh:</small><br>
+                    <b><?= $nama_admin ?></b><br>
+                    <small><?= $status_verifikasi ?></small>
+                 </div>
+            </div>
             <p class="fw-bold mb-0 text-decoration-underline"><?= strtoupper($nama_admin) ?></p>
             <p>NIP. <?= $nip_admin ?></p>
         </div>
