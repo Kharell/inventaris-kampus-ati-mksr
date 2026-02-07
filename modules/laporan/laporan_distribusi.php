@@ -6,13 +6,15 @@ checkAccess('admin');
 
 // Ambil data untuk filter dropdown
 $jurusan_query = mysqli_query($conn, "SELECT * FROM jurusan ORDER BY nama_jurusan ASC");
-$lab_all_query = mysqli_query($conn, "SELECT l.*, j.nama_jurusan FROM lab l JOIN jurusan j ON l.id_jurusan = j.id_jurusan ORDER BY j.nama_jurusan ASC, l.nama_lab ASC");
+// Pastikan mengambil id_jurusan untuk kebutuhan filter JS
+$lab_all_query = mysqli_query($conn, "SELECT l.*, j.nama_jurusan, j.id_jurusan as ref_jurusan FROM lab l JOIN jurusan j ON l.id_jurusan = j.id_jurusan ORDER BY j.nama_jurusan ASC, l.nama_lab ASC");
 
 $labs = [];
 while($l = mysqli_fetch_assoc($lab_all_query)) { $labs[] = $l; }
 
-// Statistik ringkas (opsional untuk header)
-$total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM distribusi_lab"))['total'];
+// Statistik ringkas
+$total_distribusi_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM distribusi_lab");
+$total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -163,7 +165,11 @@ $total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t
                                 <label class="form-label small fw-bold">PILIH JURUSAN</label>
                                 <select name="id_jurusan" id="id_jurusan" class="form-select border-2" onchange="filterLabByJurusan(this.value)">
                                     <option value="">-- Pilih Jurusan --</option>
-                                    <?php mysqli_data_seek($jurusan_query, 0); while($j = mysqli_fetch_assoc($jurusan_query)): ?>
+                                    <?php 
+                                    // Reset pointer agar data jurusan muncul
+                                    mysqli_data_seek($jurusan_query, 0); 
+                                    while($j = mysqli_fetch_assoc($jurusan_query)): 
+                                    ?>
                                         <option value="<?= $j['id_jurusan'] ?>"><?= $j['nama_jurusan'] ?></option>
                                     <?php endwhile; ?>
                                 </select>
@@ -220,7 +226,7 @@ $total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t
                                             <label class="btn btn-outline-light w-100 p-2 custom-option-card text-start" for="nama_asli">
                                                 <i class="bi bi-patch-check-fill mb-1 d-block" style="color: var(--navy);"></i>
                                                 <span class="d-block fw-bold text-navy small">Default</span>
-                                                <small class="text-muted" style="font-size: 0.6rem;"><?= $_SESSION['nama_user'] ?? 'User Aktif' ?></small>
+                                                <small class="text-muted" style="font-size: 0.6rem;"><?= $_SESSION['nama_lengkap'] ?? 'User Aktif' ?></small>
                                             </label>
                                         </div>
                                         <div class="col-6">
@@ -262,8 +268,6 @@ $total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t
                                     </div>
                                 </div>
 
-                        
-
                                 <button type="submit" class="btn btn-gold w-100 shadow-sm py-3">
                                     <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN
                                 </button>
@@ -277,7 +281,6 @@ $total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t
 </div>
 
 <script>
-    // Fungsi baru untuk toggle input Nama Custom
     function toggleInputNama(show) {
         const wrapper = document.getElementById('wrapper_custom_nama');
         const inputNama = document.getElementById('input_custom_nama');
@@ -296,7 +299,6 @@ $total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t
         }
     }
 
-    // Toggle scope Wilayah
     function toggleScope(val) {
         const panel = document.getElementById('panel_wilayah');
         const dJurusan = document.getElementById('div_jurusan');
@@ -316,18 +318,20 @@ $total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t
         }
     }
 
-    // Filter Lab berdasarkan Jurusan
     function filterLabByJurusan(id) {
         const labSelect = document.getElementById('id_lab');
         const opts = labSelect.options;
         labSelect.value = "";
         for (let i = 0; i < opts.length; i++) {
             const jurId = opts[i].getAttribute('data-jurusan');
-            opts[i].style.display = (id === "" || jurId === id || opts[i].value === "") ? "block" : "none";
+            if(opts[i].value === "") {
+                opts[i].style.display = "block";
+            } else {
+                opts[i].style.display = (id === "" || jurId === id) ? "block" : "none";
+            }
         }
     }
 
-    // Handle Periode
     function handlePeriode(val) {
         const box = document.getElementById('box_akhir');
         const info = document.getElementById('info_box');
@@ -357,9 +361,15 @@ $total_distribusi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as t
         else if (tipe === 'semester') dEnd.setMonth(dStart.getMonth() + 6);
 
         dEnd.setDate(dEnd.getDate() - 1);
-        const hasil = dEnd.toISOString().split('T')[0];
+        
+        // Format ke YYYY-MM-DD lokal
+        const y = dEnd.getFullYear();
+        const m = String(dEnd.getMonth() + 1).padStart(2, '0');
+        const d = String(dEnd.getDate()).padStart(2, '0');
+        
+        const hasil = `${y}-${m}-${d}`;
         akhirInput.value = hasil;
-        infoTxt.innerText = "Sistem akan menarik data hingga: " + hasil;
+        infoTxt.innerText = "Sistem akan menarik data hingga: " + d.padStart(2, '0') + "/" + m + "/" + y;
     }
 </script>
 

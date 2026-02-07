@@ -13,34 +13,37 @@ $tgl_awal     = isset($_GET['tgl_awal']) ? mysqli_real_escape_string($conn, $_GE
 $tgl_akhir    = isset($_GET['tgl_akhir']) ? mysqli_real_escape_string($conn, $_GET['tgl_akhir']) : date('Y-m-d');
 $format       = $_GET['format'] ?? 'pdf';
 
-// --- LOGIKA PENANDATANGAN (MANUAL ATAU DEFAULT) ---
+// --- LOGIKA PENANDATANGAN (OTOMATIS BERDASARKAN LOGIN) ---
 $opsi_nama    = $_GET['opsi_nama'] ?? 'default';
 $custom_nama  = $_GET['custom_nama'] ?? '';
 $custom_nip   = $_GET['custom_nip'] ?? '';
 
+// Mengambil ID User dari session (pastikan session ini ada di login.php anda)
+$id_user_session = $_SESSION['id_user'] ?? ($_SESSION['id_admin'] ?? null);
+
 if ($opsi_nama === 'custom' && !empty($custom_nama)) {
-    // Jika memilih Ganti Nama (Manual)
+    // Jika memilih input manual
     $nama_admin = $custom_nama;
     $nip_admin  = $custom_nip ?: "..........................";
-    $status_verifikasi = "Terverifikasi (Input Manual oleh Kepala Lab)";
+    $status_verifikasi = "Terverifikasi (Input Manual oleh Petugas)";
 } else {
-    // 2. DATA ADMIN DINAMIS (Logika Default)
-    $id_user_session = $_SESSION['id_user'] ?? ($_SESSION['id_admin'] ?? null);
+    // DEFAULT: Mengambil data dari database berdasarkan siapa yang login
     $admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users WHERE id_user = '$id_user_session'");
     $admin_data  = mysqli_fetch_assoc($admin_query);
 
-    if (!$admin_data) {
-        $admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users LIMIT 1");
-        $admin_data  = mysqli_fetch_assoc($admin_query);
+    if ($admin_data) {
+        $nama_admin = $admin_data['nama_lengkap'];
+        $nip_admin  = $admin_data['nip'] ?: "..........................";
+    } else {
+        // Fallback jika session tidak ditemukan
+        $nama_admin = "Administrator";
+        $nip_admin  = "..........................";
     }
-
-    $nama_admin = $admin_data['nama_lengkap'] ?? "Administrator";
-    $nip_admin  = $admin_data['nip'] ?? "..........................";
-    $status_verifikasi = "Terverifikasi secara Sistem (Admin)";
+    $status_verifikasi = "Terverifikasi secara Sistem (E-Inventory)";
 }
 
-// 3. LOGIKA FILTER QUERY
-$query = "SELECT d.*, b.nama_bahan, b.satuan, l.nama_lab, j.nama_jurusan 
+// 2. QUERY DATA
+$query = "SELECT d.*, b.nama_bahan, b.satuan, b.spesifikasi, l.nama_lab, j.nama_jurusan 
           FROM distribusi_lab d
           JOIN bahan_praktek b ON d.id_praktek = b.id_praktek
           JOIN lab l ON d.id_lab = l.id_lab
@@ -58,17 +61,20 @@ if ($scope == 'jurusan' && !empty($id_jurusan)) {
     $query .= " AND l.id_lab = '$id_lab'";
     $res_l = mysqli_query($conn, "SELECT nama_lab FROM lab WHERE id_lab = '$id_lab'");
     $data_l = mysqli_fetch_assoc($res_l);
-    $title_suffix = " " . strtoupper($data_l['nama_lab']);
+    $title_suffix = strtoupper($data_l['nama_lab']);
 }
 
 $query .= " ORDER BY d.tanggal_distribusi ASC";
 $result = mysqli_query($conn, $query);
 
-// 4. HANDLING DOWNLOAD
+// 3. HANDLING DOWNLOAD HEADERS
 $filename = "Laporan_Distribusi_" . date('Ymd');
 if ($format == 'excel') {
     header("Content-type: application/vnd-ms-excel");
     header("Content-Disposition: attachment; filename=$filename.xls");
+} elseif ($format == 'word') {
+    header("Content-type: application/vnd-ms-word");
+    header("Content-Disposition: attachment; filename=$filename.doc");
 }
 ?>
 
@@ -77,41 +83,37 @@ if ($format == 'excel') {
 <head>
     <meta charset="UTF-8">
     <title>Cetak Laporan Distribusi</title>
+    <?php if ($format == 'pdf'): ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <?php endif; ?>
     <style>
-        body { background: #f4f7f6; font-family: Arial, sans-serif; color: black; line-height: 1.2; }
+        body { background: <?= ($format == 'pdf') ? '#f4f7f6' : 'white' ?>; font-family: Arial, sans-serif; color: black; line-height: 1.2; }
         .container-print { 
             background: white; padding: 1cm; width: 98%; max-width: 1200px;
-            margin: 20px auto; min-height: 297mm; box-shadow: 0 0 15px rgba(0,0,0,0.1); 
+            margin: <?= ($format == 'pdf') ? '20px auto' : '0' ?>; 
+            min-height: 297mm; 
+            box-shadow: <?= ($format == 'pdf') ? '0 0 15px rgba(0,0,0,0.1)' : 'none' ?>; 
         }
-        .kop-table { width: 100%; border: none !important; }
-        .kop-table td { border: none !important; vertical-align: middle; }
-        .logo-container { width: 3.5cm !important; }
-        .logo-container img { width: 3.5cm !important; height: auto; }
-        .teks-kop { text-align: center; padding-right: 1.5cm; }
+        .kop-table { width: 100%; border: none !important; border-bottom: 3px solid black !important; margin-bottom: 15px; }
+        .kop-table td { border: none !important; vertical-align: middle; padding: 5px; }
+        .logo-container { width: 80px !important; }
+        .logo-container img { width: 80px !important; height: auto; }
+        .teks-kop { text-align: center; }
         .teks-kop h4 { font-size: 10pt; margin: 0; }
         .teks-kop h2 { font-size: 16pt; margin: 2px 0; font-weight: bold; }
-        .garis-kop { border-top: 1px solid black; border-bottom: 3.5px solid black; height: 3px; margin: 5px 0 20px 0; }
         
-        .table-laporan { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .table-laporan { width: 100%; border-collapse: collapse; }
         .table-laporan th, .table-laporan td { 
             border: 1px solid black !important; 
             padding: 5px; 
-            font-size: 8.5pt; 
-            word-wrap: break-word;
+            font-size: 9pt; 
             vertical-align: middle;
         }
         .table-laporan th { background-color: #f2f2f2 !important; text-align: center; font-weight: bold; }
         
-        /* Style Verifikasi Digital */
         .verif-box {
-            border: 1px solid #ddd;
-            padding: 5px;
-            font-size: 7pt;
-            color: #666;
-            display: inline-block;
-            margin-top: 5px;
-            font-style: italic;
+            border: 1px solid #ddd; padding: 5px; font-size: 7pt;
+            color: #666; display: inline-block; margin-top: 5px; font-style: italic;
         }
 
         .no-print { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; gap: 10px; }
@@ -127,10 +129,12 @@ if ($format == 'excel') {
 </head>
 <body>
 
+<?php if ($format == 'pdf'): ?>
 <div class="no-print">
-    <button onclick="window.print()" class="btn btn-primary">🖨️ CETAK PDF</button>
+    <button onclick="window.print()" class="btn btn-primary">🖨️ CETAK / PDF</button>
     <button onclick="window.close()" class="btn btn-danger">✖ TUTUP</button>
 </div>
+<?php endif; ?>
 
 <div class="container-print">
     <table class="kop-table">
@@ -145,11 +149,10 @@ if ($format == 'excel') {
             </td>
         </tr>
     </table>
-    <div class="garis-kop"></div>
 
-    <div class="text-center mb-4">
-        <h4 class="text-decoration-underline fw-bold mb-1">LAPORAN DISTRIBUSI BARANG INVENTARIS</h4>
-        <h5 class="fw-bold mb-1"><?= $title_suffix ?></h5>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h4 style="text-decoration: underline; font-weight: bold; margin-bottom: 5px;">LAPORAN DISTRIBUSI BARANG INVENTARIS</h4>
+        <h5 style="font-weight: bold; margin-bottom: 5px;"><?= $title_suffix ?></h5>
         <p>Periode: <b><?= date('d/m/Y', strtotime($tgl_awal)) ?></b> s/d <b><?= date('d/m/Y', strtotime($tgl_akhir)) ?></b></p>
     </div>
 
@@ -157,13 +160,12 @@ if ($format == 'excel') {
         <thead>
             <tr>
                 <th width="30">NO</th>
-                <th width="70">TANGGAL</th>
-                <th width="85">KODE</th>
+                <th width="80">TANGGAL</th>
+                <th width="100">KODE</th>
                 <th>NAMA BARANG</th>
                 <th>SPESIFIKASI</th>
-                <th width="65">KONDISI</th>
-                <th width="140">TUJUAN (LAB)</th>
-                <th width="40">QTY</th>
+                <th width="150">TUJUAN (LAB)</th>
+                <th width="50">QTY</th>
                 <th width="60">SAT</th>
             </tr>
         </thead>
@@ -175,47 +177,45 @@ if ($format == 'excel') {
                     $total_qty += $row['jumlah'];
             ?>
                 <tr>
-                    <td class="text-center"><?= $no++ ?></td>
-                    <td class="text-center"><?= date('d/m/y', strtotime($row['tanggal_distribusi'])) ?></td>
-                    <td class="text-center"><b><?= $row['kode_distribusi'] ?: '-' ?></b></td>
+                    <td style="text-align: center;"><?= $no++ ?></td>
+                    <td style="text-align: center;"><?= date('d/m/y', strtotime($row['tanggal_distribusi'])) ?></td>
+                    <td style="text-align: center;"><b><?= $row['kode_distribusi'] ?: '-' ?></b></td>
                     <td><?= htmlspecialchars($row['nama_bahan']) ?></td>
                     <td><small><?= $row['spesifikasi'] ?: '-' ?></small></td>
-                    <td class="text-center"><?= $row['kondisi'] ?: 'Baik' ?></td>
                     <td>
                         <b><?= $row['nama_jurusan'] ?></b><br>
                         <small><?= $row['nama_lab'] ?></small>
                     </td>
-                    <td class="text-center fw-bold"><?= $row['jumlah'] ?></td>
-                    <td class="text-center"><?= $row['satuan'] ?></td>
+                    <td style="text-align: center; font-weight: bold;"><?= $row['jumlah'] ?></td>
+                    <td style="text-align: center;"><?= $row['satuan'] ?></td>
                 </tr>
             <?php endwhile; ?>
                 <tr style="background-color: #f2f2f2; font-weight: bold;">
-                    <td colspan="7" class="text-end">TOTAL BARANG DIDISTRIBUSIKAN :</td>
-                    <td class="text-center"><?= $total_qty ?></td>
+                    <td colspan="6" style="text-align: right;">TOTAL BARANG DIDISTRIBUSIKAN :</td>
+                    <td style="text-align: center;"><?= $total_qty ?></td>
                     <td></td>
                 </tr>
             <?php else: ?>
-                <tr><td colspan="9" class="text-center py-4">Data distribusi tidak ditemukan untuk <?= strtolower($title_suffix) ?>.</td></tr>
+                <tr><td colspan="8" style="text-align: center; padding: 20px;">Data distribusi tidak ditemukan.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
 
-    <div class="row mt-5">
-        <div class="col-8"></div>
-        <div class="col-4 text-center">
-            <p class="mb-0">Makassar, <?= date('d F Y') ?></p>
-            <p class="mb-0">Petugas Gudang,</p>
-            <div style="height: 60px; display: flex; align-items: center; justify-content: center;">
-                 <div class="verif-box">
-                    <small>Dandatangani secara digital oleh:</small><br>
+    <table width="100%" style="margin-top: 40px; border: none;">
+        <tr>
+            <td width="60%"></td>
+            <td style="text-align: center;">
+                <p>Makassar, <?= date('d F Y') ?></p>
+                <p>Petugas Gudang,</p>
+                <div class="verif-box">
+                    Ditandatangani secara digital oleh:<br>
                     <b><?= $nama_admin ?></b><br>
-                    <small><?= $status_verifikasi ?></small>
-                 </div>
-            </div>
-            <p class="fw-bold mb-0 text-decoration-underline"><?= strtoupper($nama_admin) ?></p>
-            <p>NIP. <?= $nip_admin ?></p>
-        </div>
-    </div>
+                    <?= $status_verifikasi ?>
+                </div>
+                <p style="margin-top: 15px;"><b><u><?= strtoupper($nama_admin) ?></u></b><br>NIP. <?= $nip_admin ?></p>
+            </td>
+        </tr>
+    </table>
 </div>
 
 </body>
