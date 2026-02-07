@@ -13,7 +13,7 @@ $tgl_awal      = isset($_GET['tgl_awal']) ? mysqli_real_escape_string($conn, $_G
 $tgl_akhir     = isset($_GET['tgl_akhir']) ? mysqli_real_escape_string($conn, $_GET['tgl_akhir']) : date('Y-m-d');
 $format        = $_GET['format'] ?? 'pdf';
 
-// 2. LOGIKA DOWNLOAD FILE (Baru)
+// 2. LOGIKA DOWNLOAD FILE
 $filename = "Laporan_Pemakaian_" . date('Ymd');
 if ($format === 'excel') {
     header("Content-type: application/vnd-ms-excel");
@@ -23,7 +23,7 @@ if ($format === 'excel') {
     header("Content-Disposition: attachment; filename=$filename.doc");
 }
 
-// 3. LOGIKA PENANDATANGAN
+// 3. LOGIKA PENANDATANGAN (DISEMPURNAKAN)
 $opsi_nama    = $_GET['opsi_nama'] ?? 'default';
 $custom_nama  = $_GET['custom_nama'] ?? '';
 $custom_nip   = $_GET['custom_nip'] ?? '';
@@ -33,22 +33,32 @@ if ($opsi_nama === 'custom' && !empty($custom_nama)) {
     $nip_admin  = $custom_nip ?: "..........................";
     $status_verifikasi = "Terverifikasi (Input Manual oleh Petugas)";
 } else {
-    $id_user_session = $_SESSION['id_user'] ?? $_SESSION['id_admin'] ?? 1;
-    $admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users WHERE id_user = '$id_user_session'");
-    $admin_data  = mysqli_fetch_assoc($admin_query);
-    $nama_admin = $admin_data['nama_lengkap'] ?? "Administrator";
-    $nip_admin  = $admin_data['nip'] ?? "..........................";
+    // Mengambil data dari session yang di-set saat login
+    // Jika nama_lengkap di session kosong, baru ambil dari kolom 'nama' atau 'username'
+    $nama_admin = $_SESSION['nama_lengkap'] ?? $_SESSION['nama'] ?? $_SESSION['username'] ?? "Administrator";
+    $nip_admin  = $_SESSION['nip'] ?? "..........................";
+    
+    // Jika data di session ternyata belum ada (karena belum relogin), ambil paksa dari DB berdasarkan ID session
+    if ($nama_admin == "Administrator" || $nip_admin == "..........................") {
+        $id_user_session = $_SESSION['id_user'] ?? 1;
+        $admin_query = mysqli_query($conn, "SELECT nama_lengkap, nip FROM users WHERE id_admin = '$id_user_session' OR id_user = '$id_user_session'");
+        $admin_data  = mysqli_fetch_assoc($admin_query);
+        if ($admin_data) {
+            $nama_admin = $admin_data['nama_lengkap'] ?: $nama_admin;
+            $nip_admin  = $admin_data['nip'] ?: $nip_admin;
+        }
+    }
     $status_verifikasi = "Terverifikasi secara Sistem (E-Inventory)";
 }
 
 // 4. QUERY DATA
 $query = "SELECT p.*, 
-                 b.nama_bahan, b.satuan, 
-                 l.nama_lab, j.nama_jurusan,
-                 d.kode_distribusi, d.jumlah as stok_awal, 
-                 IFNULL(d.spesifikasi, '-') as spesifikasi, 
-                 IFNULL(d.kondisi, 'Baik') as kondisi,
-                 (d.jumlah - (SELECT COALESCE(SUM(jumlah_pakai),0) FROM pemakaian_lab WHERE id_distribusi = d.id_distribusi)) as sisa_stok
+                  b.nama_bahan, b.satuan, 
+                  l.nama_lab, j.nama_jurusan,
+                  d.kode_distribusi, d.jumlah as stok_awal, 
+                  IFNULL(d.spesifikasi, '-') as spesifikasi, 
+                  IFNULL(d.kondisi, 'Baik') as kondisi,
+                  (d.jumlah - (SELECT COALESCE(SUM(jumlah_pakai),0) FROM pemakaian_lab WHERE id_distribusi = d.id_distribusi)) as sisa_stok
           FROM pemakaian_lab p
           JOIN bahan_praktek b ON p.id_praktek = b.id_praktek
           JOIN lab l ON p.id_lab = l.id_lab
@@ -87,11 +97,11 @@ $result = mysqli_query($conn, $query);
 <head>
     <meta charset="UTF-8">
     <title>Laporan Pemakaian Bahan</title>
-    <?php if ($format === 'pdf'): ?>
+    <?php if ($format === 'pdf' || $format === 'print'): ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <?php endif; ?>
     <style>
-        body { background: <?= ($format === 'pdf') ? '#f4f7f6' : '#fff' ?>; font-family: Arial, sans-serif; color: black; line-height: 1.2; font-size: 9pt; }
+        body { background: <?= ($format === 'pdf' || $format === 'print') ? '#f4f7f6' : '#fff' ?>; font-family: Arial, sans-serif; color: black; line-height: 1.2; font-size: 9pt; }
         .container-print { background: white; padding: 1cm; width: 99%; margin: auto; }
         
         .kop-table { width: 100%; border: none !important; border-bottom: 3px solid black !important; margin-bottom: 20px; }
@@ -114,7 +124,7 @@ $result = mysqli_query($conn, $query);
 </head>
 <body>
 
-<?php if ($format === 'pdf'): ?>
+<?php if ($format === 'pdf' || $format === 'print'): ?>
 <div class="no-print">
     <button onclick="window.print()" class="btn btn-primary">🖨️ CETAK SEKARANG</button>
     <button onclick="window.close()" class="btn btn-danger">✖ TUTUP</button>
@@ -201,7 +211,7 @@ $result = mysqli_query($conn, $query);
                     <p>Mengetahui,<br>Petugas Logistik,</p>
                     <div class="verif-box">
                         Ditandatangani secara digital oleh:<br>
-                        <b><?= $nama_admin ?></b><br>
+                        <b><?= strtoupper($nama_admin) ?></b><br>
                         <?= $status_verifikasi ?>
                     </div>
                     <p style="margin-top:15px;"><b><u><?= strtoupper($nama_admin) ?></u></b><br>NIP. <?= $nip_admin ?></p>
@@ -217,7 +227,7 @@ $result = mysqli_query($conn, $query);
                     <p>Mengetahui,<br>Petugas Logistik,</p>
                     <div class="verif-box">
                         Ditandatangani secara digital oleh:<br>
-                        <b><?= $nama_admin ?></b><br>
+                        <b><?= strtoupper($nama_admin) ?></b><br>
                         <?= $status_verifikasi ?>
                     </div>
                     <p style="margin-top:15px;"><b><u><?= strtoupper($nama_admin) ?></u></b><br>NIP. <?= $nip_admin ?></p>
