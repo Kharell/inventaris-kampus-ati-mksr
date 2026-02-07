@@ -25,7 +25,7 @@ if (isset($_GET['pesan'])) {
     }
 }
 
-// ... (Kode POST Login tetap sama seperti yang kamu kirim) ...
+// ... (Kode POST Login) ...
 if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
@@ -49,6 +49,17 @@ if (isset($_POST['login'])) {
         $_SESSION['username'] = $data['username'];
         $_SESSION['role']     = $role_input;
         $_SESSION['nama']     = $data[$nama_key];
+        
+        // --- TAMBAHAN KODE UNTUK LAPORAN (AGAR NAMA/NIP DINAMIS) ---
+        if ($role_input == 'admin') {
+            $_SESSION['nama_lengkap'] = $data['nama_lengkap']; // Mengambil kolom nama_lengkap dari tabel users
+            $_SESSION['nip']          = $data['nip'];          // Mengambil kolom nip dari tabel users
+        } else {
+            $_SESSION['nama_lengkap'] = $data['nama_kepala'];  // Nama kepala lab
+            $_SESSION['nip']          = $data['nip'] ?? '..........................'; 
+        }
+        // ---------------------------------------------------------
+
         $_SESSION['last_activity'] = time(); 
         $_SESSION['secure_fingerprint'] = md5($_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR']);
 
@@ -60,7 +71,7 @@ if (isset($_POST['login'])) {
         header("Location: " . $redirect);
         exit();
     } else {
-        header("Location: login.php?pesan=gagal"); // Sesuaikan nama file ini jika index.php
+        header("Location: login.php?pesan=gagal"); 
         exit();
     }
 }
