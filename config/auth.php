@@ -22,7 +22,7 @@ function checkAccess($required_role) {
     // --- LOGIKA LOGOUT OTOMATIS (SERVER SIDE) ---
     // HANYA BERLAKU UNTUK KEPALA LAB
     if ($_SESSION['role'] !== 'admin') {
-        $timeout_duration = 5; // 30 menit sesi habis
+        $timeout_duration = 1800; // 30 menit sesi habis
         
         if (isset($_SESSION['last_activity'])) {
             $elapsed_time = time() - $_SESSION['last_activity'];

@@ -308,7 +308,7 @@ function prosesLogout() {
  */
 <?php if ($role !== 'admin'): ?>
 (function() {
-    const maxInactivityTime = 5000; // 30 menit dalam milidetik
+    const maxInactivityTime = 1800000; // 30 menit dalam milidetik
     let logoutTimer;
     let lastKeepAlive = 0;
 
@@ -340,7 +340,7 @@ function prosesLogout() {
 
         let now = Date.now();
         // Milidetik,Browser mengirim sinyal ke server setiap 5 menit untuk menjaga sesi tetap hidup selama user aktif.
-        if (now - lastKeepAlive > 1000) // 30 menit = 1800000 ms
+        if (now - lastKeepAlive > 300000) // 30 menit = 1800000 ms
          { 
             perbaruiSesiServer();
             lastKeepAlive = now;

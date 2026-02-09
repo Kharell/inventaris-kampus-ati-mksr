@@ -15,7 +15,7 @@ $id_user_session = $_SESSION['id_user'];
 
 // --- BAGIAN CUSTOM PENANDATANGAN ---
 $opsi_nama   = $_GET['opsi_nama'] ?? 'default';
-$custom_nama = $_GET['custom_nama'] ?? '';
+$custom_nama = $_GET['custom_nama'] ?? '';  
 $custom_nip  = $_GET['custom_nip'] ?? '';
 
 // 2. Ambil Identitas Kepala Lab & Nama Lab
