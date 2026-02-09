@@ -1,8 +1,18 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+error_reporting(E_ALL & ~E_NOTICE); 
 include "../../config/database.php";
 include "../../config/auth.php";
 checkAccess('admin');
+
+// 1. Deteksi Protokol & URL Dinamis (Penting agar Logo Muncul di Word/Excel)
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
+$current_path = $_SERVER['SCRIPT_NAME']; 
+$parts = explode('/', $current_path);
+$project_folder = $parts[1]; 
+$base_url = $protocol . $host . "/" . $project_folder . "/";
+$logo_url = $base_url . "images/images.png";
 
 // 1. Ambil Parameter Filter
 $scope       = $_GET['scope'] ?? 'semua';
@@ -12,21 +22,37 @@ $tgl_awal     = $_GET['tgl_awal'] ?? date('Y-m-01');
 $tgl_akhir    = $_GET['tgl_akhir'] ?? date('Y-m-d');
 $format       = $_GET['format'] ?? 'print';
 
-// 2. Logika Penandatangan (Mengambil dari Session Login yang sudah diperbaiki)
+// 2. Logika Download File dengan XML Office Namespace
+$filename = "Laporan_Distribusi_" . date('Ymd');
+if ($format === 'excel') {
+    header("Content-type: application/vnd-ms-excel");
+    header("Content-Disposition: attachment; filename=$filename.xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    echo "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'>";
+} elseif ($format === 'word') {
+    header("Content-type: application/vnd-ms-word");
+    header("Content-Disposition: attachment; filename=$filename.doc");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    echo "";
+}
+
+// 3. Logika Penandatangan
 $opsi_nama    = $_GET['opsi_nama'] ?? 'default';
 if ($opsi_nama === 'custom' && !empty($_GET['custom_nama'])) {
     $nama_admin = $_GET['custom_nama'];
     $nip_admin  = $_GET['custom_nip'] ?: "..........................";
     $status_verifikasi = "Terverifikasi (Input Manual)";
 } else {
-    $nama_admin = $_SESSION['nama_lengkap'] ?: "Administrator";
+    $nama_admin = $_SESSION['nama_lengkap'] ?: $_SESSION['nama'] ?: "Administrator";
     $nip_admin  = $_SESSION['nip'] ?: "..........................";
     $status_verifikasi = "Terverifikasi secara Sistem (E-Inventory)";
 }
 
 $judul_laporan = "LAPORAN DISTRIBUSI BARANG INVENTARIS";
 
-// 3. Query Data Distribusi
+// 4. Query Data Distribusi
 $query = "SELECT d.*, b.nama_bahan, b.satuan, b.spesifikasi, l.nama_lab, j.nama_jurusan 
           FROM distribusi_lab d
           JOIN bahan_praktek b ON d.id_praktek = b.id_praktek
@@ -41,15 +67,6 @@ if ($scope == 'jurusan' && !empty($id_jurusan)) {
 }
 
 $result = mysqli_query($conn, $query . " ORDER BY d.tanggal_distribusi ASC");
-
-// 4. Header untuk Format Excel/Word jika dipilih
-if ($format == 'excel') {
-    header("Content-type: application/vnd-ms-excel");
-    header("Content-Disposition: attachment; filename=Laporan_Distribusi.xls");
-} elseif ($format == 'word') {
-    header("Content-type: application/vnd-ms-word");
-    header("Content-Disposition: attachment; filename=Laporan_Distribusi.doc");
-}
 ?>
 
 <!DOCTYPE html>
@@ -57,49 +74,41 @@ if ($format == 'excel') {
 <head>
     <meta charset="UTF-8">
     <title>Cetak Laporan - <?= $judul_laporan ?></title>
+    <?php if ($format === 'pdf' || $format === 'print'): ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <?php endif; ?>
     <style>
-        body { background: #f4f7f6; font-family: Arial, sans-serif; color: black; line-height: 1.2; }
-        .container-print { 
-            background: white; padding: 1cm; width: 98%; max-width: 1200px;
-            margin: 20px auto; min-height: 297mm; box-shadow: 0 0 15px rgba(0,0,0,0.1); 
-        }
-        .kop-table { width: 100%; border: none !important; }
-        .logo-container { width: 3cm !important; }
-        .logo-container img { width: 2.5cm !important; height: auto; }
-        .teks-kop { text-align: center; padding-right: 1.5cm; }
-        .teks-kop h4 { font-size: 10pt; margin: 0; }
-        .teks-kop h2 { font-size: 16pt; margin: 2px 0; font-weight: bold; }
-        .garis-kop { border-top: 1px solid black; border-bottom: 3.5px solid black; height: 3px; margin: 5px 0 20px 0; }
+        body { background: <?= ($format === 'pdf' || $format === 'print') ? '#f4f7f6' : '#fff' ?>; font-family: Arial, sans-serif; color: black; line-height: 1.2; font-size: 9pt; }
+        .container-print { background: white; padding: 1cm; width: 99%; margin: auto; }
         
-        .table-laporan { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        /* Kop Table Style agar tidak bergeser di Word/Excel */
+        .kop-table { 
+        width: 100%; 
+        border: none !important; 
+        border-bottom: 3px solid black !important; /* INI GARISNYA */
+        margin-bottom: 20px; 
+}
+        .kop-table td { border: none !important; }
+        .logo-container { width: 100px; text-align: left; }
+        .teks-kop { text-align: center; }
+        
+        /* Table Data Style - Menggunakan mso-border agar garis muncul di Office */
+        .table-laporan { width: 100%; border-collapse: collapse; }
         .table-laporan th, .table-laporan td { 
-            border: 1px solid black !important; 
+            border: .5pt solid black !important; 
             padding: 5px; 
-            font-size: 8.5pt; 
-            word-wrap: break-word;
-            vertical-align: middle;
+            vertical-align: middle; 
+            mso-number-format:"\@"; /* Mencegah angka nol di depan NIP/Kode hilang */
         }
-        .table-laporan th { background-color: #f2f2f2 !important; text-align: center; font-weight: bold; }
+        .table-laporan th { background-color: #f2f2f2 !important; font-weight: bold; text-align: center; }
         
-        /* Style Verifikasi Digital */
-        .verif-box {
-            border: 1px solid #ddd;
-            padding: 5px;
-            font-size: 7pt;
-            color: #666;
-            display: inline-block;
-            margin-top: 5px;
-            font-style: italic;
-        }
+        .verif-box { border: 1px solid #ddd; padding: 5px; font-size: 7pt; color: #666; font-style: italic; }
+        .no-print { position: fixed; top: 20px; right: 20px; z-index: 9999; }
         
-        .no-print { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; gap: 10px; }
         @media print {
-            @page { size: portrait; margin: 0.5cm; } 
+            @page { size: landscape; margin: 0.5cm; } 
             .no-print { display: none !important; } 
-            body { background: white; margin: 0; padding: 0.5cm; }
-            .container-print { width: 100%; box-shadow: none; margin: 0; padding: 0; }
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .container-print { padding: 0; box-shadow: none; }
         }
     </style>
 </head>
@@ -113,27 +122,29 @@ if ($format == 'excel') {
 <?php endif; ?>
 
 <div class="container-print">
-    <table class="kop-table">
-        <tr>
-            <td class="logo-container">
-                <img src="../../images/logo.png" onerror="this.src='https://upload.wikimedia.org/wikipedia/id/0/05/Logo_Politeknik_ATI_Makassar.png'">
-            </td>
-            <td class="teks-kop">
-                <h4>KEMENTERIAN PERINDUSTRIAN REPUBLIK INDONESIA</h4>
-                <h4>BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h4>
-                <h2>POLITEKNIK ATI MAKASSAR</h2>
-                <p>Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
-            </td>
-        </tr>
-    </table>
-    <div class="garis-kop"></div>
+    <table class="kop-table" style="width: 100%; border: none; table-layout: fixed;">
+    <tr>
+        <td class="logo-container" style="width: 150px; text-align: left; vertical-align: middle;">
+            <img src="<?= $logo_url ?>" width="130" alt="Logo">
+        </td>
 
-    <div class="text-center mb-4">
-        <h5 class="text-decoration-underline fw-bold mb-1"><?= $judul_laporan ?></h5>
-        <p style="font-size: 9pt;">Periode: <b><?= date('d/m/Y', strtotime($tgl_awal)) ?></b> s/d <b><?= date('d/m/Y', strtotime($tgl_akhir)) ?></b></p>
+        <td class="teks-kop" style="text-align: center; vertical-align: middle;">
+            <h5 style="margin:0; font-size: 11pt;">BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h5>
+            <h3 style="margin:0; font-weight: bold;">POLITEKNIK ATI MAKASSAR</h3>
+            <p style="margin:0; font-size: 10pt;">Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
+        </td>
+
+        <td style="width: 150px;"></td>
+    </tr>
+</table>
+
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h6 style="text-decoration: underline; margin-bottom: 5px;"><?= $judul_laporan ?></h6>
+        <p>Periode: <?= date('d/m/Y', strtotime($tgl_awal)) ?> s/d <?= date('d/m/Y', strtotime($tgl_akhir)) ?></p>
     </div>
 
-    <table class="table-laporan">
+    <table class="table-laporan" border="1" cellspacing="0" cellpadding="5">
         <thead>
             <tr>
                 <th width="35">NO</th>
@@ -155,43 +166,44 @@ if ($format == 'excel') {
                     $total_qty += (int)$row['jumlah'];
             ?>
                 <tr>
-                    <td class="text-center"><?= $no++ ?></td>
-                    <td class="text-center"><?= date('d/m/y', strtotime($row['tanggal_distribusi'])) ?></td>
-                    <td class="text-center"><b><?= $row['kode_distribusi'] ?></b></td>
+                    <td align="center"><?= $no++ ?></td>
+                    <td align="center"><?= date('d/m/y', strtotime($row['tanggal_distribusi'])) ?></td>
+                    <td align="center"><b><?= $row['kode_distribusi'] ?></b></td>
                     <td><?= htmlspecialchars($row['nama_bahan']) ?></td>
                     <td><small><?= $row['spesifikasi'] ?: '-' ?></small></td>
                     <td><?= $row['nama_lab'] ?></td>
-                    <td class="text-center"><?= $row['jumlah'] ?></td>
-                    <td class="text-center"><?= $row['satuan'] ?></td>
+                    <td align="center"><?= $row['jumlah'] ?></td>
+                    <td align="center"><?= $row['satuan'] ?></td>
                 </tr>
             <?php endwhile; ?>
                 <tr style="background-color: #f2f2f2; font-weight: bold;">
-                    <td colspan="6" class="text-end">TOTAL BARANG DIDISTRIBUSIKAN :</td>
-                    <td class="text-center"><?= $total_qty ?></td>
+                    <td colspan="6" align="right">TOTAL BARANG DIDISTRIBUSIKAN :</td>
+                    <td align="center"><?= $total_qty ?></td>
                     <td></td>
                 </tr>
             <?php else: ?>
-                <tr><td colspan="8" class="text-center py-4">Tidak ada data distribusi barang pada periode ini.</td></tr>
+                <tr><td colspan="8" align="center">Tidak ada data distribusi barang pada periode ini.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
 
-    <div class="row mt-5">
-        <div class="col-8"></div>
-        <div class="col-4 text-center" style="font-size: 9pt;">
-            <p class="mb-0">Makassar, <?= date('d F Y') ?></p>
-            <p class="mb-0">Petugas Logistik / Gudang,</p>
-            <div style="height: 90px; display: flex; align-items: center; justify-content: center;">
-                 <div class="verif-box">
+    <table width="100%" border="0" style="margin-top: 30px;">
+        <tr>
+            <td colspan="2" align="right" style="padding-bottom: 10px;">Makassar, <?= date('d F Y') ?></td>
+        </tr>
+        <tr>
+            <td width="60%"></td>
+            <td width="40%" align="center">
+                <p>Mengetahui,<br>Petugas Logistik / Gudang,</p>
+                <div class="verif-box">
                     <small>Ditandatangani secara digital oleh:</small><br>
                     <b><?= strtoupper($nama_admin) ?></b><br>
                     <small style="color: green;"><?= $status_verifikasi ?></small>
-                 </div>
-            </div>
-            <p class="fw-bold mb-0 text-decoration-underline"><?= strtoupper($nama_admin) ?></p>
-            <p>NIP. <?= $nip_admin ?></p>
-        </div>
-    </div>
+                </div>
+                <p style="margin-top:15px;"><b><u><?= strtoupper($nama_admin) ?></u></b><br>NIP. <?= $nip_admin ?></p>
+            </td>
+        </tr>
+    </table>
 </div>
 
 </body>

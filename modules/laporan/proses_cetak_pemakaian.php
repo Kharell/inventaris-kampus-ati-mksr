@@ -5,6 +5,26 @@ include "../../config/database.php";
 include "../../config/auth.php";
 checkAccess('admin');
 
+// 1. Deteksi Protokol (http atau https)
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+
+// 2. Deteksi Host (misal: localhost atau domain.com)
+$host = $_SERVER['HTTP_HOST'];
+
+// 3. Deteksi Folder Proyek secara dinamis
+// Kita mengambil path script saat ini dan membuang nama filenya
+$current_path = $_SERVER['SCRIPT_NAME']; // Hasil: /folder_proyek/modules/laporan/export.php
+$parts = explode('/', $current_path);
+$project_folder = $parts[1]; // Mengambil bagian pertama setelah slash pertama (nama folder proyek)
+
+// 4. Gabungkan menjadi Base URL
+$base_url = $protocol . $host . "/" . $project_folder . "/";
+
+// 5. Link Logo Final (Sesuaikan dengan folder image Anda dari root proyek)
+$logo_url = $base_url . "images/images.png";
+
+
+
 // 1. TANGKAP PARAMETER
 $scope         = $_GET['scope'] ?? 'semua';
 $id_jurusan    = $_GET['id_jurusan'] ?? '';
@@ -132,22 +152,25 @@ $result = mysqli_query($conn, $query);
 <?php endif; ?>
 
 <div class="container-print">
-    <table class="kop-table">
-        <tr>
-            <td class="logo-container">
-                <img src="../../images/images.png" width="80">
-            </td>
-            <td class="teks-kop">
-                <h4 style="margin:0;">BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h4>
-                <h2 style="margin:0;">POLITEKNIK ATI MAKASSAR</h2>
-                <p style="margin:0;">Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
-            </td>
-        </tr>
-    </table>
+    <table class="kop-table" style="width: 100%; border: none; table-layout: fixed;">
+    <tr>
+        <td class="logo-container" style="width: 150px; text-align: left; vertical-align: middle;">
+            <img src="<?= $logo_url ?>" width="130" alt="Logo">
+        </td>
+
+        <td class="teks-kop" style="text-align: center; vertical-align: middle;">
+            <h5 style="margin:0; font-size: 11pt;">BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h5>
+            <h3 style="margin:0; font-weight: bold;">POLITEKNIK ATI MAKASSAR</h3>
+            <p style="margin:0; font-size: 10pt;">Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
+        </td>
+
+        <td style="width: 150px;"></td>
+    </tr>
+</table>
 
     <div style="text-align: center; margin-bottom: 20px;">
-        <h3 style="text-decoration: underline; margin-bottom: 5px;">LAPORAN PEMAKAIAN BAHAN PRAKTIKUM</h3>
-        <h4 style="margin:0;"><?= $title_suffix ?></h4>
+        <h6 style="text-decoration: underline; margin-bottom: 5px;">LAPORAN PEMAKAIAN BAHAN PRAKTIKUM</h6>
+        <h6 style="margin:0;"><?= $title_suffix ?></h6>
         <p>Periode: <?= date('d/m/Y', strtotime($tgl_awal)) ?> s/d <?= date('d/m/Y', strtotime($tgl_akhir)) ?></p>
     </div>
 

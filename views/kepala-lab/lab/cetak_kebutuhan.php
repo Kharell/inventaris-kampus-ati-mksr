@@ -6,6 +6,26 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
     exit('Akses ditolak.');
 }
 
+// 1. Deteksi Protokol (http atau https)
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+
+// 2. Deteksi Host (misal: localhost atau domain.com)
+$host = $_SERVER['HTTP_HOST'];
+
+// 3. Deteksi Folder Proyek secara dinamis
+// Kita mengambil path script saat ini dan membuang nama filenya
+$current_path = $_SERVER['SCRIPT_NAME']; // Hasil: /folder_proyek/modules/laporan/export.php
+$parts = explode('/', $current_path);
+$project_folder = $parts[1]; // Mengambil bagian pertama setelah slash pertama (nama folder proyek)
+
+// 4. Gabungkan menjadi Base URL
+$base_url = $protocol . $host . "/" . $project_folder . "/";
+
+// 5. Link Logo Final (Sesuaikan dengan folder image Anda dari root proyek)
+$logo_url = $base_url . "images/images.png";
+
+
+
 // Mengambil ID dari session login
 $id_kepala_session = $_SESSION['id_user']; 
 
@@ -94,6 +114,13 @@ $query = mysqli_query($conn, $sql);
             .logo-container { width: 5.5cm !important; }
             .logo-container img { width: 5.5cm !important; }
         }
+        .garis-kop {
+            border-top: 3px solid black;    /* Garis tebal di atas */
+            border-bottom: 1px solid black; /* Garis tipis di bawah */
+            height: 2px;                    /* Jarak antar garis */
+            margin: 10px 0 20px 0;          /* Jarak luar garis */
+            padding: 0;
+}
     </style>
 </head>
 <body>
@@ -107,12 +134,12 @@ $query = mysqli_query($conn, $sql);
     <table class="kop-table">
         <tr>
             <td class="logo-container">
-                <img src="../../../images/images.png" alt="Logo Kemenperin">
+                <img src="<?= $logo_url ?>" width="80" alt="Logo">
             </td>
             <td class="teks-kop">
-                <h4>BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h4>
-                <h2>POLITEKNIK ATI MAKASSAR</h2>
-                <p>Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
+                <h5 style="margin:0;">BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h5>
+                <h3 style="margin:0; font-weight: bold;">POLITEKNIK ATI MAKASSAR</h3>
+                <p style="margin:0;">Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
             </td>
         </tr>
     </table>

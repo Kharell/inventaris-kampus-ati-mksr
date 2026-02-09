@@ -6,6 +6,27 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
     exit("Akses Ditolak");
 }
 
+
+// 1. Deteksi Protokol (http atau https)
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+
+// 2. Deteksi Host (misal: localhost atau domain.com)
+$host = $_SERVER['HTTP_HOST'];
+
+// 3. Deteksi Folder Proyek secara dinamis
+// Kita mengambil path script saat ini dan membuang nama filenya
+$current_path = $_SERVER['SCRIPT_NAME']; // Hasil: /folder_proyek/modules/laporan/export.php
+$parts = explode('/', $current_path);
+$project_folder = $parts[1]; // Mengambil bagian pertama setelah slash pertama (nama folder proyek)
+
+// 4. Gabungkan menjadi Base URL
+$base_url = $protocol . $host . "/" . $project_folder . "/";
+
+// 5. Link Logo Final (Sesuaikan dengan folder image Anda dari root proyek)
+$logo_url = $base_url . "images/images.png";
+
+
+
 // 1. Ambil Parameter
 $tipe_data = $_GET['tipe_data'] ?? 'pemakaian';
 $periode   = $_GET['periode'] ?? 'bulan';
@@ -72,8 +93,24 @@ if ($tipe_data == 'pemakaian') {
               ORDER BY d.kode_distribusi ASC";
     $judul_laporan = ($tipe_data == 'gabungan') ? "LAPORAN REKAPITULASI STOK & PEMAKAIAN" : "LAPORAN SISA STOK BAHAN";
 }
+
+
+if ($format == 'excel') {
+    header("Content-type: application/vnd-ms-excel");
+    header("Content-Disposition: attachment; filename=Laporan_" . str_replace(' ', '_', $nama_lab) . ".xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+} elseif ($format == 'word') {
+    header("Content-type: application/vnd.ms-word");
+    header("Content-Disposition: attachment; filename=Laporan_" . str_replace(' ', '_', $nama_lab) . ".doc");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+}
 $result = mysqli_query($conn, $query);
 ?>
+
+
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -96,7 +133,7 @@ $result = mysqli_query($conn, $query);
         .teks-kop h2 { font-size: 16pt; margin: 2px 0; font-weight: bold; font-family: Arial, sans-serif; }
         .teks-kop p { font-size: 8pt; margin: 0; }
 
-        .garis-kop { border-top: 1px solid black; border-bottom: 3px solid black; height: 2px; margin-top: 5px; margin-bottom: 20px; }
+        .garis-kop { border-top: 1px solid black; border-bottom: 2px solid black; height: 2px; margin-top: 5px; margin-bottom: 20px; }
         
         /* --- TABEL DATA --- */
         .table-laporan { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -110,6 +147,7 @@ $result = mysqli_query($conn, $query);
             .logo-container { width: 4.5cm !important; }
             .logo-container img { width: 4.5cm !important; }
         }
+
     </style>
 </head>
 <body <?= ($format == 'pdf') ? 'onload="window.print()"' : '' ?>>
@@ -119,23 +157,24 @@ $result = mysqli_query($conn, $query);
         <button onclick="window.print()" class="btn btn-sm btn-primary">Cetak / Simpan PDF</button>
         <button onclick="window.close()" class="btn btn-sm btn-secondary">Tutup</button>
     </div>
+    
 
     <table class="kop-table">
         <tr>
             <td class="logo-container">
-                <img src="../../../images/images.png" alt="Logo">
+                <img src="<?= $logo_url ?>" width="80" alt="Logo">
             </td>
             <td class="teks-kop">
-                <h4>BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h4>
-                <h2>POLITEKNIK ATI MAKASSAR</h2>
-                <p>Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
+                <h6 style="margin:0;">BADAN PENGEMBANGAN SUMBER DAYA MANUSIA INDUSTRI</h6>
+                <h3 style="margin:0; font-weight: bold;">POLITEKNIK ATI MAKASSAR</h3>
+                <p style="margin:0;">Jl. Sunu No. 220 Makassar, Telp. (0411) 449609 Fax. (0411) 449867</p>
             </td>
         </tr>
     </table>
     <div class="garis-kop"></div>
 
     <div class="text-center mb-4">
-        <h5 style="text-decoration: underline; font-weight: bold; margin-bottom: 5px;"><?= $judul_laporan ?></h5>
+        <h6 style="text-decoration: underline; font-weight: bold; margin-bottom: 5px;"><?= $judul_laporan ?></h6>
         <p class="mb-0">Unit: <strong><?= strtoupper($nama_lab) ?></strong></p>
         <p class="small">Periode: <?= $label_periode ?></p>
     </div>

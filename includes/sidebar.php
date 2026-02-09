@@ -235,6 +235,8 @@ function isExpandedByFolder($folder_name) {
                     <li><a class="nav-link <?= isActive('laporan/laporan_stok.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_stok.php"><i class="bi bi-bar-chart-fill me-2"></i> Stok Gudang</a></li>
                     <li><a class="nav-link <?= isActive('laporan/laporan_distribusi.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_distribusi.php"><i class="bi bi-clipboard-data-fill me-2"></i> Distribusi</a></li>
                     <li><a class="nav-link <?= isActive('laporan/laporan_pemakaian.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_pemakaian.php"><i class="bi bi-clipboard-check-fill me-2"></i> Pemakaian</a></li>
+                    <li><a class="nav-link <?= isActive('laporan/laporan_grafik.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_grafik.php"><i class="bi bi-graph-up-arrow me-2"></i> Visualisasi Grafik</a></li>
+              
                 </ul>
             </div>
         <?php endif; ?>
