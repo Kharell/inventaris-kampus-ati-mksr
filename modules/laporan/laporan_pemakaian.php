@@ -135,7 +135,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                         <label class="report-card w-100" for="scope_semua">
                             <div class="icon-shape"><i class="bi bi-collection"></i></div>
                             <div>
-                                <span class="d-block fw-bold">Seluruh Pemakaian</span>
+                                <span class="d-block fw-bold">Semua Data Pemakaian</span>
                                 <span class="small text-muted">Gabungan semua data pemakaian lab</span>
                             </div>
                         </label>
@@ -144,7 +144,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                         <label class="report-card w-100" for="scope_jurusan">
                             <div class="icon-shape"><i class="bi bi-mortarboard"></i></div>
                             <div>
-                                <span class="d-block fw-bold">Per Jurusan</span>
+                                <span class="d-block fw-bold">Berdasarkan Jurusan</span>
                                 <span class="small text-muted">Akumulasi pemakaian dalam satu jurusan</span>
                             </div>
                         </label>
@@ -153,7 +153,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                         <label class="report-card w-100" for="scope_lab">
                             <div class="icon-shape"><i class="bi bi-buildings"></i></div>
                             <div>
-                                <span class="d-block fw-bold">Per Laboratorium</span>
+                                <span class="d-block fw-bold">Berdasarkan Laboratorium</span>
                                 <span class="small text-muted">Detail penggunaan bahan di lab spesifik</span>
                             </div>
                         </label>

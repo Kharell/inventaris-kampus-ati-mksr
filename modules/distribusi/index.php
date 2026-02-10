@@ -288,8 +288,7 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
 
 <div class="modal fade" id="distModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="../proses/tambah.php" method="POST" class="modal-content border-0 rounded-4 overflow-hidden">
-            
+     <form id="formACC" action="../proses/tambah.php" method="POST" class="modal-content border-0 rounded-4 overflow-hidden">
             <div class="modal-header border-0" style="background-color: #0a192f; padding: 20px;">
                 <h5 class="modal-title fw-bold" style="color: #ffffff;">
                     Kirim Bahan ke: <span id="labName" style="color: #ffcc00;"></span>
@@ -710,6 +709,49 @@ function resetVisualKondisi() {
         document.getElementById(id).classList.add('d-none');
     });
 }
+</script>
+
+<script>
+// Menangani pengiriman form ACC secara AJAX (Latar Belakang)
+document.getElementById('formACC').addEventListener('submit', function(e) {
+    e.preventDefault(); // Mencegah halaman refresh/pindah
+
+    const formData = new FormData(this);
+    formData.append('simpan_distribusi', '1'); 
+
+    // Mengirim data ke file PHP tanpa pindah halaman
+    fetch('../proses/tambah.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        // 1. Tutup modal secara otomatis
+        const modalEl = document.getElementById('distModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
+
+        // 2. Tampilkan notifikasi sukses
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil di-ACC!',
+            text: 'Data distribusi telah diperbarui.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+        // 3. KUNCI UTAMA: Memperbarui tabel saja tanpa menutup menu samping
+        loadDistribusi(currentLabId, 1, '');
+        
+        // 4. Reset form agar bersih
+        this.reset();
+        resetVisualKondisi();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Gagal!', 'Terjadi kesalahan sistem.', 'error');
+    });
+});
 </script>
 
 </body>

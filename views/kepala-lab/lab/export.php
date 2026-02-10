@@ -174,8 +174,8 @@ $result = mysqli_query($conn, $query);
     <div class="garis-kop"></div>
 
     <div class="text-center mb-4">
-        <h6 style="text-decoration: underline; font-weight: bold; margin-bottom: 5px;"><?= $judul_laporan ?></h6>
-        <p class="mb-0">Unit: <strong><?= strtoupper($nama_lab) ?></strong></p>
+        <h6 style=" font-weight: bold; margin-bottom: 5px;"><?= $judul_laporan ?></h6>
+        <p class="mb-0"> <strong><?= strtoupper($nama_lab) ?></strong></p>
         <p class="small">Periode: <?= $label_periode ?></p>
     </div>
 

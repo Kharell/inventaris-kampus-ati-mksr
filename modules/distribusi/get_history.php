@@ -228,18 +228,28 @@ function refreshContentOnly() {
 }
 
 // 3. Logic ACC dengan AJAX
-function prosesACC(idPermintaan, idPraktek, jumlah, nama) {
-    if (confirm("Setujui permintaan " + nama + "?")) {
-        $.ajax({
-            url: "controllers/proses_acc.php", // SESUAIKAN DENGAN FILE PROSES ANDA
-            type: "POST",
-            data: { id_permintaan: idPermintaan, id_praktek: idPraktek, jumlah: jumlah },
-            success: function(response) {
-                alert("Permintaan berhasil di-ACC!");
-                refreshContentOnly(); // REFRESH TABEL TANPA RELOAD HALAMAN
-            }
-        });
+function prosesACC(idPermintaan, idBahan, jmlMinta, namaBahan, spek, kondisi) {
+    // Memastikan ID Lab saat ini tersimpan
+    if (!window.currentLabId) {
+        Swal.fire('Peringatan', 'Silahkan pilih Lab terlebih dahulu', 'warning');
+        return;
     }
+
+    // Mengisi data ke dalam modal yang ada di index.php
+    document.getElementById('modIdLab').value = window.currentLabId;
+    document.getElementById('modIdReq').value = idPermintaan;
+    document.getElementById('modBarang').value = idBahan;
+    document.getElementById('modJumlah').value = jmlMinta;
+    document.getElementById('modSpesifikasi').value = spek;
+    document.getElementById('modKondisiHidden').value = kondisi;
+    
+    // Menjalankan fungsi visual (centang kondisi & kode otomatis)
+    updateVisualKondisi(conditions);
+    generateCode(); 
+
+    // Memunculkan Modal ACC
+    var myModal = new bootstrap.Modal(document.getElementById('distModal'));
+    myModal.show();
 }
 
 // 4. Logic Hapus dengan AJAX

@@ -96,7 +96,7 @@ if ($scope == 'jurusan' && !empty($id_jurusan)) {
 } elseif ($scope == 'lab' && !empty($id_lab)) {
     $query .= " AND l.id_lab = '$id_lab'";
     $res_l = mysqli_query($conn, "SELECT nama_lab FROM lab WHERE id_lab = '$id_lab'");
-    $title_suffix = "LABORATORIUM " . strtoupper(mysqli_fetch_assoc($res_l)['nama_lab']);
+    $title_suffix = " " . strtoupper(mysqli_fetch_assoc($res_l)['nama_lab']);
     
     $kepala_query = mysqli_query($conn, "SELECT k.nama_kepala, k.nip, l.nama_lab FROM kepala_lab k JOIN lab l ON k.id_lab = l.id_lab WHERE k.id_lab = '$id_lab'");
     $k_data = mysqli_fetch_assoc($kepala_query);

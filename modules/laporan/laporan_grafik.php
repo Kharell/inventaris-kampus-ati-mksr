@@ -106,23 +106,118 @@ $q15 = getChartData($conn, "SELECT DAYNAME(tgl_permintaan) as hari, COUNT(*) FRO
         }
     }
 
-    /* Style Tombol Modern */
-    .btn-modern-print {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        color: #f8fafc;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.3);
+
+/* Container Utama */
+        .header-card { 
+            background: linear-gradient(135deg, #1a2a6c 0%, #2a4858 100%); /* Warna Navy ke Light */
+            color: white; 
+            border-radius: 15px; 
+            padding: 20px 40px; /* Padding atas-bawah 20px, kiri-kanan 40px agar memanjang */
+            margin-bottom: 25px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        /* Tombol Cetak di Dalam Card */
+        .btn-modern-print {
+            background: #ffc107; /* Warna Kuning Warning agar kontras dengan Navy */
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-modern-print:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+            color: #000;
+        }
+
+</style>
+
+<style>
+    /* Container Utama Section */
+    .dashboard-section {
+        margin-bottom: 50px;
     }
-    .btn-modern-print:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.4);
-        color: #fff;
+
+    /* Judul Section Modern */
+    .premium-divider {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    .premium-divider .line {
+        height: 2px;
+        flex-grow: 1;
+        background: linear-gradient(90deg, #e2e8f0, transparent);
+    }
+    .premium-divider .section-label {
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #1e293b;
+        font-size: 0.9rem;
+    }
+
+    /* Vibrant Card Design */
+    .vibrant-card {
+        border: none;
+        border-radius: 20px;
+        background: #ffffff;
+        overflow: hidden;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-top: 5px solid var(--accent-color); /* Warna unik di atas */
+    }
+
+    .vibrant-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
+    }
+
+    .vibrant-header {
+        padding: 20px 20px 0 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-color);
+        color: white;
+        box-shadow: 0 4px 10px var(--shadow-color);
+    }
+
+    .vibrant-title {
+        font-weight: 700;
+        color: #334155;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .vibrant-body {
+        padding: 15px 20px 20px;
+        height: 260px;
+    }
+
+    /* Print Adjustment */
+    @media print {
+        .vibrant-card { border: 1px solid #ddd !important; break-inside: avoid; }
+        .icon-circle { border: 1px solid #000; color: #000; background: none !important; }
     }
 </style>
 
@@ -139,76 +234,129 @@ $q15 = getChartData($conn, "SELECT DAYNAME(tgl_permintaan) as hari, COUNT(*) FRO
         </div>
 
         <div class="container-fluid py-4" style="margin-top: 60px;">
-            <div class="d-flex justify-content-between align-items-center mb-4 px-3 btn-print-wrapper">
-                <div>
-                    <h2 class="fw-bold text-dark mb-0">Dashboard Analitik</h2>
-                    <p class="text-muted mb-0">Laporan Inventaris Real-time</p>
-                </div>
-                <button onclick="window.print()" class="btn-modern-print">
-                    <i class="bi bi-printer-fill me-2"></i> Cetak Grafik (PDF)
-                </button>
-            </div>
 
-            <h5 class="mb-3 px-3 text-black fw-bold">I. STOK & INVENTARIS</h5>
-            <div class="row px-2">
-                <?php 
-                $charts_stok = [
-                    ['id' => 'c1', 'title' => 'Kondisi Bahan'],
-                    ['id' => 'c2', 'title' => 'Top 10 Stok Terbanyak'],
-                    ['id' => 'c3', 'title' => 'Bahan Hampir Habis'],
-                    ['id' => 'c4', 'title' => 'Sebaran Satuan'],
-                    ['id' => 'c5', 'title' => 'Tren Masuk Barang'],
-                ];
-                foreach($charts_stok as $c): ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header bg-white"><?= $c['title'] ?></div>
-                        <div class="card-body chart-container"><canvas id="<?= $c['id'] ?>"></canvas></div>
+            <div class="px-3 btn-print-wrapper no-print">
+                <div class="header-card shadow-sm d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="me-4">
+                            <i class="bi bi-printer-fill text-warning" style="font-size: 3rem;"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold mb-1">Dashboard Analitik Inventaris</h2>
+                            <p class="mb-0 text-white-50">Ringkasan statistik stok, manajemen distribusi, dan laporan pemakaian unit</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button onclick="window.print()" class="btn-modern-print">
+                            <i class="bi bi-printer-fill me-2"></i> Cetak Grafik (PDF)
+                        </button>
                     </div>
                 </div>
-                <?php endforeach; ?>
             </div>
-            <br>
 
-            <h5 class="mb-3 mt-4 px-3 text-black fw-bold">II. DISTRIBUSI (GUDANG KE LAB)</h5>
-            <div class="row px-2">
-                <?php 
-                $charts_dist = [
-                    ['id' => 'c6', 'title' => 'Volume Distribusi per Lab'],
-                    ['id' => 'c7', 'title' => 'Status Pengiriman'],
-                    ['id' => 'c8', 'title' => 'Histori Distribusi Mingguan'],
-                    ['id' => 'c9', 'title' => 'Distribusi per Jurusan'],
-                    ['id' => 'c10', 'title' => 'Item Terpopuler'],
-                ];
-                foreach($charts_dist as $c): ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header bg-white"><?= $c['title'] ?></div>
-                        <div class="card-body chart-container"><canvas id="<?= $c['id'] ?>"></canvas></div>
+            <div class="section-divider px-3">
+    <div class="dashboard-section px-3">
+    <div class="premium-divider">
+        <span class="section-label text-primary"><i class="bi bi-box-seam me-2"></i> I. STOK & INVENTARIS</span>
+        <div class="line"></div>
+    </div>
+    <div class="row">
+        <?php 
+        $charts_stok = [
+            ['id' => 'c1', 'title' => 'Kondisi Bahan', 'icon' => 'bi-heart-pulse', 'color' => '#6366f1'], // Indigo
+            ['id' => 'c2', 'title' => 'Top 10 Stok', 'icon' => 'bi-trophy', 'color' => '#f59e0b'],      // Amber
+            ['id' => 'c3', 'title' => 'Hampir Habis', 'icon' => 'bi-bell-fill', 'color' => '#ef4444'], // Red
+            ['id' => 'c4', 'title' => 'Sebaran Satuan', 'icon' => 'bi-tag-fill', 'color' => '#8b5cf6'], // Violet
+            ['id' => 'c5', 'title' => 'Tren Masuk', 'icon' => 'bi-graph-up', 'color' => '#10b981'],    // Emerald
+        ];
+        foreach($charts_stok as $c): 
+            $shadow = $c['color'] . '4D'; // Transparansi 30% untuk shadow
+        ?>
+        <div class="col-md-4 mb-4">
+            <div class="card vibrant-card h-100" style="--accent-color: <?= $c['color'] ?>; --shadow-color: <?= $shadow ?>;">
+                <div class="vibrant-header">
+                    <div class="icon-circle">
+                        <i class="bi <?= $c['icon'] ?>"></i>
                     </div>
+                    <h6 class="vibrant-title"><?= $c['title'] ?></h6>
                 </div>
-                <?php endforeach; ?>
+                <div class="vibrant-body">
+                    <canvas id="<?= $c['id'] ?>"></canvas>
+                </div>
             </div>
-            <br>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
 
-            <h5 class="mb-3 mt-4 px-3 text-black fw-bold">III. PEMAKAIAN & PERENCANAAN</h5>
-            <div class="row px-2">
-                <?php 
-                $charts_extra = [
-                    ['id' => 'c11', 'title' => 'Tren Pemakaian Bulanan'],
-                    ['id' => 'c12', 'title' => 'Efisiensi (Pakai vs Sisa)'],
-                    ['id' => 'c13', 'title' => 'Lab Paling Aktif Melapor'],
-                    ['id' => 'c14', 'title' => 'Rasio Persetujuan Permintaan'],
-                    ['id' => 'c15', 'title' => 'Waktu Puncak Permintaan'],
-                ];
-                foreach($charts_extra as $c): ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header bg-white"><?= $c['title'] ?></div>
-                        <div class="card-body chart-container"><canvas id="<?= $c['id'] ?>"></canvas></div>
+<div class="dashboard-section px-3">
+    <div class="premium-divider">
+        <span class="section-label text-success"><i class="bi bi-truck me-2"></i> II. DISTRIBUSI LOGISTIK</span>
+        <div class="line"></div>
+    </div>
+    <div class="row">
+        <?php 
+        $charts_dist = [
+            ['id' => 'c6', 'title' => 'Volume per Lab', 'icon' => 'bi-geo-alt-fill', 'color' => '#0ea5e9'], // Sky
+            ['id' => 'c7', 'title' => 'Status Pengiriman', 'icon' => 'bi-check-circle', 'color' => '#22c55e'], // Green
+            ['id' => 'c8', 'title' => 'Histori Mingguan', 'icon' => 'bi-clock-history', 'color' => '#f43f5e'], // Rose
+            ['id' => 'c9', 'title' => 'Per Jurusan', 'icon' => 'bi-diagram-3-fill', 'color' => '#ec4899'], // Pink
+            ['id' => 'c10', 'title' => 'Item Terpopuler', 'icon' => 'bi-lightning-charge', 'color' => '#fbbf24'], // Yellow
+        ];
+        foreach($charts_dist as $c): 
+            $shadow = $c['color'] . '4D';
+        ?>
+        <div class="col-md-4 mb-4">
+            <div class="card vibrant-card h-100" style="--accent-color: <?= $c['color'] ?>; --shadow-color: <?= $shadow ?>;">
+                <div class="vibrant-header">
+                    <div class="icon-circle">
+                        <i class="bi <?= $c['icon'] ?>"></i>
                     </div>
+                    <h6 class="vibrant-title"><?= $c['title'] ?></h6>
                 </div>
-                <?php endforeach; ?>
+                <div class="vibrant-body">
+                    <canvas id="<?= $c['id'] ?>"></canvas>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
+<div class="dashboard-section px-3">
+    <div class="premium-divider">
+        <span class="section-label text-warning"><i class="bi bi-cpu me-2"></i> III. ANALITIK PEMAKAIAN</span>
+        <div class="line"></div>
+    </div>
+    <div class="row">
+        <?php 
+        $charts_extra = [
+            ['id' => 'c11', 'title' => 'Tren Bulanan', 'icon' => 'bi-activity', 'color' => '#6366f1'],
+            ['id' => 'c12', 'title' => 'Efisiensi Pakai', 'icon' => 'bi-droplet-fill', 'color' => '#3b82f6'],
+            ['id' => 'c13', 'title' => 'Lab Teraktif', 'icon' => 'bi-award-fill', 'color' => '#fb923c'],
+            ['id' => 'c14', 'title' => 'Rasio Persetujuan', 'icon' => 'bi-patch-check', 'color' => '#10b981'],
+            ['id' => 'c15', 'title' => 'Waktu Puncak', 'icon' => 'bi-hourglass-split', 'color' => '#64748b'], // Slate
+        ];
+        foreach($charts_extra as $c): 
+            $shadow = $c['color'] . '4D';
+        ?>
+        <div class="col-md-4 mb-4">
+            <div class="card vibrant-card h-100" style="--accent-color: <?= $c['color'] ?>; --shadow-color: <?= $shadow ?>;">
+                <div class="vibrant-header">
+                    <div class="icon-circle">
+                        <i class="bi <?= $c['icon'] ?>"></i>
+                    </div>
+                    <h6 class="vibrant-title"><?= $c['title'] ?></h6>
+                </div>
+                <div class="vibrant-body">
+                    <canvas id="<?= $c['id'] ?>"></canvas>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
             </div>
         </div>
     </div>

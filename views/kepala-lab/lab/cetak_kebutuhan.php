@@ -146,7 +146,7 @@ $query = mysqli_query($conn, $sql);
     <div class="garis-kop"></div>
 
     <div class="text-center mb-4">
-        <h5 class="text-decoration-underline fw-bold mb-1">LAPORAN DAFTAR TUNGGU (PENDING) KEBUTUHAN BAHAN</h5>
+        <h5 class=" fw-bold mb-1">LAPORAN DAFTAR TUNGGU (PENDING) KEBUTUHAN BAHAN</h5>
         <p class="mb-0">Unit: <strong><?= strtoupper($nama_lab) ?></strong></p>
         <p class="small">Periode: <?= date('d/m/Y', strtotime($tgl_awal)) ?> s/d <?= date('d/m/Y', strtotime($tgl_akhir)) ?></p>
     </div>
