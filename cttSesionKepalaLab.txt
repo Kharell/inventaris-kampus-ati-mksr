@@ -1,9 +1,9 @@
  -------------
-    CATATAN
+    CATATAN : 
+         untuk seting time out otomatis logout untuk role kepala kepala_lab
+         untuk admin tidak ada sesi logout nya jadi terserah dari admin mau logout kapan saja dari sistem aplikasi nya
+         untuk kepala lab per 30 menit jika tidak ada kegiatan yang di lakukan di aplikasi maka aplikasi nya otomatis logout dari sistem
 --------------
-
-Halaman Login Local
-http://localhost/inventaris-kampus-ati/login.php
 
 
 1 . Waktu Logout OTOMATIS 30 menit untuk kepala_lab
