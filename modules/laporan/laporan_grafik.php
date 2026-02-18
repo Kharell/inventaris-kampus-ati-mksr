@@ -258,7 +258,7 @@ $q15 = getChartData($conn, "SELECT DAYNAME(tgl_permintaan) as hari, COUNT(*) FRO
             <div class="section-divider px-3">
     <div class="dashboard-section px-3">
     <div class="premium-divider">
-        <span class="section-label text-primary"><i class="bi bi-box-seam me-2"></i> I. STOK & INVENTARIS</span>
+        <span class="section-label text-black"><i class="bi bi-box-seam me-2"></i> I. STOK & INVENTARIS</span>
         <div class="line"></div>
     </div>
     <div class="row">
@@ -292,7 +292,7 @@ $q15 = getChartData($conn, "SELECT DAYNAME(tgl_permintaan) as hari, COUNT(*) FRO
 
 <div class="dashboard-section px-3">
     <div class="premium-divider">
-        <span class="section-label text-success"><i class="bi bi-truck me-2"></i> II. DISTRIBUSI LOGISTIK</span>
+        <span class="section-label text-black"><i class="bi bi-truck me-2"></i> II. DISTRIBUSI LOGISTIK</span>
         <div class="line"></div>
     </div>
     <div class="row">
@@ -326,7 +326,7 @@ $q15 = getChartData($conn, "SELECT DAYNAME(tgl_permintaan) as hari, COUNT(*) FRO
 
 <div class="dashboard-section px-3">
     <div class="premium-divider">
-        <span class="section-label text-warning"><i class="bi bi-cpu me-2"></i> III. ANALITIK PEMAKAIAN</span>
+        <span class="section-label text-black"><i class="bi bi-cpu me-2"></i> III. ANALITIK PEMAKAIAN</span>
         <div class="line"></div>
     </div>
     <div class="row">
