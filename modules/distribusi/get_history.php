@@ -5,7 +5,7 @@ include "../../config/database.php";
 $id_lab  = isset($_GET['id_lab']) ? mysqli_real_escape_string($conn, $_GET['id_lab']) : '';
 $keyword = isset($_GET['keyword']) ? mysqli_real_escape_string($conn, $_GET['keyword']) : '';
 $page    = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit   = 5; 
+$limit   = 3; 
 $offset  = ($page - 1) * $limit;
 
 if (empty($id_lab)) {
@@ -83,7 +83,10 @@ $query_req = mysqli_query($conn, $sql_req);
                             <i class="bi bi-box-seam me-1"></i><?= $req['stok_gudang'] ?>
                         </td>
                         <td class="text-end pe-4">
-                            <button class="btn btn-navy btn-sm rounded-pill px-3 shadow-sm hover-up" 
+                            <button class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm" 
+                                style="transition: all 0.3s ease; border: none;"
+                                onmouseover="this.style.backgroundColor='#00c853'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 15px rgba(0, 200, 83, 0.4)';"
+                                onmouseout="this.style.backgroundColor='#002b5c'; this.style.transform='translateY(0)'; this.style.boxShadow='none';"
                                 onclick="prosesACC(
                                     '<?= $req['id_permintaan'] ?>', 
                                     '<?= $req['id_praktek'] ?>', 
@@ -96,7 +99,7 @@ $query_req = mysqli_query($conn, $sql_req);
                                 <i class="bi bi-check2-circle me-1"></i> ACC
                             </button>
                         </td>
-                    </tr>
+                     </tr>
                     <?php endwhile; ?>
                 </tbody>
             </table>
