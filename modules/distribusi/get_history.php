@@ -5,7 +5,7 @@ include "../../config/database.php";
 $id_lab  = isset($_GET['id_lab']) ? mysqli_real_escape_string($conn, $_GET['id_lab']) : '';
 $keyword = isset($_GET['keyword']) ? mysqli_real_escape_string($conn, $_GET['keyword']) : '';
 $page    = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit   = 3; 
+$limit   = 100; 
 $offset  = ($page - 1) * $limit;
 
 if (empty($id_lab)) {
@@ -37,14 +37,10 @@ $query_req = mysqli_query($conn, $sql_req);
         <h5 class="fw-bold text-navy mb-1"><i class="bi bi-cpu-fill me-2"></i>Manajemen Distribusi Lab</h5>
         <p class="text-muted small mb-0">Halaman otomatis diperbarui tanpa muat ulang (No Refresh).</p>
     </div>
-    <div class="col-md-6">
-        <!-- <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border">
-            <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-muted"></i></span>
-            <input type="text" id="searchInput" class="form-control border-0 py-2" placeholder="Cari material..." value="<?= htmlspecialchars($keyword) ?>" onkeyup="if(event.key==='Enter') executeSearch()">
-            <button class="btn btn-navy px-4" onclick="executeSearch()">Cari</button>
-        </div> -->
-    </div>
 </div>
+
+
+
 
 <?php if (mysqli_num_rows($query_req) > 0) : ?>
     <div class="card border-0 shadow-lg rounded-4 mb-5 overflow-hidden anim-fade-up border-top border-warning border-5">
@@ -181,11 +177,15 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
                             <?php endif; ?>
                             <td class="text-center pe-4">
                                 <?php if($hasAction) : ?>
-                                    <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white">
-                                        <button class="btn btn-sm btn-outline-danger border-0 px-3" onclick="hapusDistribusi('<?= $row['id_distribusi'] ?>')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
+                                  <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white border">
+                                    <button class="btn btn-sm btn-outline-danger border-0 px-3" 
+                                        style="transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;"
+                                        onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white'; this.style.transform='scale(1.1)'; this.style.boxShadow='inset 0 0 10px rgba(0,0,0,0.1)';"
+                                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#dc3545'; this.style.transform='scale(1)';"
+                                        onclick="hapusDistribusi('<?= $row['id_distribusi'] ?>')">
+                                        <i class="bi bi-trash" style="font-size: 1.1rem;"></i>
+                                    </button>
+                                </div>
                                 <?php else : ?>
                                     <span class="status-pill status-success "><i class="bi text-success bi-check-circle-fill me-1"></i>Selesai</span>
                                 <?php endif; ?>
