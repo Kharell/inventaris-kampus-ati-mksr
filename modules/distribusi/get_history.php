@@ -5,7 +5,7 @@ include "../../config/database.php";
 $id_lab  = isset($_GET['id_lab']) ? mysqli_real_escape_string($conn, $_GET['id_lab']) : '';
 $keyword = isset($_GET['keyword']) ? mysqli_real_escape_string($conn, $_GET['keyword']) : '';
 $page    = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit   = 100; 
+$limit   = 5; 
 $offset  = ($page - 1) * $limit;
 
 if (empty($id_lab)) {
