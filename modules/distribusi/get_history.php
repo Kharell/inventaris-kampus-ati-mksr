@@ -187,7 +187,7 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
                                         </button>
                                     </div>
                                 <?php else : ?>
-                                    <span class="status-pill status-success"><i class="bi bi-check-circle-fill me-1"></i>Selesai</span>
+                                    <span class="status-pill status-success "><i class="bi text-success bi-check-circle-fill me-1"></i>Selesai</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
