@@ -5,7 +5,12 @@ include "../../config/database.php";
 $id_lab  = isset($_GET['id_lab']) ? mysqli_real_escape_string($conn, $_GET['id_lab']) : '';
 $keyword = isset($_GET['keyword']) ? mysqli_real_escape_string($conn, $_GET['keyword']) : '';
 $page    = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit   = 5; 
+
+// Limit dari parameter, default 10
+$allowed_limits = [10, 25, 50];
+$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+if (!in_array($limit, $allowed_limits)) $limit = 10;
+
 $offset  = ($page - 1) * $limit;
 
 if (empty($id_lab)) {
@@ -13,13 +18,7 @@ if (empty($id_lab)) {
     exit;
 }
 
-// State untuk dikirim kembali ke JavaScript
-echo "<script>
-    window.currentLabId = '$id_lab';
-    window.currentPage = $page;
-    window.currentKeyword = '$keyword';
-</script>";
-
+// State untuk dikirim kembali ke JavaScript (tanpa <script> tag, akan di-set oleh parent)
 $search_sql = $keyword ? " AND (b.nama_bahan LIKE '%$keyword%' OR d.kode_distribusi LIKE '%$keyword%')" : "";
 
 // --- BAGIAN A: ANTRIAN PERMINTAAN (ACC) ---
@@ -32,14 +31,20 @@ $sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok as stok_gudang, b.id_prak
 $query_req = mysqli_query($conn, $sql_req);
 ?>
 
+<!-- Data attributes untuk JavaScript parent (index.php) baca -->
+<div id="ajax-state" 
+     data-lab-id="<?= $id_lab ?>" 
+     data-page="<?= $page ?>" 
+     data-keyword="<?= htmlspecialchars($keyword) ?>" 
+     data-limit="<?= $limit ?>" 
+     style="display:none;"></div>
+
 <div class="row align-items-center mb-4 anim-fade-up">
     <div class="col-md-6">
         <h5 class="fw-bold text-navy mb-1"><i class="bi bi-cpu-fill me-2"></i>Manajemen Distribusi Lab</h5>
         <p class="text-muted small mb-0">Halaman otomatis diperbarui tanpa muat ulang (No Refresh).</p>
     </div>
 </div>
-
-
 
 
 <?php if (mysqli_num_rows($query_req) > 0) : ?>
@@ -105,17 +110,15 @@ $query_req = mysqli_query($conn, $sql_req);
 
 <ul class="nav nav-pills mb-4 gap-2 anim-fade-up" id="distTab" role="tablist">
     <li class="nav-item">
-        <button class="nav-link active rounded-pill px-4 fw-bold shadow-sm text-dark border" id="tab-dikirim" data-bs-toggle="tab" data-bs-target="#transit-pane">
+        <button class="nav-link rounded-pill px-4 fw-bold shadow-sm text-dark border" id="tab-dikirim" data-bs-toggle="tab" data-bs-target="#transit-pane">
             <i class="bi bi-truck me-2"></i>In Transit
         </button>
     </li>
-
     <li class="nav-item">
         <button class="nav-link rounded-pill px-4 fw-bold shadow-sm text-dark border-danger" id="tab-ditolak" data-bs-toggle="tab" data-bs-target="#reject-pane">
             <i class="bi bi-x-circle me-2"></i>Ditolak
         </button>
     </li>
-
     <li class="nav-item">
         <button class="nav-link rounded-pill px-4 fw-bold shadow-sm text-dark border-success" id="tab-diterima" data-bs-toggle="tab" data-bs-target="#done-pane">
             <i class="bi bi-check-all me-2"></i>Selesai
@@ -124,19 +127,19 @@ $query_req = mysqli_query($conn, $sql_req);
 </ul>
 
 <div class="tab-content anim-fade-up">
-    <div class="tab-pane fade show active" id="transit-pane">
-        <?php renderTableDistribusi($conn, $id_lab, 'dikirim', $search_sql, 'warning', $limit, $offset, true); ?>
+    <div class="tab-pane fade" id="transit-pane">
+        <?php renderTableDistribusi($conn, $id_lab, 'dikirim', $search_sql, 'warning', $limit, $offset, true, $page); ?>
     </div>
     <div class="tab-pane fade" id="reject-pane">
-        <?php renderTableDistribusi($conn, $id_lab, 'ditolak', $search_sql, 'danger', $limit, $offset, true); ?>
+        <?php renderTableDistribusi($conn, $id_lab, 'ditolak', $search_sql, 'danger', $limit, $offset, true, $page); ?>
     </div>
     <div class="tab-pane fade" id="done-pane">
-        <?php renderTableDistribusi($conn, $id_lab, 'diterima', $search_sql, 'success', $limit, $offset, false); ?>
+        <?php renderTableDistribusi($conn, $id_lab, 'diterima', $search_sql, 'success', $limit, $offset, false, $page); ?>
     </div>
 </div>
 
 <?php
-function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $limit, $offset, $hasAction) {
+function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $limit, $offset, $hasAction, $current_page) {
     $sql = "SELECT d.*, b.nama_bahan, b.satuan FROM distribusi_lab d 
             JOIN bahan_praktek b ON d.id_praktek = b.id_praktek 
             WHERE d.id_lab = '$id_lab' AND d.status = '$status' $search_sql 
@@ -146,8 +149,37 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
     $count_sql = mysqli_query($conn, "SELECT COUNT(*) as total FROM distribusi_lab d JOIN bahan_praktek b ON d.id_praktek = b.id_praktek WHERE d.id_lab = '$id_lab' AND d.status = '$status' $search_sql");
     $total_data = mysqli_fetch_assoc($count_sql)['total'];
     $total_page = ceil($total_data / $limit);
+    if ($total_page < 1) $total_page = 1;
 
-    if (mysqli_num_rows($query) > 0) : ?>
+    // Hitung range data yang ditampilkan
+    $start_entry = $total_data > 0 ? $offset + 1 : 0;
+    $end_entry = min($offset + $limit, $total_data);
+
+    // Unique ID untuk tiap tab
+    $uid = $status;
+    ?>
+
+    <!-- Header: Show Entries & Info -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small fw-semibold">Tampilkan</span>
+            <select class="form-select form-select-sm border-2 rounded-pill shadow-sm fw-bold dist-limit-select" 
+                    style="width: auto; min-width: 75px; border-color: #002b5c; color: #002b5c; cursor: pointer;" 
+                    data-status="<?= $uid ?>"
+                    onchange="changeDistLimit(this.value)">
+                <?php foreach([10, 25, 50] as $opt): ?>
+                    <option value="<?= $opt ?>" <?= ($limit == $opt) ? 'selected' : '' ?>><?= $opt ?></option>
+                <?php endforeach; ?>
+            </select>
+            <span class="text-muted small fw-semibold">data</span>
+        </div>
+        <div class="text-muted small">
+            <i class="bi bi-info-circle me-1"></i>
+            Menampilkan <b><?= $start_entry ?></b>–<b><?= $end_entry ?></b> dari <b><?= $total_data ?></b> data
+        </div>
+    </div>
+
+    <?php if (mysqli_num_rows($query) > 0) : ?>
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden border-start border-<?= $theme ?> border-5">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -198,89 +230,79 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
         </div>
         
         <?php if ($total_page > 1) : ?>
+            <!-- Pagination -->
             <nav class="mt-4">
-                <ul class="pagination justify-content-center gap-1">
-                    <?php for ($i = 1; $i <= $total_page; $i++) : ?>
-                        <li class="page-item <?= ($i == ($offset/$limit)+1) ? 'active' : '' ?>">
+                <ul class="pagination justify-content-center gap-1 flex-wrap">
+                    <!-- Previous Button -->
+                    <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
+                        <a class="page-link border-0 rounded-pill shadow-sm px-3" href="javascript:void(0)"
+                           <?php if ($current_page > 1): ?>
+                           onclick="loadDistribusi(window.currentLabId, <?= $current_page - 1 ?>, window.currentKeyword, window.currentLimit)"
+                           <?php endif; ?>
+                           style="color: #002b5c;">
+                            <i class="bi bi-chevron-left"></i> Prev
+                        </a>
+                    </li>
+
+                    <?php
+                    // Smart page range: show max 5 pages around current
+                    $range = 2;
+                    $start_page = max(1, $current_page - $range);
+                    $end_page = min($total_page, $current_page + $range);
+
+                    // Always show first page
+                    if ($start_page > 1): ?>
+                        <li class="page-item">
                             <a class="page-link border-0 rounded-pill shadow-sm" href="javascript:void(0)" 
-                               onclick="loadDistribusi(window.currentLabId, <?= $i ?>, window.currentKeyword)">
+                               onclick="loadDistribusi(window.currentLabId, 1, window.currentKeyword, window.currentLimit)">1</a>
+                        </li>
+                        <?php if ($start_page > 2): ?>
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent">…</span></li>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <?php for ($i = $start_page; $i <= $end_page; $i++) : ?>
+                        <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
+                            <a class="page-link border-0 rounded-pill shadow-sm" href="javascript:void(0)" 
+                               onclick="loadDistribusi(window.currentLabId, <?= $i ?>, window.currentKeyword, window.currentLimit)">
                                <?= $i ?>
                             </a>
                         </li>
                     <?php endfor; ?>
+
+                    <?php // Always show last page
+                    if ($end_page < $total_page): ?>
+                        <?php if ($end_page < $total_page - 1): ?>
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent">…</span></li>
+                        <?php endif; ?>
+                        <li class="page-item">
+                            <a class="page-link border-0 rounded-pill shadow-sm" href="javascript:void(0)" 
+                               onclick="loadDistribusi(window.currentLabId, <?= $total_page ?>, window.currentKeyword, window.currentLimit)">
+                               <?= $total_page ?>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <!-- Next Button -->
+                    <li class="page-item <?= ($current_page >= $total_page) ? 'disabled' : '' ?>">
+                        <a class="page-link border-0 rounded-pill shadow-sm px-3" href="javascript:void(0)"
+                           <?php if ($current_page < $total_page): ?>
+                           onclick="loadDistribusi(window.currentLabId, <?= $current_page + 1 ?>, window.currentKeyword, window.currentLimit)"
+                           <?php endif; ?>
+                           style="color: #002b5c;">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         <?php endif; ?>
     <?php else : ?>
         <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-            <p class="text-muted small mb-0">Tidak ada data ditemukan.</p>
+            <i class="bi bi-inbox text-muted" style="font-size: 2.5rem;"></i>
+            <p class="text-muted small mb-0 mt-2">Belum ada data</p>
         </div>
     <?php endif;
 } ?>
-
-<script>
-// 1. Fungsi Pencarian
-function executeSearch() {
-    const key = document.getElementById('searchInput').value;
-    loadDistribusi(window.currentLabId, 1, key);
-}
-
-// 2. Fungsi Refresh Konten Saja (Kunci agar tidak kembali ke menu utama)
-function refreshContentOnly() {
-    loadDistribusi(window.currentLabId, window.currentPage, window.currentKeyword);
-}
-
-// 3. Logic ACC dengan AJAX
-function prosesACC(idPermintaan, idBahan, jmlMinta, namaBahan, spek, kondisi) {
-    // Memastikan ID Lab saat ini tersimpan
-    if (!window.currentLabId) {
-        Swal.fire('Peringatan', 'Silahkan pilih Lab terlebih dahulu', 'warning');
-        return;
-    }
-
-    // Mengisi data ke dalam modal yang ada di index.php
-    document.getElementById('modIdLab').value = window.currentLabId;
-    document.getElementById('modIdReq').value = idPermintaan;
-    document.getElementById('modBarang').value = idBahan;
-    document.getElementById('modJumlah').value = jmlMinta;
-    document.getElementById('modSpesifikasi').value = spek;
-    document.getElementById('modKondisiHidden').value = kondisi;
-    
-    // Menjalankan fungsi visual (centang kondisi & kode otomatis)
-    updateVisualKondisi(conditions);
-    generateCode(); 
-
-    // Memunculkan Modal ACC
-    var myModal = new bootstrap.Modal(document.getElementById('distModal'));
-    myModal.show();
-}
-
-// 4. Logic Hapus dengan AJAX
-function hapusDistribusi(idDistribusi) {
-    if (confirm("Hapus data distribusi ini?")) {
-        $.ajax({
-            url: "controllers/hapus_distribusi.php", // SESUAIKAN DENGAN FILE HAPUS ANDA
-            type: "POST",
-            data: { id: idDistribusi },
-            success: function(response) {
-                refreshContentOnly();
-            }
-        });
-    }
-}
-
-
-// 5. Menjaga Tab Tetap Aktif setelah Refresh AJAX
-$(document).ready(function(){
-    $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-        localStorage.setItem('activeTab', $(e.target).attr('id'));
-    });
-    var activeTab = localStorage.getItem('activeTab');
-    if(activeTab){
-        $('#' + activeTab).tab('show');
-    }
-});
-</script>
 
 <style>
 .nav-pills .nav-link {
@@ -289,7 +311,6 @@ $(document).ready(function(){
     border: 1px solid #004594;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
-/* Styling tetap sama seperti sebelumnya */
 .text-navy { color: #002b5c; }
 .btn-navy { background: #002b5c; color: white; border: none; }
 .btn-navy:hover { background: #004080; color: white; }
@@ -297,4 +318,27 @@ $(document).ready(function(){
 .nav-pills .nav-link.active { background: #002b5c !important; color: #FFD700 !important; }
 .anim-fade-up { animation: fadeUp 0.4s ease-out backwards; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Pagination styling */
+.pagination .page-item.active .page-link {
+    background-color: #002b5c !important;
+    color: #FFD700 !important;
+    border: none;
+    font-weight: bold;
+}
+.pagination .page-link {
+    color: #002b5c;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+.pagination .page-link:hover {
+    background-color: #e8edf3;
+    transform: translateY(-2px);
+}
+.pagination .page-item.disabled .page-link {
+    color: #adb5bd;
+    background: transparent;
+    pointer-events: none;
+}
 </style>

@@ -21,24 +21,6 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
     
     <style>
 
-        .nav-lab .nav-link {
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-            padding: 12px 15px;
-            background: white;
-        }
-        .nav-lab .nav-link:hover {
-            background-color: #f8fafc;
-            border-color: #002b5c;
-        }
-        .nav-lab .nav-link.active {
-            background-color: #002b5c !important;
-            border-color: #002b5c;
-        }
-        .nav-lab .nav-link.active .text-navy, 
-        .nav-lab .nav-link.active .text-muted {
-            color: white !important;
-        }
         :root { --navy: #0a192f; --gold: #ffcc00; --soft-bg: #f8f9fa; }
         body { background-color: var(--soft-bg); font-family: 'Inter', sans-serif; }
         .wrapper { display: flex; width: 100%; }
@@ -51,67 +33,89 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
             position: relative; overflow: hidden;
         }
 
-    /* --- PERBAIKAN NAV JURUSAN AGAR JELAS SEBELUM DIKLIK --- */
-    .nav-jurusan {
-        background: #ffffff;
-        padding: 12px;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Shadow lebih tegas agar area menonjol */
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        gap: 12px;
-        margin-bottom: 30px;
-        border: 1px solid #e2e8f0;
-    }
-
-    .nav-jurusan .nav-link { 
-        /* Warna teks saat BELUM diklik: Dibuat Navy agar kontras */
-        color: var(--navy) !important; 
-        background: #ffffff; 
-        border: 2px solid #e2e8f0; /* Border lebih tebal agar bentuk tombol jelas */
-        padding: 12px 24px; 
-        font-weight: 700; /* Tulisan tebal */
-        border-radius: 10px; 
-        transition: all 0.3s ease;
-        white-space: nowrap;
-        opacity: 0.85; /* Sedikit transparan agar beda dengan yang aktif */
-    }
-
-    /* Efek Hover (Saat kursor di atas tombol tapi belum diklik) */
-    .nav-jurusan .nav-link:hover:not(.active) {
-        background: #f0f4f8;
-        border-color: var(--navy);
-        opacity: 1;
-        transform: translateY(-2px);
-    }
-
-    /* Saat Jurusan AKTIF (Sudah diklik) */
-    .nav-jurusan .nav-link.active { 
-        background: var(--navy) !important; 
-        color: var(--gold) !important; /* Teks jadi emas */
-        border-color: var(--navy) !important;
-        box-shadow: 0 5px 15px rgba(10, 25, 47, 0.3);
-        opacity: 1;
-        transform: translateY(-2px);
-    }
-
-    /* Indikator Merah (Pulse) agar tidak menutupi teks */
-    .nav-jurusan .nav-link .pulse-dot {
-        right: -5px;
-        top: -5px;
-    }
-
-
-        .nav-jurusan .nav-link.active { background: var(--navy); color: var(--gold); }
-
-        /* Nav Tab Lab (Sub-Tab) */
-        .nav-lab .nav-link { 
-            color: var(--navy); background: #fff; border: 1px solid #dee2e6; 
-            margin-bottom: 10px; text-align: left; font-weight: 600; padding: 15px;
-            border-radius: 12px; display: flex; align-items: center; justify-content: space-between;
+        /* --- NAV JURUSAN --- */
+        .nav-jurusan {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
         }
-        .nav-lab .nav-link.active { border-color: var(--navy); background: #f0f4f8; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .nav-jurusan .nav-link { 
+            color: var(--navy) !important; 
+            background: #eef2f7; 
+            border: 2px solid #b0bfd0;
+            padding: 12px 24px; 
+            font-weight: 700;
+            border-radius: 10px; 
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            opacity: 1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .nav-jurusan .nav-link:hover:not(.active) {
+            background: #dde5ef;
+            border-color: var(--navy);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(10, 25, 47, 0.15);
+        }
+        .nav-jurusan .nav-link.active { 
+            background: var(--navy) !important; 
+            color: var(--gold) !important;
+            border-color: var(--navy) !important;
+            box-shadow: 0 5px 15px rgba(10, 25, 47, 0.3);
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+        .nav-jurusan .nav-link .pulse-dot {
+            right: -5px;
+            top: -5px;
+        }
+
+        /* === NAV LAB (Tombol Pilih Lab) === */
+        .nav-lab .nav-link {
+            color: var(--navy); 
+            background: #ffffff; 
+            border: 2px solid #d0d7e0;
+            border-left: 4px solid #8899aa;
+            margin-bottom: 10px; 
+            text-align: left; 
+            font-weight: 600; 
+            padding: 14px 16px;
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .nav-lab .nav-link:hover:not(.active) {
+            background-color: #eef2f7;
+            border-color: #6b8bad;
+            border-left-color: var(--navy);
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .nav-lab .nav-link.active {
+            background: linear-gradient(135deg, #0a192f 0%, #112d4e 100%) !important;
+            border-color: #0a192f !important;
+            border-left-color: var(--gold) !important;
+            box-shadow: 0 6px 18px rgba(10, 25, 47, 0.35);
+            transform: translateX(4px);
+        }
+        .nav-lab .nav-link.active .text-navy, 
+        .nav-lab .nav-link.active .text-muted,
+        .nav-lab .nav-link.active .fw-bold {
+            color: #ffffff !important;
+        }
+        .nav-lab .nav-link.active .text-danger {
+            color: #ffcc00 !important;
+        }
         .nav-lab .nav-link i { font-size: 1.2rem; }
 
         /* Table Area */
@@ -456,20 +460,74 @@ function viewLabDetails(id, labName, jurName, idJurusan) {
 }
 
 
-    function loadDistribusi(id_lab, page = 1, keyword = '') {
-        // Pastikan ID ini SAMA dengan ID tempat tabel muncul
+    function loadDistribusi(id_lab, page = 1, keyword = '', limit = 10) {
         const tableContainer = document.getElementById('table-content');
         if(!tableContainer) return;
 
-        fetch(`get_history.php?id_lab=${id_lab}&page=${page}&keyword=${keyword}`)
+        // Gunakan limit dari window jika ada
+        const activeLimit = limit || window.currentLimit || 10;
+
+        fetch(`get_history.php?id_lab=${id_lab}&page=${page}&keyword=${keyword}&limit=${activeLimit}`)
             .then(response => response.text())
             .then(data => {
                 tableContainer.innerHTML = data;
+
+                // Baca state dari data-attributes (bukan dari <script> tag)
+                var stateEl = document.getElementById('ajax-state');
+                if(stateEl) {
+                    window.currentLabId = stateEl.dataset.labId;
+                    window.currentPage = parseInt(stateEl.dataset.page);
+                    window.currentKeyword = stateEl.dataset.keyword;
+                    window.currentLimit = parseInt(stateEl.dataset.limit);
+                }
+
+                // Bind event listener untuk menyimpan tab aktif ke localStorage
+                var tabButtons = tableContainer.querySelectorAll('button[data-bs-toggle="tab"]');
+                tabButtons.forEach(function(btn) {
+                    btn.addEventListener('shown.bs.tab', function(e) {
+                        localStorage.setItem('activeDistTab', e.target.id);
+                    });
+                });
+
+                // Pulihkan tab aktif dari localStorage 
+                var savedTab = localStorage.getItem('activeDistTab');
+                if(savedTab) {
+                    var tabEl = document.getElementById(savedTab);
+                    if(tabEl) {
+                        var bsTab = new bootstrap.Tab(tabEl);
+                        bsTab.show();
+                    }
+                } else {
+                    // Default: aktifkan tab transit jika belum ada yang tersimpan
+                    var defaultTab = document.getElementById('tab-dikirim');
+                    if(defaultTab) {
+                        var bsTab = new bootstrap.Tab(defaultTab);
+                        bsTab.show();
+                    }
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
                 tableContainer.innerHTML = '<div class="alert alert-danger">Gagal memuat data.</div>';
             });
+    }
+
+    // Fungsi global untuk ubah limit dari dropdown di dalam AJAX content
+    function changeDistLimit(newLimit) {
+        window.currentLimit = parseInt(newLimit);
+        loadDistribusi(window.currentLabId, 1, window.currentKeyword, window.currentLimit);
+    }
+
+    // Fungsi pencarian
+    function executeSearch() {
+        var searchInput = document.getElementById('searchInput');
+        var key = searchInput ? searchInput.value : '';
+        loadDistribusi(window.currentLabId, 1, key, window.currentLimit);
+    }
+
+    // Refresh konten tanpa kembali ke menu utama
+    function refreshContentOnly() {
+        loadDistribusi(window.currentLabId, window.currentPage, window.currentKeyword, window.currentLimit);
     }
 
     function handleSearch(val) {
