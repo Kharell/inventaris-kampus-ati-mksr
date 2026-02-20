@@ -185,7 +185,8 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light small fw-bold">
                         <tr>
-                            <th class="ps-4 py-3">KODE & MATERIAL</th>
+                            <th class="ps-4 py-3 text-center" style="width: 60px;">NO</th>
+                            <th class="py-3">KODE & MATERIAL</th>
                             <th>SPEK & KONDISI</th>
                             <th class="text-center">KUANTITAS</th>
                             <?php if($status == 'ditolak') echo '<th>ALASAN</th>'; ?>
@@ -193,9 +194,10 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = mysqli_fetch_assoc($query)) : ?>
+                        <?php $no = $offset; while ($row = mysqli_fetch_assoc($query)) : $no++; ?>
                         <tr>
-                            <td class="ps-4">
+                            <td class="ps-4 text-center fw-bold text-muted"><?= $no ?></td>
+                            <td>
                                 <code class="kode-modern mb-1 d-inline-block"><?= $row['kode_distribusi'] ?></code>
                                 <div class="fw-bold text-navy"><?= htmlspecialchars($row['nama_bahan']) ?></div>
                             </td>

@@ -482,14 +482,21 @@ function viewLabDetails(id, labName, jurName, idJurusan) {
                 }
 
                 // Bind event listener untuk menyimpan tab aktif ke localStorage
+                // dan reset page ke 1 saat pindah tab agar data tidak ikut berpindah
                 var tabButtons = tableContainer.querySelectorAll('button[data-bs-toggle="tab"]');
                 tabButtons.forEach(function(btn) {
                     btn.addEventListener('shown.bs.tab', function(e) {
                         localStorage.setItem('activeDistTab', e.target.id);
+                        // Jika sedang proses restore tab, jangan reload data
+                        if (window._isRestoringTab) return;
+                        // Reset page ke 1 saat pindah tab supaya data tab lain tidak terpengaruh
+                        window.currentPage = 1;
+                        loadDistribusi(window.currentLabId, 1, window.currentKeyword, window.currentLimit);
                     });
                 });
 
-                // Pulihkan tab aktif dari localStorage 
+                // Pulihkan tab aktif dari localStorage (dengan guard agar tidak loop)
+                window._isRestoringTab = true;
                 var savedTab = localStorage.getItem('activeDistTab');
                 if(savedTab) {
                     var tabEl = document.getElementById(savedTab);
@@ -505,6 +512,8 @@ function viewLabDetails(id, labName, jurName, idJurusan) {
                         bsTab.show();
                     }
                 }
+                // Reset guard setelah restore selesai (gunakan setTimeout agar event selesai dulu)
+                setTimeout(function() { window._isRestoringTab = false; }, 100);
             })
             .catch(error => {
                 console.error('Error:', error);
