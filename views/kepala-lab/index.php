@@ -11,19 +11,22 @@ include "../../config/auth.php";
 
 checkAccess('kepala_lab');
 
-
 $id_user = $_SESSION['id_user'];
 
 // 1. Ambil data User, Lab, dan Jurusan
+// Menggunakan LEFT JOIN agar jika salah satu data kosong, halaman tidak blank
 $query_user = mysqli_query($conn, "SELECT k.*, l.nama_lab, j.nama_jurusan 
                                    FROM kepala_lab k 
-                                   JOIN lab l ON k.id_lab = l.id_lab 
-                                   JOIN jurusan j ON l.id_jurusan = j.id_jurusan 
+                                   LEFT JOIN lab l ON k.id_lab = l.id_lab 
+                                   LEFT JOIN jurusan j ON l.id_jurusan = j.id_jurusan 
                                    WHERE k.id_kepala = '$id_user'");
 $data = mysqli_fetch_assoc($query_user);
+
+// Penanganan nama agar tidak error (Mencoba ambil dari kolom 'nama' atau 'nama_kepala')
+$nama_tampil = $data['nama'] ?? $data['nama_kepala'] ?? 'User';
 $id_lab_user = $data['id_lab'] ?? 0;
 
-// 2. Statistik (Gunakan nama tabel 'permintaan_barang' dan 'bahan_praktek' sesuai kode Anda)
+// 2. Statistik
 $total_permintaan = 0;
 $check_p = mysqli_query($conn, "SHOW TABLES LIKE 'permintaan_barang'");
 if(mysqli_num_rows($check_p) > 0) {
@@ -36,7 +39,7 @@ if(mysqli_num_rows($check_b) > 0) {
     $total_inventaris = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(stok) as total FROM bahan_praktek WHERE id_lab = '$id_lab_user'"))['total'] ?? 0;
 }
 
-// 3. Data Grafik Status Distribusi (Default kosong jika tabel tidak ada)
+// 3. Data Grafik
 $label_status = []; $count_status = [];
 $check_d = mysqli_query($conn, "SHOW TABLES LIKE 'distribusi_lab'");
 if(mysqli_num_rows($check_d) > 0) {
@@ -46,10 +49,8 @@ if(mysqli_num_rows($check_d) > 0) {
         $count_status[] = $row['jumlah'];
     }
 }
-// Fallback jika data kosong agar chart tidak error
 if(empty($label_status)) { $label_status = ['Belum Ada Data']; $count_status = [1]; }
 
-// 4. Data Grafik Stok Terbanyak
 $labels_bahan = []; $stok_bahan = [];
 if(mysqli_num_rows($check_b) > 0) {
     $query_stok = mysqli_query($conn, "SELECT nama_bahan, stok FROM bahan_praktek WHERE id_lab = '$id_lab_user' ORDER BY stok DESC LIMIT 5");
@@ -73,41 +74,17 @@ if(mysqli_num_rows($check_b) > 0) {
     <style>
         :root { --navy-deep: #00152b; --navy-light: #001f3f; --gold: #ffcc00; }
         body { background: #f0f4f8; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
-
-        .main-content { transition: all 0.3s; min-height: 100vh; }
+        .main-content { transition: all 0.3s; min-height: 100vh; padding-top: 70px; }
+        @media (min-width: 992px) { .main-content { margin-left: 260px; } }
         
-        @media (min-width: 992px) {
-            .main-content { margin-left: 260px; padding-top: 70px; }
-        }
-
         .hero-banner {
             background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-light) 100%);
-            border-radius: 20px; padding: 30px 40px; color: white;
-            position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,31,63,0.1);
+            border-radius: 20px; padding: 30px 40px; color: white; box-shadow: 0 10px 30px rgba(0,31,63,0.1);
         }
-
-        .badge-role {
-            background: rgba(255, 204, 0, 0.2); color: var(--gold);
-            padding: 5px 12px; border-radius: 8px; font-size: 0.75rem;
-            font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        .avatar-img { width: 90px; height: 90px; border: 4px solid rgba(255,255,255,0.2); object-fit: cover; }
-
-        .glass-card {
-            background: white; border-radius: 20px; padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: none; height: 100%;
-        }
-
-        .stat-circle {
-            width: 70px; height: 70px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: #f8f9fa; border: 4px solid var(--gold); margin: 0 auto 10px;
-        }
-
+        .glass-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: none; height: 100%; }
+        .step-box { border-left: 4px solid var(--gold); background: #f8f9fa; padding: 15px; border-radius: 0 10px 10px 0; margin-bottom: 15px; }
+        .stat-circle { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border: 4px solid var(--gold); margin: 0 auto 10px; }
         .stat-number { font-size: 1.5rem; font-weight: 800; color: var(--navy-deep); }
-        .chart-box { height: 250px; width: 100%; }
-
     </style>
 </head>
 <body>
@@ -118,68 +95,90 @@ if(mysqli_num_rows($check_b) > 0) {
     <div class="main-content w-100 p-3 p-lg-4">
         <?php include "../../includes/header.php"; ?>
 
-    <div class="hero-banner mb-4 p-4 rounded-4 shadow-sm" style="margin-top: 70px; background: linear-gradient(135deg, #001f3f 0%, #112240 100%); color: white;">
-        <div class="row align-items-center">
-            <div class="col-md-9">
-                <span class="badge bg-warning text-dark mb-2 px-3">Kepala Laboratorium</span>
-                <h2 class="fw-bold mb-1 text-white"><?= $data['nama_lab'] ?? 'Lab Tidak Terdaftar'; ?></h2>
-                <p class="opacity-75 small mb-0">
-                    Pengelolaan data jurusan <strong class="text-warning"><?= $data['nama_jurusan'] ?? '-'; ?></strong> terpusat dan efisien.
-                </p>
-            </div>
-
-            <div class="col-md-3 text-end d-none d-md-block">
-                <div class="position-relative d-inline-block">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($data['nama'] ?? 'User'); ?>&background=ffcc00&color=001f3f&size=100&bold=true" 
-                        class="rounded-circle shadow-lg border border-3 border-white" 
-                        alt="Avatar" 
-                        style="width: 80px; height: 80px; object-fit: cover;">
-                    
-                    <span class="position-absolute bottom-0 end-0 p-2 bg-success border border-2 border-white rounded-circle" 
-                        style="margin-right: 5px; margin-bottom: 5px;">
-                        <span class="visually-hidden">Active</span>
-                    </span>
+        <div class="hero-banner mb-4" style="margin-top: 80px;">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <span class="badge bg-warning text-dark mb-2 px-3">Kepala Laboratorium</span>
+                    <h2 class="fw-bold mb-1">Selamat Datang, <?= explode(' ', $nama_tampil)[0]; ?>!</h2>
+                    <p class="opacity-75 small mb-3"> <strong><?= $data['nama_lab'] ?? 'Lab Belum Diatur'; ?></strong></p>
+                    <a href="../../assets/panduan/panduan_sistem.pdf" class="btn btn-warning btn-sm fw-bold">
+                            <i class="bi bi-file-earmark-pdf-fill me-2"></i>Comming Zoon panduanApp
+                        </a>
+                    </a>
+                </div>
+                <div class="col-md-4 text-end d-none d-md-block">
+                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($nama_tampil); ?>&background=ffcc00&color=001f3f&size=100&bold=true" 
+                         class="rounded-circle border border-3 border-white shadow shadow-lg" alt="Avatar">
                 </div>
             </div>
         </div>
-    </div>
 
         <div class="row g-4">
-            <div class="col-xl-7">
+            <div class="col-xl-6">
                 <div class="glass-card">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="fw-bold m-0"><i class="bi bi-compass-fill me-2 text-warning"></i>Distribusi Barang</h5>
-                    </div>
-                    <div class="chart-box">
-                        <canvas id="chartStatus"></canvas>
+                    <h5 class="fw-bold mb-4"><i class="bi bi-journal-text me-2 text-primary"></i>Panduan Penggunaan</h5>
+                    
+                    <div class="accordion" id="guideAccordion">
+                        <div class="accordion-item border-0 mb-3 shadow-sm overflow-hidden rounded-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#proc1">
+                                    1. Alur Permintaan Barang
+                                </button>
+                            </h2>
+                            <div id="proc1" class="accordion-collapse collapse show" data-bs-parent="#guideAccordion">
+                                <div class="accordion-body">
+                                    <div class="step-box">
+                                        <small class="text-muted fw-bold">TAHAP 1</small><br>
+                                        Buka menu <strong>Input Kebutuhan</strong> dan masukkan item yang diperlukan.
+                                    </div>
+                                    <div class="step-box" style="border-left-color: #0d6efd;">
+                                        <small class="text-muted fw-bold">TAHAP 2</small><br>
+                                        <strong>PENTING:</strong> Segera <strong>Cetak Laporan</strong> setelah input sebagai bukti pegangan Anda.
+                                    </div>
+                                    <div class="step-box" style="border-left-color: #198754;">
+                                        <small class="text-muted fw-bold">TAHAP 3</small><br>
+                                        Setelah Admin memberikan <strong>ACC</strong>, Anda wajib melakukan <strong>Konfirmasi</strong> di sistem agar data resmi masuk ke database.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item border-0 shadow-sm overflow-hidden rounded-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#proc2">
+                                    2. Laporan Penggunaan
+                                </button>
+                            </h2>
+                            <div id="proc2" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+                                <div class="accordion-body">
+                                    <p>Gunakan menu <strong>Laporan Pakai</strong> untuk mencatat setiap barang yang keluar. Pastikan untuk selalu <strong>Mencetak Laporan</strong> penggunaan secara berkala untuk kebutuhan audit internal lab.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-5">
-                <div class="row g-3">
+            <div class="col-xl-6">
+                <div class="row g-3 mb-4">
                     <div class="col-6">
-                        <div class="glass-card text-center py-3">
+                        <div class="glass-card text-center py-4">
                             <div class="stat-circle"><span class="stat-number"><?= $total_permintaan ?></span></div>
-                            <p class="text-muted fw-bold small mb-0">PERMINTAAN</p>
+                            <p class="text-muted fw-bold small mb-0">TOTAL PERMINTAAN</p>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="glass-card text-center py-3">
-                            <div class="stat-circle" style="border-color: var(--navy-light);">
-                                <span class="stat-number"><?= number_format($total_inventaris) ?></span>
-                            </div>
-                            <p class="text-muted fw-bold small mb-0">TOTAL UNIT</p>
+                        <div class="glass-card text-center py-4">
+                            <div class="stat-circle" style="border-color: var(--navy-light);"><span class="stat-number"><?= number_format($total_inventaris) ?></span></div>
+                            <p class="text-muted fw-bold small mb-0">TOTAL STOK UNIT</p>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <div class="glass-card">
-                            <h6 class="fw-bold mb-3 small text-uppercase">Stok Terbanyak (Top 5)</h6>
-                            <div style="height: 180px;">
-                                <canvas id="chartBahan"></canvas>
-                            </div>
-                        </div>
-                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow me-2"></i>Status Distribusi & Stok</h6>
+                    <div style="height: 200px;"><canvas id="chartStatus"></canvas></div>
+                    <div class="mt-4" style="height: 150px;"><canvas id="chartBahan"></canvas></div>
                 </div>
             </div>
         </div>
@@ -188,7 +187,7 @@ if(mysqli_num_rows($check_b) > 0) {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // 1. Grafik Distribusi (Doughnut)
+    // Inisialisasi Chart (Logika sama seperti sebelumnya namun lebih clean)
     const ctxStatus = document.getElementById('chartStatus').getContext('2d');
     new Chart(ctxStatus, {
         type: 'doughnut',
@@ -200,16 +199,9 @@ if(mysqli_num_rows($check_b) > 0) {
                 borderWidth: 0
             }]
         },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 
-    // 2. Grafik Stok (Horizontal Bar)
     const ctxBahan = document.getElementById('chartBahan').getContext('2d');
     new Chart(ctxBahan, {
         type: 'bar',
@@ -218,18 +210,14 @@ if(mysqli_num_rows($check_b) > 0) {
             datasets: [{
                 data: <?= json_encode($stok_bahan) ?>,
                 backgroundColor: '#001f3f',
-                borderRadius: 5,
-                barThickness: 15
+                borderRadius: 5
             }]
         },
         options: {
             indexAxis: 'y',
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: {
-                x: { display: false },
-                y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-            }
+            scales: { x: { display: false }, y: { grid: { display: false } } }
         }
     });
 </script>
