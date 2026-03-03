@@ -101,8 +101,8 @@ if(mysqli_num_rows($check_b) > 0) {
                     <span class="badge bg-warning text-dark mb-2 px-3">Kepala Laboratorium</span>
                     <h2 class="fw-bold mb-1">Selamat Datang, <?= explode(' ', $nama_tampil)[0]; ?>!</h2>
                     <p class="opacity-75 small mb-3"> <strong><?= $data['nama_lab'] ?? 'Lab Belum Diatur'; ?></strong></p>
-                    <a href="../../assets/panduan/panduan_sistem.pdf" class="btn btn-warning btn-sm fw-bold">
-                            <i class="bi bi-file-earmark-pdf-fill me-2"></i>Comming Zoon panduanApp
+                    <a href="../../assets/docs/panduan_kepala_lab.pdf" class="btn btn-warning btn-sm fw-bold" download>
+                            <i class="bi bi-file-earmark-pdf-fill me-2"></i> Comming Zoon panduanApp 
                         </a>
                     </a>
                 </div>

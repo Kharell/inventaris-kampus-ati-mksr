@@ -1,12 +1,15 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
 include "../../config/database.php";
 include "../../config/auth.php";
 
+// Proteksi akses khusus Admin
 checkAccess('admin'); 
 
 $nama_admin = $_SESSION['nama'] ?? 'Administrator';
 
-// 1. Ambil statistik
+// 1. Ambil statistik Global (Tanpa filter ID Lab)
 $total_bahan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM bahan_praktek"))['total'] ?? 0;
 $total_lab = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM lab"))['total'] ?? 0;
 $stok_menipis = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM bahan_praktek WHERE stok < 10"))['total'] ?? 0;
@@ -34,23 +37,37 @@ while($row = mysqli_fetch_assoc($res_status)) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin | Lab Inventory</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --navy: #0a192f; --gold: #ffcc00; --accent: #64ffda; }
-        body { background-color: #f4f7fe; font-family: 'Inter', sans-serif; }
+        :root { 
+            --navy: #0a192f; 
+            --navy-light: #112240;
+            --gold: #ffcc00; 
+            --gold-hover: #e6b800;
+        }
+        
+        body { 
+            background-color: #f4f7fe; 
+            font-family: 'Inter', sans-serif; 
+        }
         
         .main-content { min-height: 100vh; padding-bottom: 50px; }
         
-        /* Banner & Profile */
+        /* Banner Style */
         .welcome-banner {
-            background: linear-gradient(135deg, var(--navy) 0%, #112240 100%);
-            color: white; border-radius: 24px; padding: 40px; position: relative;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+            color: white; 
+            border-radius: 24px; 
+            padding: 40px; 
+            position: relative;
             box-shadow: 0 10px 30px rgba(10, 25, 47, 0.15);
         }
 
@@ -59,10 +76,35 @@ while($row = mysqli_fetch_assoc($res_status)) {
             border: 4px solid rgba(255, 204, 0, 0.3);
         }
 
-        /* Cards */
+        /* Tombol Download - SERASI DENGAN KEPALA LAB (TEKS TETAP GELAP) */
+        .btn-download {
+            background-color: var(--gold); 
+            color: #212529; /* Teks gelap */
+            border: none; 
+            font-weight: 700; 
+            border-radius: 12px;
+            padding: 12px 24px; 
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .btn-download:hover { 
+            background-color: var(--gold-hover); 
+            color: #212529 !important; /* TETAP GELAP SAAT HOVER */
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-download:hover i {
+            color: #212529 !important;
+        }
+
+        /* Stat Cards */
         .stat-card { 
             background: white; border-radius: 18px; border: none; 
-            transition: all 0.3s ease; cursor: default;
+            transition: all 0.3s ease;
         }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
         
@@ -70,21 +112,6 @@ while($row = mysqli_fetch_assoc($res_status)) {
             background: white; border-radius: 20px; border: none;
             box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         }
-
-        .btn-download {
-            background-color: var(--gold); color: var(--navy);
-            border: none; font-weight: 600; border-radius: 10px;
-            padding: 10px 20px; transition: 0.3s;
-        }
-        .btn-download:hover { background-color: #e6b800; transform: scale(1.02); }
-
-        .quick-link {
-            text-decoration: none; color: inherit;
-            background: white; padding: 15px; border-radius: 15px;
-            display: flex; align-items: center; transition: 0.2s;
-            border: 1px solid #edf2f7;
-        }
-        .quick-link:hover { background: var(--soft-blue); border-color: #d1d9e6; }
         
         .chart-container { position: relative; height: 320px; width: 100%; }
     </style>
@@ -97,30 +124,25 @@ while($row = mysqli_fetch_assoc($res_status)) {
     <div class="main-content w-100 px-4"> 
         <?php include "../../includes/header.php"; ?>
         
-         <main class="p-3 p-md-3" style="margin-top: 80px;">
+        <main class="p-3 p-md-3" style="margin-top: 80px;">
             <div class="welcome-banner mb-4">
                 <div class="row align-items-center">
                     <div class="col-md-7">
-                        <h1 class="fw-bold mb-2">Halo, <span style="color: var(--gold);"><?= $nama_admin; ?>!</span></h1>
+                        <h1 class="fw-bold mb-2">Halo, <span style="color: var(--gold);"><?= htmlspecialchars($nama_admin); ?>!</span></h1>
                         <p class="opacity-75 mb-4">Pantau aktivitas inventaris, kelola permintaan bahan, dan unduh laporan terbaru dari dashboard Anda.</p>
                         
                         <div class="d-flex gap-2">
                             <a href="../../assets/docs/panduan_admin.pdf" class="btn btn-download shadow-sm" download>
-                                <i class="bi bi-file-earmark-pdf-fill me-2"></i>Comming Zoon panduanApp
+                                <i class="bi bi-file-earmark-pdf-fill me-2"></i> Coming Soon panduanApp
                             </a>
-                         
                         </div>
                     </div>
                     <div class="col-md-5 text-center text-md-end d-none d-md-block">
                         <img src="https://ui-avatars.com/api/?name=<?= urlencode($nama_admin); ?>&background=ffcc00&color=0a192f&size=128&bold=true" 
-                             class="rounded-circle admin-avatar-img shadow-lg mb-2" alt="Admin">
-                        <div class="mt-2">
-                            <span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> Online</span>
-                        </div>
+                             class="rounded-circle admin-avatar-img shadow-lg" alt="Admin">
                     </div>
                 </div>
             </div>
-
 
             <div class="row g-4 mb-4">
                 <div class="col-md-3">
@@ -174,9 +196,7 @@ while($row = mysqli_fetch_assoc($res_status)) {
                     <div class="glass-card p-4 h-100">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0">Tren Distribusi Barang</h5>
-                            <select class="form-select form-select-sm w-auto">
-                                <option>7 Hari Terakhir</option>
-                            </select>
+                            <span class="badge bg-light text-dark px-3 py-2 border">7 Hari Terakhir</span>
                         </div>
                         <div class="chart-container">
                             <canvas id="distribusiChart"></canvas>
@@ -190,9 +210,9 @@ while($row = mysqli_fetch_assoc($res_status)) {
                         <div style="height: 250px;">
                             <canvas id="statusChart"></canvas>
                         </div>
-                        <div class="mt-4 pt-3 border-top">
+                        <div class="mt-4 pt-3 border-top text-center">
                              <div class="d-grid">
-                                <a href="../../modules/distribusi/index.php" class="btn btn-light fw-bold text-primary">
+                                <a href="../../modules/distribusi/index.php" class="btn btn-light fw-bold text-primary py-2">
                                     Lihat Detail Request <i class="bi bi-arrow-right ms-1"></i>
                                 </a>
                              </div>
@@ -208,7 +228,7 @@ while($row = mysqli_fetch_assoc($res_status)) {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    // Konfigurasi Chart Tren (Line)
+    // Line Chart: Tren Distribusi
     new Chart(document.getElementById('distribusiChart'), {
         type: 'line',
         data: {
@@ -235,15 +255,16 @@ while($row = mysqli_fetch_assoc($res_status)) {
         }
     });
 
-    // Konfigurasi Chart Status (Doughnut)
+    // Doughnut Chart: Status Request
     new Chart(document.getElementById('statusChart'), {
         type: 'doughnut',
         data: {
             labels: <?= json_encode($labels_status); ?>,
             datasets: [{
                 data: <?= json_encode($counts_status); ?>,
-                backgroundColor: ['#ffc107', '#198754', '#dc3545'],
-                hoverOffset: 4
+                backgroundColor: ['#ffc107', '#198754', '#dc3545', '#0dcaf0'],
+                hoverOffset: 10,
+                borderWidth: 0
             }]
         },
         options: {
@@ -251,7 +272,8 @@ while($row = mysqli_fetch_assoc($res_status)) {
             maintainAspectRatio: false,
             plugins: {
                 legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
-            }
+            },
+            cutout: '70%'
         }
     });
 </script>
