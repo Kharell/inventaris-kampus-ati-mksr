@@ -73,7 +73,7 @@ while($row = mysqli_fetch_assoc($res_status)) {
 
         .admin-avatar-img {
             width: 110px; height: 110px; object-fit: cover;
-            border: 4px solid rgba(255, 204, 0, 0.3);
+            border: 4px solid rgb(245, 244, 244);
         }
 
         /* Tombol Download - SERASI DENGAN KEPALA LAB (TEKS TETAP GELAP) */
