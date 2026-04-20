@@ -209,6 +209,8 @@ function isExpandedByFolder($folder_name) {
             <div class="collapse <?= isExpandedByFolder('gudang'); ?>" id="collapseGudang">
                 <ul class="submenu">
                     <li><a class="nav-link <?= isActive('gudang/bahan-praktek.php'); ?>" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php"><i class="bi bi-tools me-2"></i> Input Bahan Praktek</a></li>
+                    <li><a class="nav-link <?= isActive('gudang/persediaan.php'); ?>" href="<?= $base_url; ?>modules/gudang/persediaan.php"><i class="bi bi-box-seam me-2"></i> Gudang Persediaan</a></li>
+    
                     <!-- <li><a class="nav-link <?= isActive('gudang/atk.php'); ?>" href="<?= $base_url; ?>modules/gudang/atk.php"><i class="bi bi-pencil-fill me-2"></i> ATK</a></li>
                     <li><a class="nav-link <?= isActive('gudang/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/gudang/kebersihan.php"><i class="bi bi-bucket-fill me-2"></i> Kebersihan</a></li> -->
                 </ul>

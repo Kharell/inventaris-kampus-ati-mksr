@@ -36,29 +36,43 @@ if (isset($_POST['id'])) {
     exit; 
 }
 
+
 // --- 2. LOGIKA KIRIM PERMINTAAN (VIA FORM) ---
 if (isset($_POST['kirim_permintaan'])) {
-    $id_kepala    = $_SESSION['id_user'];
-    $id_barang    = mysqli_real_escape_string($conn, $_POST['id_barang']);
-    $jumlah_minta = mysqli_real_escape_string($conn, $_POST['jumlah_minta']);
+    // 1. Ambil ID Kepala Lab dari Session
+    $id_kepala     = $_SESSION['id_user'];
     
-    $spesifikasi  = strtoupper(mysqli_real_escape_string($conn, trim($_POST['spesifikasi'])));
-    $kondisi      = mysqli_real_escape_string($conn, $_POST['kondisi']);
+    // 2. Tangkap & Amankan data dari Form
+    $id_barang     = mysqli_real_escape_string($conn, $_POST['id_barang']);
+    $jumlah_minta  = mysqli_real_escape_string($conn, $_POST['jumlah_minta']);
+    
+    // Ambil stok_awal dari input readonly (Pastikan di HTML name="stok_awal")
+    $stok_awal     = isset($_POST['stok_awal']) ? mysqli_real_escape_string($conn, $_POST['stok_awal']) : 0;
+    
+    // Ambil keterangan (jika ada input keterangan_kepala di form)
+    $keterangan    = isset($_POST['keterangan_kepala']) ? mysqli_real_escape_string($conn, $_POST['keterangan_kepala']) : '';
 
-    if (empty($spesifikasi)) { $spesifikasi = "-"; }
-    if (empty($kondisi)) { $kondisi = "BAIK"; }
+    // 3. Ambil data Spesifikasi & Kondisi terbaru langsung dari DB agar akurat
+    $query_cek = mysqli_query($conn, "SELECT spesifikasi, kondisi FROM bahan_praktek WHERE id_praktek = '$id_barang'");
+    $data_cek  = mysqli_fetch_assoc($query_cek);
 
+    $spesifikasi = mysqli_real_escape_string($conn, $data_cek['spesifikasi'] ?? '-');
+    $kondisi     = mysqli_real_escape_string($conn, $data_cek['kondisi'] ?? 'Baik');
+
+    // 4. Query INSERT sesuai struktur tabel permintaan_barang
     $sql_tambah = "INSERT INTO permintaan_barang 
-                   (id_kepala, id_barang, spesifikasi, jumlah_minta, kondisi, status, tgl_permintaan) 
+                   (id_kepala, id_barang, stok_awal, spesifikasi, jumlah_minta, kondisi, status, tgl_permintaan, keterangan_kepala) 
                    VALUES 
-                   ('$id_kepala', '$id_barang', '$spesifikasi', '$jumlah_minta', '$kondisi', 'pending', NOW())";
+                   ('$id_kepala', '$id_barang', '$stok_awal', '$spesifikasi', '$jumlah_minta', '$kondisi', 'pending', NOW(), '$keterangan')";
     
     if (mysqli_query($conn, $sql_tambah)) {
-        $_SESSION['alert'] = 'sukses_tambah';
-        header("Location: ../lab/kebutuhan.php");
+        // Menggunakan sistem status agar SweetAlert muncul
+        header("Location: ../lab/kebutuhan.php?status=success&msg=Permintaan barang berhasil dikirim");
         exit;
     } else {
-        die("Gagal Query: " . mysqli_error($conn));
+        // Jika gagal, kirim pesan error
+        header("Location: ../lab/kebutuhan.php?status=error&msg=" . urlencode(mysqli_error($conn)));
+        exit;
     }
 }
 
@@ -94,4 +108,35 @@ if (isset($_GET['hapus_pakai'])) {
         exit;
     }
 }
+
+// tambah stok paling awal
+
+if (isset($_POST['kirimm'])) {
+    $id_barang_array = $_POST['id_barang'] ?? [];
+    $stok_fisik_array = $_POST['stok_fisik_lab'] ?? [];
+    $id_user = $_SESSION['id_user']; 
+    $tgl = date('Y-m-d H:i:s');
+
+    if (empty($id_barang_array)) {
+        header("Location: ../bahan-praktek.php?status=empty");
+        exit;
+    }
+
+    foreach ($id_barang_array as $key => $id_barang_raw) {
+        $id_barang = mysqli_real_escape_string($conn, $id_barang_raw);
+        $stok_raw = $stok_fisik_array[$key] ?? 0;
+        $stok_fisik = mysqli_real_escape_string($conn, $stok_raw);
+
+        $query = "INSERT INTO permintaan_bahan (id_barang, id_user, stok_saat_ini, tgl_permintaan, status) 
+                  VALUES ('$id_barang', '$id_user', '$stok_fisik', '$tgl', 'pending')";
+        
+        mysqli_query($conn, $query);
+    }
+
+    // Kembali ke halaman sebelumnya dengan parameter sukses
+    header("Location: ../lab/stok.php?status=success");
+    exit;
+}
+
+
 ?>

@@ -1,0 +1,293 @@
+<?php
+include "../../config/database.php";
+include "../../config/auth.php";
+checkAccess('admin'); // Sesuaikan akses
+
+// --- Logika Pagination & Pencarian ---
+$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+$page = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
+$offset = ($page - 1) * $limit;
+
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+
+// Query dasar
+$whereClause = "";
+if ($search != '') {
+    $whereClause = "WHERE nama_barang LIKE '%$search%'";
+}
+
+// Hitung total data
+$total_data_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM gudang_persediaan $whereClause");
+$total_data = mysqli_fetch_assoc($total_data_query)['total'];
+$total_pages = ceil($total_data / $limit);
+
+// Ambil data
+$query = "SELECT * FROM gudang_persediaan $whereClause ORDER BY id_persediaan DESC LIMIT $offset, $limit";
+$res = mysqli_query($conn, $query);
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gudang Persediaan - Inventaris</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="../../assets/css/style.css" rel="stylesheet">
+    
+    <style>
+        :root { --navy: #0a192f; --navy-light: #112240; --gold: #ffcc00; }
+        body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; }
+        .header-card { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); color: white; border-radius: 15px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .filter-card { border-radius: 15px; border: none; margin-bottom: 20px; }
+        .search-box { border-radius: 10px 0 0 10px; border: 2px solid #e9ecef; }
+        .search-btn { border-radius: 0 10px 10px 0; background-color: var(--navy); color: white; border: none; }
+        .table-container { border-radius: 15px; overflow: hidden; background: white; border: none; }
+        .table thead { background-color: var(--navy); color: white; }
+        .table thead th { padding: 15px; font-weight: 500; text-transform: uppercase; font-size: 0.8rem; }
+        .stok-akhir-badge { background-color: #fff3cd; color: #856404; font-weight: 700; padding: 5px 10px; border-radius: 6px; border: 1px solid #ffeeba; }
+        .pagination .page-link { color: var(--navy); border: none; margin: 0 3px; border-radius: 8px; font-weight: 600; }
+        .pagination .page-item.active .page-link { background-color: var(--gold); color: var(--navy); }
+        .btn-gold { background-color: var(--gold); color: var(--navy); font-weight: 700; border: none; border-radius: 10px; transition: 0.3s; }
+        .btn-gold:hover { background-color: #e6b800; transform: translateY(-2px); }
+        .modal-header { background-color: var(--navy); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="d-flex">
+    <?php include "../../includes/sidebar.php"; ?>
+
+    <div class="main-content w-100"> 
+        <?php include "../../includes/header.php"; ?>
+
+        <main class="p-3 p-md-4" style="margin-top: 70px;">
+            <div class="header-card d-flex justify-content-between align-items-center shadow-sm">
+                <div>
+                    <h2 class="fw-bold mb-1"><i class="bi bi-box-seam text-warning me-2"></i> Gudang Persediaan</h2>
+                    <p class="mb-0 text-white-50">Monitoring Stok Awal, Pengajuan, dan Pemakaian Barang</p>
+                </div>
+                <button class="btn btn-gold px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalTambah">
+                    <i class="bi bi-plus-circle-fill me-2"></i>Tambah Data
+                </button>
+            </div>
+
+            <div class="card filter-card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="GET" class="row g-3 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted">TAMPILKAN</label>
+                            <select name="limit" class="form-select border-2" onchange="this.form.submit()">
+                                <option value="10" <?= $limit == 10 ? 'selected' : ''; ?>>10 Baris</option>
+                                <option value="25" <?= $limit == 25 ? 'selected' : ''; ?>>25 Baris</option>
+                                <option value="50" <?= $limit == 50 ? 'selected' : ''; ?>>50 Baris</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6"></div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">CARI BARANG</label>
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control border-2 search-box" placeholder="Nama barang..." value="<?= htmlspecialchars($search); ?>">
+                                <button class="btn search-btn px-3" type="submit"><i class="bi bi-search"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card table-container shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">No</th>
+                                    <th>Tanggal</th>
+                                    <th>Nama Barang</th>
+                                    <th class="text-center">Awal</th>
+                                    <th class="text-center text-success">Masuk (+)</th>
+                                    <th class="text-center text-danger">Keluar (-)</th>
+                                    <th class="text-center">Stok Akhir</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $no = $offset + 1;
+                                if(mysqli_num_rows($res) > 0):
+                                    while($row = mysqli_fetch_assoc($res)): 
+                                ?>
+                                <tr>
+                                    <td class="ps-4 text-muted fw-bold"><?= $no++; ?></td>
+                                   <td>
+                                        <span class="small fw-semibold">
+                                            <?= isset($row['tgl_input']) ? date('d/m/Y', strtotime($row['tgl_input'])) : date('d/m/Y'); ?>
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold"><?= $row['nama_barang']; ?> <br><small class="text-muted fw-normal"><?= $row['satuan']; ?></small></td>
+                                    <td class="text-center"><?= $row['stok_awal']; ?></td>
+                                    <td class="text-center fw-bold text-success">+ <?= $row['pengajuan_barang']; ?></td>
+                                    <td class="text-center fw-bold text-danger">- <?= $row['pemakaian_barang']; ?></td>
+                                    <td class="text-center">
+                                        <span class="stok-akhir-badge"><?= $row['stok_akhir']; ?></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-warning border-0" data-bs-toggle="modal" data-bs-target="#modalEdit<?= $row['id_persediaan']; ?>">
+                                            <i class="bi bi-pencil-square fs-5"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger border-0" onclick="confirmDelete('<?= $row['id_persediaan']; ?>')">
+                                            <i class="bi bi-trash3-fill fs-5"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <?php endwhile; else: ?>
+                                <tr><td colspan="7" class="text-center py-5 text-muted">Data persediaan tidak ditemukan.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav class="d-flex justify-content-between align-items-center">
+                        <span class="small text-muted">Menampilkan <?= mysqli_num_rows($res); ?> dari <?= $total_data; ?> data</span>
+                        <ul class="pagination mb-0">
+                            <li class="page-item <?= ($page <= 1) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?halaman=<?= $page-1; ?>&limit=<?= $limit; ?>&search=<?= $search; ?>"><i class="bi bi-chevron-left"></i></a>
+                            </li>
+                            <?php for($i=1; $i<=$total_pages; $i++): ?>
+                            <li class="page-item <?= ($page == $i) ? 'active' : ''; ?>">
+                                <a class="page-link" href="?halaman=<?= $i; ?>&limit=<?= $limit; ?>&search=<?= $search; ?>"><?= $i; ?></a>
+                            </li>
+                            <?php endfor; ?>
+                            <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?halaman=<?= $page+1; ?>&limit=<?= $limit; ?>&search=<?= $search; ?>"><i class="bi bi-chevron-right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal fade" id="modalTambah" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <<form action="../proses/tambah.php" method="POST" class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-white">Tambah Persediaan Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">NAMA BARANG</label>
+                    <input type="text" name="nama_barang" class="form-control" placeholder="Nama barang..." required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">SATUAN</label>
+                        <input type="text" name="satuan" class="form-control" placeholder="Rim / Box / Pcs" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">STOK AWAL</label>
+                        <input type="number" name="stok_awal" class="form-control" value="0" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-success">PENGAJUAN (+)</label>
+                        <input type="number" name="pengajuan_barang" class="form-control border-success" value="0">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-danger">PEMAKAIAN (-)</label>
+                        <input type="number" name="pemakaian_barang" class="form-control border-danger" value="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-gold px-4">Simpan Data</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php 
+mysqli_data_seek($res, 0); 
+while($row = mysqli_fetch_assoc($res)): 
+?>
+<div class="modal fade" id="modalEdit<?= $row['id_persediaan']; ?>" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="../proses/edit.php" method="POST" class="modal-content">
+            <input type="hidden" name="id_persediaan" value="<?= $row['id_persediaan']; ?>">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-white">Edit Data Persediaan</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">NAMA BARANG</label>
+                    <input type="text" name="nama_barang" class="form-control" value="<?= $row['nama_barang']; ?>" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small">SATUAN</label>
+                        <input type="text" name="satuan" class="form-control" value="<?= $row['satuan']; ?>" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small">STOK AWAL</label>
+                        <input type="number" name="stok_awal" class="form-control" value="<?= $row['stok_awal']; ?>" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-success">PENGAJUAN (+)</label>
+                        <input type="number" name="pengajuan_barang" class="form-control" value="<?= $row['pengajuan_barang']; ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-danger">PEMAKAIAN (-)</label>
+                        <input type="number" name="pemakaian_barang" class="form-control" value="<?= $row['pemakaian_barang']; ?>">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-gold px-4">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<?php endwhile; ?>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// SweetAlert status handling
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('status') === 'sukses') Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data disimpan!', timer: 2000, showConfirmButton: false });
+if (urlParams.get('status') === 'hapus_sukses') Swal.fire({ icon: 'success', title: 'Terhapus', text: 'Data dihapus!', timer: 2000, showConfirmButton: false });
+
+function confirmDelete(id) {
+    Swal.fire({
+        title: 'Hapus data ini?',
+        text: "Data akan dihapus permanen!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#0a192f',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "../proses/hapus.php?id=" + id;
+        }
+    })
+}
+
+</script>
+</body>
+</html>

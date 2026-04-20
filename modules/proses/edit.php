@@ -1,4 +1,98 @@
+
+
 <?php
+include "../../config/database.php";
+include "../../config/auth.php";
+checkAccess('admin');
+
+// 1. UPDATE ATK
+if (isset($_POST['update_atk'])) {
+    $id     = mysqli_real_escape_string($conn, $_POST['id_barang']);
+    $nama   = mysqli_real_escape_string($conn, $_POST['nama_barang']);
+    $stok   = mysqli_real_escape_string($conn, $_POST['stok']);
+    $satuan = mysqli_real_escape_string($conn, $_POST['satuan']);
+
+    $query = "UPDATE barang SET nama_barang='$nama', stok='$stok', satuan='$satuan' WHERE id_barang='$id'";
+    mysqli_query($conn, $query);
+    header("Location: ../gudang/atk.php?status=update_sukses");
+    exit();
+}
+
+// 2. UPDATE KEBERSIHAN
+if (isset($_POST['update_kebersihan'])) {
+    $id     = mysqli_real_escape_string($conn, $_POST['id_barang']);
+    $nama   = mysqli_real_escape_string($conn, $_POST['nama_barang']);
+    $stok   = mysqli_real_escape_string($conn, $_POST['stok']);
+    $satuan = mysqli_real_escape_string($conn, $_POST['satuan']);
+
+    $query = "UPDATE barang SET nama_barang='$nama', stok='$stok', satuan='$satuan' WHERE id_barang='$id'";
+    mysqli_query($conn, $query);
+    header("Location: ../gudang/kebersihan.php?status=update_sukses");
+    exit();
+}
+
+// 3. UPDATE BAHAN PRAKTEK (LAB) - ELSE DIHAPUS AGAR TIDAK MENJEGAL
+if (isset($_POST['update_bahan_lab'])) {
+    $id_praktek  = mysqli_real_escape_string($conn, $_POST['id_praktek']);
+    $id_lab_back = mysqli_real_escape_string($conn, $_POST['id_lab_back']);
+    $id_j_back   = mysqli_real_escape_string($conn, $_POST['id_j_back']);
+    $kode_bahan  = mysqli_real_escape_string($conn, $_POST['kode_bahan']);
+    $nama        = mysqli_real_escape_string($conn, $_POST['nama_bahan']);
+    $spesifikasi = mysqli_real_escape_string($conn, $_POST['spesifikasi']);
+    $kondisi     = mysqli_real_escape_string($conn, $_POST['kondisi']);
+    $satuan      = mysqli_real_escape_string($conn, $_POST['satuan']);
+    
+    $sql = "UPDATE bahan_praktek SET kode_bahan='$kode_bahan', nama_bahan='$nama', spesifikasi='$spesifikasi', kondisi='$kondisi', satuan='$satuan' WHERE id_praktek='$id_praktek'";
+    mysqli_query($conn, $sql);
+    header("Location: ../gudang/bahan-praktek.php?id_lab=$id_lab_back&id_jurusan=$id_j_back&status=sukses_edit");
+    exit();
+}
+
+// 4. EDIT PERSEDIAAN GUDANG (Punya Anda sekarang Aman)
+if (isset($_POST['id_persediaan'])) {
+    $id        = mysqli_real_escape_string($conn, $_POST['id_persediaan']);
+    $nama      = mysqli_real_escape_string($conn, $_POST['nama_barang']);
+    $satuan    = mysqli_real_escape_string($conn, $_POST['satuan']);
+    $awal      = (int)$_POST['stok_awal'];
+    $pengajuan = (int)$_POST['pengajuan_barang'];
+    $pemakaian = (int)$_POST['pemakaian_barang'];
+
+    $sql = "UPDATE gudang_persediaan SET nama_barang='$nama', satuan='$satuan', stok_awal='$awal', pengajuan_barang='$pengajuan', pemakaian_barang='$pemakaian' WHERE id_persediaan='$id'";
+    
+    if (mysqli_query($conn, $sql)) {
+        header("Location: ../gudang/persediaan.php?status=sukses");
+    } else {
+        header("Location: ../gudang/persediaan.php?status=gagal");
+    }
+    exit();
+}
+
+// 5. UPDATE JURUSAN / LAB / KEPALA LAB / DISTRIBUSI (Gunakan pola yang sama)
+if (isset($_POST['update_jurusan'])) {
+    $id = $_POST['id_jurusan'];
+    $nama = mysqli_real_escape_string($conn, $_POST['nama_jurusan']);
+    mysqli_query($conn, "UPDATE jurusan SET nama_jurusan='$nama' WHERE id_jurusan='$id'");
+    header("Location: ../bahan-praktek/jurusan.php?status=update_sukses");
+    exit();
+}
+
+if (isset($_POST['update_lab'])) {
+    $id = $_POST['id_lab'];
+    $id_jur = $_POST['id_jurusan'];
+    $nama = mysqli_real_escape_string($conn, $_POST['nama_lab']);
+    mysqli_query($conn, "UPDATE lab SET id_jurusan='$id_jur', nama_lab='$nama' WHERE id_lab='$id'");
+    header("Location: ../bahan-praktek/jurusan.php?status=update_sukses");
+    exit();
+}
+
+// PENGAMAN TERAKHIR: Jika tidak ada data POST yang cocok
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ../../index.php");
+    exit();
+}
+?>
+
+<!-- 
 include "../../config/database.php";
 include "../../config/auth.php";
 checkAccess('admin');
@@ -54,40 +148,46 @@ if (isset($_POST['update_kebersihan'])) {
     }
 }
 
-// ==========================================
-// LOGIKA UPDATE KHUSUS BAHAN PRAKTEK
-// ==========================================
-if (isset($_POST['update_praktek_pusat'])) {
-    // 1. Ambil data dari form modal edit
-    $id          = mysqli_real_escape_string($conn, $_POST['id_praktek']);
-    $nama        = mysqli_real_escape_string($conn, $_POST['nama_bahan']);
-    $spesifikasi = mysqli_real_escape_string($conn, $_POST['spesifikasi']); // Field Baru
-    $stok        = (int)$_POST['stok'];
-    $kondisi     = mysqli_real_escape_string($conn, $_POST['kondisi']);     // Field Baru
-    $satuan      = mysqli_real_escape_string($conn, $_POST['satuan']);
 
-    // 2. Update ke tabel bahan_praktek
-    // Kita tambahkan kolom spesifikasi dan kondisi ke dalam set query
-    $query = "UPDATE bahan_praktek SET 
-                nama_bahan  = '$nama', 
-                spesifikasi = '$spesifikasi', 
-                stok        = '$stok', 
-                kondisi     = '$kondisi', 
-                satuan      = '$satuan' 
-              WHERE id_praktek = '$id'";
+// ==========================================
+// LOGIKA UPDATE BAHAN PRAKTEK (LAB)
+// ==========================================
+if (isset($_POST['update_bahan_lab'])) {
+    // 1. Tangkap Parameter ID & Redirect Back
+    $id_praktek  = mysqli_real_escape_string($conn, $_POST['id_praktek']);
+    $id_lab_back = mysqli_real_escape_string($conn, $_POST['id_lab_back']);
+    $id_j_back   = mysqli_real_escape_string($conn, $_POST['id_j_back']);
     
-    // 3. Eksekusi dan Redirect
-    if (mysqli_query($conn, $query)) {
-        // Mengirim status update_sukses agar SweetAlert menampilkan pesan yang benar
-        header("Location: ../gudang/bahan-praktek.php?status=update_sukses");
+    // 2. Tangkap Input Data Baru
+    $kode_bahan  = mysqli_real_escape_string($conn, $_POST['kode_bahan']);
+    $nama        = mysqli_real_escape_string($conn, $_POST['nama_bahan']);
+    $spesifikasi = mysqli_real_escape_string($conn, $_POST['spesifikasi']);
+    $kondisi     = mysqli_real_escape_string($conn, $_POST['kondisi']);
+    $satuan      = mysqli_real_escape_string($conn, $_POST['satuan']);
+    
+    // 3. Query Update
+    $sql = "UPDATE bahan_praktek SET 
+            kode_bahan  = '$kode_bahan',
+            nama_bahan  = '$nama',
+            spesifikasi = '$spesifikasi',
+            kondisi     = '$kondisi',
+            satuan      = '$satuan'
+            WHERE id_praktek = '$id_praktek'";
+
+    if (mysqli_query($conn, $sql)) {
+        // Berhasil: Kembali ke lab yang sama dengan parameter url agar tidak hilang
+        header("Location: ../gudang/bahan-praktek.php?id_lab=$id_lab_back&id_jurusan=$id_j_back&status=sukses_edit");
         exit();
     } else {
-        // Jika gagal, kirim status gagal
-        header("Location: ../gudang/bahan-praktek.php?status=gagal");
+        // Gagal: Kembali dengan parameter url dan status gagal
+        header("Location: ../gudang/bahan-praktek.php?id_lab=$id_lab_back&id_jurusan=$id_j_back&status=gagal_edit");
         exit();
     }
+} else {
+    // Jika diakses ilegal
+    header("Location: ../gudang/bahan-praktek.php");
+    exit();
 }
-
 
 
 // 1. UPDATE JURUSAN
@@ -157,8 +257,38 @@ if (isset($_POST['update_kepala'])) {
     } else {
         header("Location: ../bahan-praktek/kepala-lab.php?status=gagal");
     }
-    exit();
+    
 }
+
+
+// EDIT PERSEDIAAN GUDANG
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Pastikan 'id_persediaan' sesuai dengan name="id_persediaan" di input hidden modal
+    $id = mysqli_real_escape_string($conn, $_POST['id_persediaan']);
+    
+    $nama      = mysqli_real_escape_string($conn, $_POST['nama_barang']);
+    $satuan    = mysqli_real_escape_string($conn, $_POST['satuan']);
+    $awal      = (int)$_POST['stok_awal'];
+    $pengajuan = (int)$_POST['pengajuan_barang'];
+    $pemakaian = (int)$_POST['pemakaian_barang'];
+
+    $sql = "UPDATE gudang_persediaan SET 
+            nama_barang = '$nama', 
+            satuan = '$satuan', 
+            stok_awal = '$awal', 
+            pengajuan_barang = '$pengajuan', 
+            pemakaian_barang = '$pemakaian' 
+            WHERE id_persediaan = '$id'";
+
+    if (mysqli_query($conn, $sql)) {
+        header("Location: ../gudang/persediaan.php?status=sukses");
+        exit();
+    } else {
+        // Cek error di sini jika masih gagal
+        die("Error database: " . mysqli_error($conn));
+    }
+}
+
 
 // EDIT DISTRIBUSI
 if (isset($_POST['update_distribusi'])) {
@@ -201,4 +331,8 @@ if (isset($_POST['update_distribusi'])) {
         }
     }
 }
-?>
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ../../index.php");
+    exit();
+} -->

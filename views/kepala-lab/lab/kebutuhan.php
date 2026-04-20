@@ -8,13 +8,20 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
     exit;
 }
 
+// Ambil ID dari session (Pastikan saat login, $_SESSION['id_user'] diisi dari kolom id_kepala)
 $id_user = $_SESSION['id_user'];
 
-// 2. Query Ambil Barang dari tabel bahan_praktek (Ditambahkan Kondisi)
-$query_barang = mysqli_query($conn, "SELECT id_praktek, kode_bahan, nama_bahan, spesifikasi, kondisi, satuan FROM bahan_praktek ORDER BY nama_bahan ASC");
+// --- STEP 1: Ambil id_lab milik Kepala Lab ini ---
+$q_identitas = mysqli_query($conn, "SELECT id_lab FROM kepala_lab WHERE id_kepala = '$id_user'");
+$d_identitas = mysqli_fetch_assoc($q_identitas);
+$id_lab_user = $d_identitas['id_lab'];
 
-// 3. Query Ambil Riwayat Permintaan (LEFT JOIN untuk ambil spesifikasi & kondisi bahan)
-$sql_riwayat = "SELECT p.*, b.nama_bahan, b.spesifikasi, b.kondisi 
+// --- STEP 2: Ambil Bahan HANYA dari Lab yang sama ---
+// Kita ambil stok dan data lainnya langsung dari tabel bahan_praktek
+$query_barang = mysqli_query($conn, "SELECT * FROM bahan_praktek WHERE id_lab = '$id_lab_user' ORDER BY nama_bahan ASC");
+
+// --- STEP 3: Riwayat Permintaan ---
+$sql_riwayat = "SELECT p.*, b.kode_bahan,  b.nama_bahan, b.spesifikasi, b.kondisi , b.stok
                 FROM permintaan_barang p 
                 LEFT JOIN bahan_praktek b ON p.id_barang = b.id_praktek 
                 WHERE p.id_kepala = '$id_user' 
@@ -25,13 +32,26 @@ $riwayat = mysqli_query($conn, $sql_riwayat);
 $edit_data = null;
 if (isset($_GET['edit_id'])) {
     $id_edit = mysqli_real_escape_string($conn, $_GET['edit_id']);
-    $query_edit = mysqli_query($conn, "SELECT p.*, b.nama_bahan, b.spesifikasi, b.kondisi 
+    $query_edit = mysqli_query($conn, "SELECT p.*, b.kode_bahan, b.nama_bahan, b.spesifikasi, b.kondisi, b.stok
                                        FROM permintaan_barang p 
                                        LEFT JOIN bahan_praktek b ON p.id_barang = b.id_praktek 
                                        WHERE p.id_permintaan = '$id_edit'");
     $edit_data = mysqli_fetch_assoc($query_edit);
 }
+
+
+
+// Query untuk mengambil total stok per barang dari tabel distribusi_lab yang sudah diterima
+$stok_lab_query = mysqli_query($conn, "SELECT id_praktek, SUM(jumlah) as total_stok 
+                                       FROM distribusi_lab 
+                                       WHERE status = 'diterima' 
+                                       GROUP BY id_praktek");
+$stok_list = [];
+while($row = mysqli_fetch_assoc($stok_lab_query)) {
+    $stok_list[$row['id_praktek']] = $row['total_stok'];
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -113,11 +133,14 @@ if (isset($_GET['edit_id'])) {
                                             <option value="">Ketik nama atau kode bahan...</option>
                                             <?php 
                                             mysqli_data_seek($query_barang, 0);
-                                            while($b = mysqli_fetch_assoc($query_barang)): ?>
+                                            while($b = mysqli_fetch_assoc($query_barang)): 
+                                                // Ambil stok dari array yang kita buat di atas, jika tidak ada set 0
+                                                $stok_saat_ini = $stok_list[$b['id_praktek']] ?? 0;
+                                            ?>
                                                 <option value="<?= $b['id_praktek']; ?>" 
                                                         data-spesifikasi="<?= htmlspecialchars($b['spesifikasi'] ?? '-'); ?>" 
-                                                        data-kondisi="<?= htmlspecialchars($b['kondisi'] ?? '-'); ?>">
-                                                    <?= $b['kode_bahan']; ?> - <?= $b['nama_bahan']; ?> (<?= $b['satuan']; ?>)
+                                                        data-kondisi="<?= htmlspecialchars($b['kondisi'] ?? '-'); ?>"
+                                                        data-stok="<?= $stok_saat_ini; ?>"> <?= $b['kode_bahan']; ?> - <?= $b['nama_bahan']; ?> (<?= $b['satuan']; ?>)
                                                 </option>
                                             <?php endwhile; ?>
                                         </select>
@@ -134,9 +157,20 @@ if (isset($_GET['edit_id'])) {
                                     <input type="text" id="display_kondisi" class="form-control bg-light" value="<?= $edit_data['kondisi'] ?? ''; ?>" readonly placeholder="Otomatis...">
                                 </div>
 
-                                <div class="col-md-1">
-                                    <label class="form-label fw-bold small text-muted">QTY</label>
-                                    <input type="number" name="jumlah_minta" class="form-control" value="<?= $edit_data['jumlah_minta'] ?? ''; ?>" min="1" required>
+                                <div class="row g-3">
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold small text-muted">STOK DI LAB SAAT INI</label>
+                                    <input type="text" 
+                                        id="display_stok" 
+                                        name="stok_awal"  class="form-control bg-light fw-bold text-primary" 
+                                        value="0" 
+                                        readonly>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold small text-muted">JUMLAH DIMINTA</label>
+                                    <input type="number" name="jumlah_minta" class="form-control border-success" 
+                                        value="<?= $edit_data['jumlah_minta'] ?? ''; ?>" min="1" required 
+                                        placeholder="Qty minta...">
                                 </div>
 
                                 <div class="col-md-2 d-flex align-items-end">
@@ -144,6 +178,7 @@ if (isset($_GET['edit_id'])) {
                                         <i class="bi bi-send-check me-2"></i><?= $edit_data ? 'Update' : 'Kirim' ?>
                                     </button>
                                 </div>
+                            </div>
                             </div>
                         </form>
                     </div>
@@ -164,10 +199,12 @@ if (isset($_GET['edit_id'])) {
                                     <tr>
                                         <th>No</th>
                                         <th>Tanggal</th>
-                                        <th>Bahan</th>
+                                        <th>Kode Bahan</th>
+                                        <th>Nama Bahan</th>
                                         <th>Spesifikasi</th>
                                         <th>Kondisi</th>
-                                        <th class="text-center">Qty</th>
+                                        <th class="text-center">Stok Awal</th>
+                                        <th class="text-center">Jumlah Permintaan</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Aksi</th>
                                     </tr>
@@ -177,6 +214,9 @@ if (isset($_GET['edit_id'])) {
                                     <tr>
                                         <td class="text-muted"><?= $no++; ?></td>
                                         <td><span class="small fw-semibold"><?= date('d/m/Y', strtotime($r['tgl_permintaan'])); ?></span></td>
+                                        <td class="text-center">
+                                            <span class="badge-status bg-<?= $r['kode_bahan']; ?>"><?= $r['kode_bahan']; ?></span>
+                                        </td>
                                         <td class="fw-bold text-navy"><?= $r['nama_bahan'] ?? 'N/A'; ?></td><td>
                                             <div class="text-wrap" style="max-width: 200px; font-size: 0.85rem; line-height: 1.4;">
                                                 <?php if (!empty($r['spesifikasi'])): ?>
@@ -189,6 +229,7 @@ if (isset($_GET['edit_id'])) {
                                             </div>
                                         </td>
                                         <td><span class="badge bg-light text-dark border"><?= $r['kondisi'] ?: '-'; ?></span></td>
+                                        <td class="text-center fw-bold"><?= $r['stok_awal']; ?></td>
                                         <td class="text-center fw-bold"><?= $r['jumlah_minta']; ?></td>
                                         <td class="text-center">
                                             <span class="badge-status bg-<?= $r['status']; ?>"><?= $r['status']; ?></span>
@@ -286,5 +327,47 @@ if (isset($_GET['edit_id'])) {
         });
     }
 </script>
+
+
+<script>
+$(document).ready(function() {
+    $('#id_barang').on('change', function() {
+        var id_praktek = $(this).val();
+        // Pastikan variabel ini mengambil ID Lab dari session login
+        var id_lab = "<?= $_SESSION['id_lab']; ?>"; 
+
+        if (id_praktek) {
+            $.ajax({
+                url: '../proses/get_stok.php',
+                type: 'GET',
+                data: { 
+                    id_praktek: id_praktek,
+                    id_lab: id_lab 
+                },
+                success: function(response) {
+                    $('#display_stok').val(response);
+                }
+            });
+        }
+    });
+});
+
+$(document).ready(function() {
+    $('#pilih_bahan').on('change', function() {
+        // Ambil data dari option yang dipilih
+        const selectedOption = $(this).find(':selected');
+        const spesifikasi = selectedOption.data('spesifikasi');
+        const kondisi = selectedOption.data('kondisi');
+        const stok = selectedOption.data('stok');
+
+        // Masukkan ke input display
+        $('#display_spesifikasi').val(spesifikasi);
+        $('#display_kondisi').val(kondisi);
+        $('#display_stok').val(stok); // Stok otomatis terisi
+    });
+});
+</script>
+
+
 </body>
 </html>

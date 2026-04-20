@@ -28,22 +28,33 @@ if (isset($_GET['id']) && ($_GET['modul'] == 'atk' || $_GET['modul'] == 'kebersi
 }
 
 // ==========================================
-// 3. LOGIKA HAPUS BAHAN PRAKTEK (PUSAT)
+// 3. LOGIKA HAPUS BAHAN PRAKTEK (PUSAT) - VERSI AJAX
 // ==========================================
+
 if (isset($_GET['id']) && $_GET['modul'] == 'praktek_pusat') {
+    header('Content-Type: application/json');
     $id = mysqli_real_escape_string($conn, $_GET['id']);
 
-    // Cek apakah bahan ini sudah didistribusikan ke Lab
+    // Cek Relasi
     $cek_relasi = mysqli_query($conn, "SELECT id_praktek FROM distribusi_lab WHERE id_praktek = '$id'");
     
     if (mysqli_num_rows($cek_relasi) > 0) {
-        header("Location: ../gudang/bahan-praktek.php?status=gagal_relasi");
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Data tidak bisa dihapus karena sudah didistribusikan ke Laboratorium!'
+        ]);
     } else {
         $query = "DELETE FROM bahan_praktek WHERE id_praktek = '$id'";
         if (mysqli_query($conn, $query)) {
-            header("Location: ../gudang/bahan-praktek.php?status=hapus_sukses");
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Data bahan praktek berhasil dihapus permanen.'
+            ]);
         } else {
-            header("Location: ../gudang/bahan-praktek.php?status=gagal");
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal menghapus data dari database.'
+            ]);
         }
     }
     exit();
@@ -127,6 +138,25 @@ if (isset($_GET['hapus_distribusi'])) {
         }
     }
     exit();
+}
+
+
+// ==========================================
+// HAPUS PERSEDIAAN GUDANG
+// ==========================================
+
+if (isset($_GET['id'])) {
+    $id = mysqli_real_escape_string($conn, $_GET['id']);
+
+    $sql = "DELETE FROM gudang_persediaan WHERE id_persediaan = '$id'";
+
+    if (mysqli_query($conn, $sql)) {
+        header("Location: ../gudang/persediaan.php?status=hapus_sukses");
+    } else {
+        echo "Error: " . mysqli_error($conn);
+    }
+} else {
+    header("Location: ../gudang/persediaan.php");
 }
 
 header("Location: ../../index.php");

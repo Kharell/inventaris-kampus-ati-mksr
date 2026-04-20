@@ -290,102 +290,68 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
 </div>
 
 
-<div class="modal fade" id="distModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-     <form id="formACC" action="../proses/tambah.php" method="POST" class="modal-content border-0 rounded-4 overflow-hidden">
-            <div class="modal-header border-0" style="background-color: #0a192f; padding: 20px;">
-                <h5 class="modal-title fw-bold" style="color: #ffffff;">
-                    Kirim Bahan ke: <span id="labName" style="color: #ffcc00;"></span>
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-<div class="modal-body p-4">
-    <input type="hidden" name="id_lab" id="modIdLab">
-    <input type="hidden" name="id_permintaan" id="modIdReq">
-    
-    <input type="hidden" name="id_jurusan_id" id="modIdJurHidden"> 
-    
-    <input type="hidden" name="nama_jurusan" id="modJurusan">
-    <input type="hidden" name="nama_lab" id="modLab">   
-    
-    
-    <div class="mb-3">
-        <label class="form-label fw-bold small" style="color: #0a192f;">PILIH BAHAN PRAKTEK</label>
-        <select name="id_praktek" id="modBarang" class="form-select border-2" onchange="updateDetailBahan()" required>
-            <option value="">-- Pilih Bahan --</option>
-            <?php 
-            mysqli_data_seek($list_barang, 0); 
-            while($b = mysqli_fetch_assoc($list_barang)): 
-            ?>
-                <option value="<?= $b['id_praktek']; ?>" 
-                        data-kode="<?= $b['kode_bahan']; ?>"
-                        data-spesifikasi="<?= htmlspecialchars($b['spesifikasi']); ?>"
-                        data-kondisi="<?= $b['kondisi']; ?>">
-                    <?= $b['nama_bahan']; ?> (Stok: <?= $b['stok']; ?> <?= $b['satuan']; ?>)
-                </option>
-            <?php endwhile; ?>
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label fw-bold small" style="color: #0a192f;">KODE LABEL OTOMATIS</label>
-        <input type="text" name="kode_distribusi" id="modKode" class="form-control bg-light fw-bold font-monospace" readonly style="color: #0a192f; border: 1px dashed #0a192f;">
-    </div>
-
-<div class="mb-3">
-    <label class="form-label fw-bold small" style="color: #0a192f;">SPESIFIKASI BARANG</label>
-    <input type="text" name="spesifikasi" id="modSpesifikasi" class="form-control bg-light border-2" readonly placeholder="Terisi otomatis..." required>
-</div>
-
-<div class="mb-3">
-    <label class="form-label fw-bold small d-block" style="color: #0a192f;">KONDISI BARANG (DARI DATABASE)</label>
-    <div class="border rounded-3 p-2 bg-light">
-        <input type="hidden" name="kondisi" id="modKondisiHidden">
-
-        <div id="rowBaik" class="d-flex align-items-center justify-content-between p-2 mb-1 rounded-2 text-muted opacity-50">
-            <div class="d-flex align-items-center small fw-bold">
-                <i class="bi bi-shield-check me-2"></i> Baik
-            </div>
-            <i id="checkBaik" class="bi bi-check-circle-fill d-none"></i>
-        </div>
-
-        <div id="rowKurang" class="d-flex align-items-center justify-content-between p-2 mb-1 rounded-2 text-muted opacity-50">
-            <div class="d-flex align-items-center small fw-bold">
-                <i class="bi bi-exclamation-triangle me-2"></i> Kurang Baik
-            </div>
-            <i id="checkKurang" class="bi bi-check-circle-fill d-none"></i>
-        </div>
-
-        <div id="rowRusak" class="d-flex align-items-center justify-content-between p-2 rounded-2 text-muted opacity-50">
-            <div class="d-flex align-items-center small fw-bold">
-                <i class="bi bi-x-octagon me-2"></i> Rusak
-            </div>
-            <i id="checkRusak" class="bi bi-check-circle-fill d-none"></i>
-        </div>
-    </div>
-</div>
-
-    <div class="row">
-        <div class="col-6 mb-3">
-            <label class="fw-bold small" style="color: #0a192f;">JUMLAH KIRIM</label>
-            <input type="number" name="jumlah" id="modJumlah" class="form-control" min="1" required>
-        </div>
-        <div class="col-6 mb-3">
-            <label class="fw-bold small" style="color: #0a192f;">TANGGAL</label>
-            <input type="date" name="tanggal_distribusi" class="form-control" value="<?= date('Y-m-d'); ?>">
-        </div>
-    </div>
-</div>
 
 
-            <div class="modal-footer border-0 p-4 pt-0">
-                <button type="submit" name="simpan_distribusi" class="btn w-100 py-3 fw-bold shadow-sm" style="background-color: #0a192f; color: #ffcc00; border-radius: 10px;">
-                    <i class="bi bi-send-check me-2"></i>KONFIRMASI PENGIRIMAN
-                </button>
+<div class="modal fade" id="modalACC" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <form id="formACC" action="../proses/tambah.php" method="POST" class="modal-content border-0 rounded-4 shadow-lg">
+            <input type="hidden" name="id_permintaan" id="modIdReq">
+            <input type="hidden" name="id_lab" id="modIdLab">
+            <input type="hidden" name="id_praktek" id="modBarang">
+            <input type="hidden" name="jumlah" id="modJumlah">
+            <input type="hidden" name="kode_distribusi" id="modKode">
+            <input type="hidden" name="kondisi" id="modKondisiHidden">
+            <input type="hidden" name="tanggal_distribusi" value="<?= date('Y-m-d'); ?>">
+
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning-subtle text-warning rounded-circle mb-3" style="width: 50px; height: 50px;">
+                        <i class="bi bi-shield-check fs-3"></i>
+                    </div>
+                    <h6 class="fw-bold text-navy mb-1">Validasi Distribusi</h6>
+                    <p class="small text-muted">Konfirmasi data sebelum material dikeluarkan</p>
+                </div>
+
+                <div class="bg-light rounded-4 p-3 border border-dashed border-secondary-subtle">
+                    <div class="mb-3">
+                        <label class="smaller text-muted d-block text-uppercase fw-bold mb-1" style="letter-spacing: 1px;">Nama Material</label>
+                        <div id="textNamaBarang" class="fw-bold text-navy h6 mb-0">...</div>
+                        <span id="textKodeDisplay" class="badge bg-navy-subtle text-navy font-monospace mt-1" style="font-size: 0.7rem;">-</span>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-7">
+                            <label class="smaller text-muted d-block text-uppercase fw-bold mb-1" style="letter-spacing: 1px;">Spesifikasi</label>
+                            <div id="textSpekDisplay" class="small text-dark text-truncate">-</div>
+                        </div>
+                        <div class="col-5">
+                            <label class="smaller text-muted d-block text-uppercase fw-bold mb-1" style="letter-spacing: 1px;">Kondisi</label>
+                            <span id="textKondisiDisplay" class="badge bg-white border text-dark fw-normal">-</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-top border-2 border-white d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-muted">JUMLAH ACC:</span>
+                        <span class="h4 fw-bold text-navy mb-0" id="textJumlahDisplay">0</span>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" name="simpan_distribusi" class="btn btn-navy w-100 py-2 rounded-3 fw-bold mb-2 shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Setujui Sekarang
+                    </button>
+                    <button type="button" class="btn btn-link w-100 btn-sm text-muted text-decoration-none" data-bs-dismiss="modal">
+                        Kembali
+                    </button>
+                </div>
             </div>
         </form>
     </div>
+</div>
+
+
+
+
 
 
 </div> <div class="modal fade" id="editDistModal" tabindex="-1">
@@ -661,62 +627,72 @@ let currentLabId = '';
 let currentLabName = '';
 let currentJurName = '';
 
-// function viewLabDetails(id, labName, jurName) {
-//     // 1. Simpan ke variabel global
-//     currentLabId = id;
-//     currentLabName = labName;
-//     currentJurName = jurName;
 
-//     // 2. Langsung isi input hidden di modal supaya 'siaga'
-//     document.getElementById('modIdLab').value = id;
-//     document.getElementById('modLab').value = labName;
-//     document.getElementById('modJurusan').value = jurName;
+function prosesACC(idReq, idPraktek, jml, nama, spek, kondisi, kode, idLab) {
+    // 1. Mapping data ke input form
+    document.getElementById('modIdReq').value = idReq;
+    document.getElementById('modIdLab').value = idLab;
+    document.getElementById('modBarang').value = idPraktek;
+    document.getElementById('modJumlah').value = jml;
+    document.getElementById('modKode').value = kode; // Kode bahan asli
+    document.getElementById('modKondisiHidden').value = kondisi;
 
-//     // ... kode fetch/loadDistribusi Anda yang sudah ada ...
-//     const view = document.getElementById('distribusi-view');
-//     view.innerHTML = `
-//         <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm border-start border-4" style="border-left-color: #0a192f !important;">
-//             <div>
-//                 <h4 class="fw-bold mb-0" style="color: #0a192f;">${labName}</h4>
-//                 <span class="badge" style="background-color: #ffcc00; color: #0a192f;">${jurName}</span>
-//             </div>
-//             <div class="d-flex gap-2">
-//                 <button class="btn btn-sm btn-add-dist shadow-sm" onclick="openDistModal('${id}', '${labName}', '${jurName}')" style="background-color: #0a192f; color: #ffcc00;">
-//                     <i class="bi bi-plus-lg me-1"></i>Kirimmm
-//                 </button>
-//             </div>
-//         </div>
-//         <div id="table-content">
-//             <div class="text-center p-5"><div class="spinner-border" style="color: #0a192f;"></div></div>
-//         </div>
-//     `;
-//     loadDistribusi(id, 1, '');
-// }
+    // 2. Update Tampilan Visual Modal
+    document.getElementById('textNamaBarang').innerText = nama;
+    document.getElementById('textSpekDisplay').innerText = spek ? spek : '-';
+    document.getElementById('textJumlahDisplay').innerText = jml;
+    document.getElementById('textKodeDisplay').innerText = kode;
+    document.getElementById('textKondisiDisplay').innerText = kondisi;
 
-function prosesACC(idPermintaan, idBahan, jmlMinta, namaBahan, spek, kondisi) {
-    if (!currentLabId) {
-        Swal.fire('Peringatan', 'ID Lab hilang...', 'warning');
+    // 3. Eksekusi Modal
+    var instance = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalACC'));
+    instance.show();
+}
+
+
+function sinkronisasiData() {
+    const select = document.getElementById('modBarang');
+    
+    // Validasi jika tidak ada yang dipilih
+    if (!select || select.selectedIndex === -1 || !select.value) {
         return;
     }
 
-    document.getElementById('modIdLab').value = currentLabId;
-    document.getElementById('modIdReq').value = idPermintaan;
-    document.getElementById('modLab').value = currentLabName;
-    document.getElementById('labName').innerText = currentLabName;
+    const selected = select.options[select.selectedIndex];
     
-    document.getElementById('modBarang').value = idBahan;
-    document.getElementById('modJumlah').value = jmlMinta;
-    
-    // Set Spek & Kondisi dari parameter
-    document.getElementById('modSpesifikasi').value = spek;
-    document.getElementById('modKondisiHidden').value = kondisi;
-    
-    updateVisualKondisi(kondisi);
-    generateCode(); 
+    // Ambil attribute dari option yang dipilih
+    const kodeBahan = selected.getAttribute('data-kode') || "???";
+    const spekBahan = selected.getAttribute('data-spesifikasi') || "-";
+    const kondisiBahan = selected.getAttribute('data-kondisi') || "Baik";
+    const namaLab = document.getElementById('modLab').value || "LAB";
 
-    var myModal = new bootstrap.Modal(document.getElementById('distModal'));
-    myModal.show();
+    // --- LOGIKA KODE OTOMATIS ---
+    // Format: DIST - (3 Huruf Lab) - (Kode Bahan) - (Tgl)
+    const tgl = new Date().getDate().toString().padStart(2, '0');
+    const bln = (new Date().getMonth() + 1).toString().padStart(2, '0');
+    const kodeDistribusi = `DIST-${namaLab.substring(0, 3).toUpperCase()}-${kodeBahan}-${tgl}${bln}`;
+    
+    document.getElementById('modKode').value = kodeDistribusi;
+    document.getElementById('modSpesifikasi').value = spekBahan;
+    document.getElementById('modKondisiHidden').value = kondisiBahan;
+
+    // --- STYLING VISUAL KONDISI ---
+    const displayKondisi = document.getElementById('displayKondisi');
+    if (displayKondisi) {
+        displayKondisi.innerText = kondisiBahan;
+        
+        // Gunakan classList agar lebih aman daripada mengganti seluruh className
+        displayKondisi.className = "form-control border-0 fw-bold text-center text-uppercase"; // Reset
+        if (kondisiBahan.toLowerCase() === 'baik') {
+            displayKondisi.classList.add("bg-success-subtle", "text-success");
+        } else {
+            displayKondisi.classList.add("bg-warning-subtle", "text-warning");
+        }
+    }
 }
+
+
+
 </script>
 
 <script>

@@ -22,7 +22,7 @@ if (empty($id_lab)) {
 $search_sql = $keyword ? " AND (b.nama_bahan LIKE '%$keyword%' OR d.kode_distribusi LIKE '%$keyword%')" : "";
 
 // --- BAGIAN A: ANTRIAN PERMINTAAN (ACC) ---
-$sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok as stok_gudang, b.id_praktek, b.spesifikasi, b.kondisi, b.kode_bahan
+$sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok, b.id_praktek, b.spesifikasi, b.kondisi, b.kode_bahan
             FROM permintaan_barang p
             JOIN bahan_praktek b ON p.id_barang = b.id_praktek
             JOIN kepala_lab kl ON p.id_kepala = kl.id_kepala
@@ -57,10 +57,11 @@ $query_req = mysqli_query($conn, $sql_req);
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light small fw-bold text-muted">
                     <tr>
-                        <th class="ps-4">MATERIAL</th>
+                        <th class="ps-4">TANGGAL PENGAJUAN</th>
+                        <th class="ps-4">KODE & NAMA MATERIAL</th>    
                         <th class="text-center">SPEK & KONDISI</th>
-                        <th class="text-center">KUANTITAS</th>
-                        <th class="text-center">STOK GUDANG</th>
+                        <th class="text-center">STOK GUDANG & PERMINTAAN</th>
+                        
                         <th class="text-end pe-4">AKSI</th>
                     </tr>
                 </thead>
@@ -68,26 +69,30 @@ $query_req = mysqli_query($conn, $sql_req);
                     <?php while ($req = mysqli_fetch_assoc($query_req)) : ?>
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-bold text-navy"><?= htmlspecialchars($req['nama_bahan']) ?></div>
                             <div class="smaller text-muted"><?= date('d/m/Y H:i', strtotime($req['tgl_permintaan'])) ?></div>
+                            
+                        </td>
+                        <td class="ps-4">
+                            <?= htmlspecialchars($req['kode_bahan']) ?>
+                            <div class="fw-bold text-navy"><?= htmlspecialchars($req['nama_bahan']) ?></div>
+                            
                         </td>
                         <td class="text-center">
                             <div class="small text-dark mb-1"><?= htmlspecialchars($req['spesifikasi'] ?: '-') ?></div>
                             <span class="badge bg-info-subtle text-info border border-info rounded-pill" style="font-size: 10px;"><?= $req['kondisi'] ?></span>
                         </td>
+
                         <td class="text-center">
-                            <span class="badge bg-warning-subtle text-dark px-3 py-2">
-                                <b><?= $req['jumlah_minta'] ?></b> <?= $req['satuan'] ?>
+                            <span class="badge bg-primary px-2 py-1 me-1" title="Sisa Stok di Lab">
+                                <i class="bi bi-house-door me-1"></i><?= $req['stok_awal'] ?></b> <?= $req['satuan'] ?>
+                            </span>
+                            
+                            <span class="badge bg-warning text-dark px-2 py-1" title="Jumlah Permintaan">
+                                <i class="bi bi-cart-plus me-1"></i><?= $req['jumlah_minta'] ?></b> <?= $req['satuan'] ?>
                             </span>
                         </td>
-                        <td class="text-center small fw-bold <?= ($req['stok_gudang'] < $req['jumlah_minta']) ? 'text-danger' : 'text-success' ?>">
-                            <i class="bi bi-box-seam me-1"></i><?= $req['stok_gudang'] ?>
-                        </td>
                         <td class="text-end pe-4">
-                            <button class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm" 
-                                style="transition: all 0.3s ease; border: none;"
-                                onmouseover="this.style.backgroundColor='#00c853'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 15px rgba(0, 200, 83, 0.4)';"
-                                onmouseout="this.style.backgroundColor='#002b5c'; this.style.transform='translateY(0)'; this.style.boxShadow='none';"
+                           <button class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm" 
                                 onclick="prosesACC(
                                     '<?= $req['id_permintaan'] ?>', 
                                     '<?= $req['id_praktek'] ?>', 
@@ -95,7 +100,10 @@ $query_req = mysqli_query($conn, $sql_req);
                                     '<?= addslashes($req['nama_bahan']) ?>', 
                                     '<?= addslashes($req['spesifikasi']) ?>', 
                                     '<?= $req['kondisi'] ?>', 
-                                    '<?= $req['kode_bahan'] ?>'
+                                    '<?= $req['kode_bahan'] ?>',
+                                    '<?= addslashes($req['nama_lab'] ?? 'LAB') ?>', 
+                                    '<?= addslashes($req['nama_jurusan'] ?? 'JUR') ?>',
+                                    '<?= $id_lab ?>'
                                 )">
                                 <i class="bi bi-check2-circle me-1"></i> ACC
                             </button>
@@ -188,7 +196,6 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
                             <th class="ps-4 py-3 text-center" style="width: 60px;">NO</th>
                             <th class="py-3">KODE & MATERIAL</th>
                             <th>SPEK & KONDISI</th>
-                            <th class="text-center">KUANTITAS</th>
                             <?php if($status == 'ditolak') echo '<th>ALASAN</th>'; ?>
                             <th class="text-center pe-4"><?= $hasAction ? 'KONTROL' : 'STATUS' ?></th>
                         </tr>
