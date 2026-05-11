@@ -1,7 +1,58 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 include "../../config/database.php";
 include "../../config/auth.php";
 checkAccess('admin');
+
+$aksi = isset($_POST['aksi']) ? $_POST['aksi'] : '';
+
+if ($aksi == 'kirim_ulang') {
+    // Sanitasi data
+    $id_distribusi = mysqli_real_escape_string($conn, $_POST['id']);
+    $jumlah_sisa   = (int)$_POST['jumlah'];
+
+    // 1. Ambil data lama
+    $cek = mysqli_query($conn, "SELECT * FROM distribusi_lab WHERE id_distribusi = '$id_distribusi'");
+    $data_lama = mysqli_fetch_assoc($cek);
+
+    if ($data_lama) {
+        $id_praktek = $data_lama['id_praktek'];
+        $id_lab     = $data_lama['id_lab'];
+        $kode       = $data_lama['kode_distribusi'];
+        $spek       = mysqli_real_escape_string($conn, $data_lama['spesifikasi']);
+        $kondisi    = $data_lama['kondisi'];
+
+        mysqli_begin_transaction($conn);
+        try {
+            // 2. Buat record PENGIRIMAN BARU untuk sisa barang (INSERT)
+            $keterangan_baru = "Kirim kekurangan/ulang (" . $jumlah_sisa . " unit)";
+            
+            $sql_insert = "INSERT INTO distribusi_lab 
+                            (id_praktek, id_lab, kode_distribusi, jumlah, tanggal_distribusi, spesifikasi, kondisi, status, keterangan) 
+                           VALUES 
+                            ('$id_praktek', '$id_lab', '$kode', '$jumlah_sisa', NOW(), '$spek', '$kondisi', 'dikirim', '$keterangan_baru')";
+            mysqli_query($conn, $sql_insert);
+
+            // 3. TUTUP record/histori lama agar masuk ke tab "Selesai" (TIDAK ADA LAGI ERROR ENUM)
+            // Kita set jumlah = jumlah_diterima (jika ditolak nilainya 0), dan status diubah jadi 'diterima'
+            $sql_update_lama = "UPDATE distribusi_lab SET 
+                                jumlah = COALESCE(jumlah_diterima, 0), 
+                                status = 'diterima' 
+                                WHERE id_distribusi = '$id_distribusi'";
+            mysqli_query($conn, $sql_update_lama);
+
+            mysqli_commit($conn);
+            echo "success";
+        } catch (Exception $e) {
+            mysqli_rollback($conn);
+            echo "Error Database: " . $e->getMessage();
+        }
+    } else {
+        echo "Data distribusi tidak ditemukan.";
+    }
+    exit;
+}
 
 // ==========================================
 // LOGIKA KHUSUS TAMBAH ATK
@@ -170,54 +221,43 @@ if (isset($_POST['tambah_kepala'])) {
 // ==========================================
 // 1. LOGIKA DISTRIBUSI BAHAN (FIXED & LENGKAP)
 // ==========================================
-if (isset($_POST['simpan_distribusi'])) {
-    $id_praktek     = mysqli_real_escape_string($conn, $_POST['id_praktek'] ?? '');
-    $id_lab         = mysqli_real_escape_string($conn, $_POST['id_lab'] ?? ''); 
-    $id_permintaan  = mysqli_real_escape_string($conn, $_POST['id_permintaan'] ?? '');
-    
-    $kode           = mysqli_real_escape_string($conn, $_POST['kode_distribusi'] ?? '');
-    $jumlah         = (int)($_POST['jumlah'] ?? 0);
-    $tanggal        = $_POST['tanggal_distribusi'] ?? date('Y-m-d');
 
-    // MENGAMBIL KONDISI: Pastikan name di modal adalah 'kondisi'
-    $kondisi        = mysqli_real_escape_string($conn, $_POST['kondisi'] ?? 'Baik');
+
+if (isset($_POST['simpan_distribusi'])) {
+    $id_req   = mysqli_real_escape_string($conn, $_POST['id_permintaan']);
+    $id_lab   = mysqli_real_escape_string($conn, $_POST['id_lab']);
+    $id_prak  = mysqli_real_escape_string($conn, $_POST['id_barang']); 
+    $jumlah   = mysqli_real_escape_string($conn, $_POST['jumlah']);
+    $kode     = mysqli_real_escape_string($conn, $_POST['kode_distribusi']);
+    $kondisi  = mysqli_real_escape_string($conn, $_POST['kondisi']);
+    $tgl_now  = date('Y-m-d');
+
+    // Ambil spek dari tabel asal
+    $q_spek = mysqli_query($conn, "SELECT spesifikasi FROM bahan_praktek WHERE id_praktek = '$id_prak'");
+    $d_spek = mysqli_fetch_assoc($q_spek);
+    $spesifikasi = mysqli_real_escape_string($conn, $d_spek['spesifikasi'] ?? '-');
 
     mysqli_begin_transaction($conn);
     try {
-        // --- TAMBAHAN: MENGAMBIL SPESIFIKASI ---
-        // Kita ambil langsung dari database berdasarkan id_praktek agar data valid
-        $cek_barang = mysqli_query($conn, "SELECT spesifikasi FROM bahan_praktek WHERE id_praktek = '$id_praktek'");
-        $data_barang = mysqli_fetch_assoc($cek_barang);
-        $spesifikasi = mysqli_real_escape_string($conn, $data_barang['spesifikasi'] ?? '-');
+        // 1. Update status di permintaan_barang
+        $q1 = "UPDATE permintaan_barang SET status='disetujui', tgl_proses=NOW(), jumlah_disetujui='$jumlah' WHERE id_permintaan='$id_req'";
+        mysqli_query($conn, $q1);
 
-        // 1. INSERT ke distribusi_lab
-        $query_ins = "INSERT INTO distribusi_lab 
-                (id_praktek, id_lab, kode_distribusi, jumlah, tanggal_distribusi, spesifikasi, kondisi, status) 
-                VALUES 
-                ('$id_praktek', '$id_lab', '$kode', '$jumlah', '$tanggal', '$spesifikasi', '$kondisi', 'dikirim')";
-        
-        if (!mysqli_query($conn, $query_ins)) {
-            throw new Exception("Gagal Simpan Distribusi: " . mysqli_error($conn));
-        }
-
-        // 2. UPDATE permintaan_barang 
-        if (!empty($id_permintaan)) {
-            $query_upd = "UPDATE permintaan_barang SET status = 'disetujui' WHERE id_permintaan = '$id_permintaan'";
-            if (!mysqli_query($conn, $query_upd)) {
-                throw new Exception("Gagal Update Permintaan: " . mysqli_error($conn));
-            }
-        }
+        // 2. Simpan ke distribusi_lab
+        $q2 = "INSERT INTO distribusi_lab (id_praktek, id_lab, kode_distribusi, jumlah, tanggal_distribusi, spesifikasi, kondisi, status) 
+               VALUES ('$id_prak', '$id_lab', '$kode', '$jumlah', '$tgl_now', '$spesifikasi', '$kondisi', 'dikirim')";
+        mysqli_query($conn, $q2);
 
         mysqli_commit($conn);
-        echo "success"; 
-        exit();
-
+        echo "success"; // Respon untuk SweetAlert
     } catch (Exception $e) {
         mysqli_rollback($conn);
-        echo "Error: " . $e->getMessage();
-        exit();
+        echo "Gagal: " . $e->getMessage();
     }
+    exit;
 }
+
+
 
 
 // ==========================================
@@ -277,11 +317,16 @@ if (isset($_POST['setujui'])) {
         // Menggunakan $kode_bahan_asal sebagai isi dari kolom kode_distribusi
         $tanggal_sekarang = date('Y-m-d');
         
+        // 4. INSERT ke tabel distribusi_lab
+        // Kita tambahkan 'jumlah_diterima' agar langsung dianggap SELESAI dan tidak masuk tab Masalah
+        $tanggal_sekarang = date('Y-m-d');
+        
         $q4 = "INSERT INTO distribusi_lab (
                 id_praktek, 
                 id_lab, 
                 kode_distribusi, 
                 jumlah, 
+                jumlah_diterima, /* <--- TAMBAHAN BARU */
                 tanggal_distribusi, 
                 spesifikasi, 
                 kondisi, 
@@ -292,6 +337,7 @@ if (isset($_POST['setujui'])) {
                 '$id_lab_back', 
                 '$kode_bahan_asal', 
                 '$stok_baru', 
+                '$stok_baru', /* <--- ISI DENGAN NILAI YANG SAMA (FULL) */
                 '$tanggal_sekarang', 
                 '$spesifikasi', 
                 '$kondisi_asal', 
@@ -360,5 +406,9 @@ if (isset($_POST['tambah_atk']) || isset($_POST['tambah_kebersihan'])) {
         header("Location: ../gudang/$redirect?status=gagal");
     }
     exit();
+
+
 }
+
+
 

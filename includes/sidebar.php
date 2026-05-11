@@ -245,7 +245,7 @@ function isExpandedByFolder($folder_name) {
 
         <?php if($role == 'kepala_lab' || $role == 'kepala-lab'): ?>
             <div class="nav-label-modern">Aktivitas Lab</div>
-            <a class="nav-link <?= isActive('lab/kebutuhan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/kebutuhan.php"><i class="bi bi-cart-plus me-3"></i> Input Kebutuhan</a>
+            <a class="nav-link <?= isActive('lab/kebutuhan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/kebutuhan.php"><i class="bi bi-cart-plus me-3"></i> Buat Pembelian</a>
             <a class="nav-link <?= isActive('lab/konfirmasi.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/konfirmasi.php"><i class="bi bi-check2-square me-3"></i> Konfirmasi</a>
             <a class="nav-link <?= isActive('lab/stok.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/stok.php"><i class="bi bi-archive me-3"></i> Stok Lab</a>
             <a class="nav-link <?= isActive('lab/pemakaian.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/pemakaian.php"><i class="bi bi-clipboard-data me-3"></i> Lapor Pakai</a>

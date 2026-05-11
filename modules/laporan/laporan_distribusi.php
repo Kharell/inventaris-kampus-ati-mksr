@@ -13,7 +13,7 @@ $labs = [];
 while($l = mysqli_fetch_assoc($lab_all_query)) { $labs[] = $l; }
 
 // Statistik ringkas
-$total_distribusi_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM distribusi_lab");
+$total_distribusi_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM distribusi_lab WHERE status = 'diterima'");
 $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
 ?>
 <!DOCTYPE html>
@@ -54,7 +54,7 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
         }
         .report-selector:checked + .report-card {
             border-color: var(--gold); background: #fffdf2;
-            transform: translateX(10px);
+            transform: translateX(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         .report-selector:checked + .report-card .icon-shape {
             background-color: var(--gold); color: var(--navy);
@@ -64,9 +64,10 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
             width: 45px; height: 45px; border-radius: 10px; 
             display: flex; align-items: center; justify-content: center; 
             font-size: 1.2rem; background-color: #f8f9fa; color: var(--navy);
+            transition: 0.3s;
         }
 
-        .config-card { border-radius: 15px; border: none; }
+        .config-card { border-radius: 15px; border: none; position: sticky; top: 90px;}
         
         .format-pill {
             border-radius: 10px; font-weight: 600; padding: 10px;
@@ -82,7 +83,7 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
             font-weight: 700; border: none; border-radius: 12px; 
             padding: 15px; transition: 0.3s;
         }
-        .btn-gold:hover { background-color: #e6b800; transform: translateY(-2px); }
+        .btn-gold:hover { background-color: #e6b800; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,204,0,0.3);}
 
         .info-badge {
             background-color: #e7f1ff; color: #084298; border-radius: 8px;
@@ -93,11 +94,11 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
         .custom-option-card {
             border: 2px solid #e9ecef;
             border-radius: 12px;
-            transition: all 0.2s;
+            transition: all 0.2s; cursor: pointer;
         }
         .btn-check:checked + .custom-option-card {
-            border-color: var(--navy);
-            background-color: #f8faff;
+            border-color: var(--navy) !important;
+            background-color: #f8faff !important;
         }
         .animate-fade-in {
             animation: fadeIn 0.3s ease-in-out;
@@ -120,11 +121,11 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
             <div class="header-card shadow-sm">
                 <div class="d-flex align-items-center">
                     <div class="me-3">
-                        <i class="bi bi-printer-fill text-warning fs-1"></i>
+                        <i class="bi bi-truck text-warning fs-1"></i>
                     </div>
                     <div>
-                        <h2 class="fw-bold mb-1">Cetak Laporan Distribusi Bahan Praktek</h2>
-                        <p class="mb-0 text-white-50">Filter distribusi barang antar Jurusan dan Lab</p>
+                        <h2 class="fw-bold mb-1">Cetak Laporan Distribusi Barang</h2>
+                        <p class="mb-0 text-white-50">Filter rekapitulasi distribusi barang/bahan dari Gudang ke Laboratorium</p>
                     </div>
                 </div>
             </div>
@@ -133,12 +134,13 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
                 <div class="row g-4">
                     
                     <div class="col-lg-7">
+                
                         <input type="radio" class="report-selector" name="scope" id="scope_semua" value="semua" checked onclick="toggleScope('semua')">
                         <label class="report-card w-100" for="scope_semua">
                             <div class="icon-shape"><i class="bi bi-globe"></i></div>
                             <div>
-                                <span class="d-block fw-bold">Semua Data Distribusi</span>
-                                <span class="small text-muted">Seluruh laporan dari semua jurusan & lab</span>
+                                <span class="d-block fw-bold">Seluruh Kampus (Semua Data)</span>
+                                <span class="small text-muted">Rekapitulasi total dari <?= $total_distribusi ?> riwayat distribusi diterima</span>
                             </div>
                         </label>
 
@@ -147,7 +149,7 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
                             <div class="icon-shape"><i class="bi bi-mortarboard"></i></div>
                             <div>
                                 <span class="d-block fw-bold">Berdasarkan Jurusan</span>
-                                <span class="small text-muted">Distribusi untuk satu jurusan tertentu</span>
+                                <span class="small text-muted">Filter barang yang didistribusikan ke satu jurusan tertentu</span>
                             </div>
                         </label>
 
@@ -156,7 +158,7 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
                             <div class="icon-shape"><i class="bi bi-buildings"></i></div>
                             <div>
                                 <span class="d-block fw-bold"> Berdasarkan Laboratorium</span>
-                                <span class="small text-muted">Detail distribusi per laboratorium spesifik</span>
+                                <span class="small text-muted">Filter barang yang didistribusikan ke satu lab spesifik</span>
                             </div>
                         </label>
 
@@ -251,7 +253,7 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
                                     </div>
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label small fw-bold text-muted d-block">FORMAT DOKUMEN</label>
+                                    <label class="form-label small fw-bold text-muted d-block">FORMAT OUTPUT</label>
                                     <div class="row g-2">
                                         <div class="col-4">
                                             <input type="radio" class="btn-check" name="format" id="f_pdf" value="pdf" checked>
@@ -269,7 +271,7 @@ $total_distribusi = mysqli_fetch_assoc($total_distribusi_res)['total'];
                                 </div>
 
                                 <button type="submit" class="btn btn-gold w-100 shadow-sm py-3">
-                                    <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN
+                                     <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN DISTRIBUSI
                                 </button>
                             </div>
                         </div>

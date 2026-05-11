@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 18, 2026 at 08:31 AM
+-- Generation Time: May 11, 2026 at 06:29 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.22
 
@@ -45,31 +45,9 @@ CREATE TABLE `bahan_praktek` (
 --
 
 INSERT INTO `bahan_praktek` (`id_praktek`, `kode_bahan`, `nama_bahan`, `spesifikasi`, `id_jurusan`, `id_lab`, `stok`, `kondisi`, `satuan`, `tgl_masuk`) VALUES
-(27, 'BPR-26-001', 'Meteran', 'Meteran Listrik', NULL, NULL, 10, 'Baik', 'Pcs', '2026-01-30'),
-(28, 'BPR-26-002', 'Isolasi Listrik', 'Isolasi Kabel Untuk Kabel Listrik', NULL, NULL, 7, 'Baik', 'Pcs', '2026-01-30'),
-(29, 'BPR-26-003', 'Tang', 'Tang Besi', NULL, NULL, 7, 'Baik', 'Pcs', '2026-01-30'),
-(30, 'BPR-26-004', 'Mouse Pad', 'Laboratorium Komputasi', NULL, NULL, 9, 'Baik', 'Pcs', '2026-01-30'),
-(31, 'BPR-26-005', 'Plate Dumbble ', 'Plate Dumbble - 5 Kg', NULL, NULL, 1, 'Baik', 'Pcs', '2026-01-30'),
-(32, 'BPR-26-006', 'Mata Gerinda Potong 4 Inch', 'Mesin Potong Besi', NULL, NULL, 10, 'Baik', 'Psc', '2026-01-30'),
-(33, 'BPR-26-007', 'Gas CO2 1 kg', 'Tabung Gas CO2', NULL, NULL, 7, 'Baik', 'Tabung', '2026-01-30'),
-(34, 'BPR-26-008', 'Selang Kecil Destilasi', 'Selang Kecil', NULL, NULL, 10, 'Baik', 'Meter', '2026-01-30'),
-(35, 'BPR-26-009', 'Tespen', 'Tespen', NULL, NULL, 15, 'Baik', 'Pcs', '2026-01-30'),
-(36, 'BPR-26-010', 'Kabel NYAF Merah', 'Kabel NYAF Merah', NULL, NULL, 2, 'Baik', 'Meter', '2026-01-30'),
-(39, 'BPR-26-011', 'Filamen - Biru', 'Filamen', NULL, NULL, 2, 'Baik', 'Roll', '2026-02-13'),
-(40, 'BPR-26-012', 'Box Kontainer Navara (Merah)', 'Box Kontainer Navara (Merah)', NULL, NULL, 30, 'Baik', 'Pcs', '2026-02-13'),
-(41, 'BPR-26-013', 'Box Organizer', 'Box Organizer - Kuning', NULL, NULL, 5, 'Baik', 'Pcs', '2026-02-13'),
-(42, 'BPR-26-014', 'Lakban Isolasi', 'Lakban Isolasi (jilid) merah', NULL, NULL, 4, 'Baik', 'Pcs', '2026-02-13'),
-(43, 'BPR-26-015', 'Lakban Isolasi', 'Lakban Isolasi (jilid) Kuning', NULL, NULL, 4, 'Baik', 'Pcs', '2026-02-13'),
-(44, 'BPR-26-016', 'Balok ', 'Balok Jati Putih', NULL, NULL, 50, 'Baik', 'Pcs', '2026-02-13'),
-(45, 'BPR-26-017', 'Drump HDPE Torn Air', 'Drump HDPE Torn Air Tempat Sampah 160 Liter', NULL, NULL, 2, 'Baik', 'Pcs', '2026-02-13'),
-(46, 'BPR-26-018', 'Tang', 'Tang Laboratorium Sistem Produksi', NULL, NULL, 5, 'Baik', 'Pcs', '2026-02-13'),
-(47, 'BPR-26-019', 'Cat Duco Merah ', 'Cat Duco Merah Tuangan 1L - Cat besi kayu pagar', NULL, NULL, 20, 'Baik', 'Kaleng', '2026-02-13'),
-(48, 'BPR-26-020', 'Tombol Power on off', 'Tombol Power on off - Laboratorium Komputasi', NULL, NULL, 5, 'Baik', 'Pcs', '2026-02-13'),
-(49, 'BPR-26-021', 'Manajemen kabel velcro', 'Manajemen kabel velcro - Komputasi', NULL, NULL, 10, 'Baik', 'Pcs', '2026-02-13'),
-(50, 'BPR-26-022', 'Plate Dumbble', 'Plate Dumbble - 5 Kg', NULL, NULL, 2, 'Baik', 'Pcs', '2026-02-13'),
-(51, 'BPR-26-023', 'Plate Dumbble ', 'Plate Dumbble - 5 Kg', NULL, NULL, 2, 'Baik', 'Pcs', '2026-02-13'),
-(52, 'BPR-26-024', 'Keranjang Industri', 'Keranjang Industri', NULL, NULL, 5, 'Baik', 'Pcs', '2026-02-13'),
-(53, 'BPR-26-025', 'Baterai', 'Baterai 5 Pack', NULL, NULL, 5, 'Baik', 'Pack', '2026-02-13');
+(85, 'P1', 'Meja', '123', 3, 20, 7, 'Baik', 'Pcs', '2026-05-11'),
+(86, 'P2', 'Kursi', '123', 3, 20, 3, 'Baik', 'Pcs', '2026-05-11'),
+(87, 'P3', 'Besi', 'Kawat baja', 3, 20, 0, 'Baik', 'Roll', '2026-05-11');
 
 -- --------------------------------------------------------
 
@@ -118,38 +96,87 @@ CREATE TABLE `distribusi` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `distribusi_history`
+--
+
+CREATE TABLE `distribusi_history` (
+  `id_history` int NOT NULL,
+  `id_distribusi` int DEFAULT NULL,
+  `jumlah_masuk` int DEFAULT NULL,
+  `tanggal_log` datetime DEFAULT NULL,
+  `keterangan_log` text,
+  `status_log` enum('Lengkap','Sebagian') DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `distribusi_lab`
 --
 
 CREATE TABLE `distribusi_lab` (
   `id_distribusi` int NOT NULL,
+  `id_permintaan` int DEFAULT NULL,
   `id_praktek` int DEFAULT NULL,
   `id_lab` int DEFAULT NULL,
   `kode_distribusi` varchar(50) DEFAULT NULL,
   `jumlah` int DEFAULT NULL,
-  `tanggal_distribusi` date DEFAULT NULL,
+  `jumlah_diterima` int DEFAULT '0',
+  `tanggal_distribusi` datetime DEFAULT NULL,
   `spesifikasi` text,
   `kondisi` varchar(50) DEFAULT NULL,
   `status` enum('dikirim','diterima','ditolak') NOT NULL,
-  `keterangan` text
+  `keterangan` text,
+  `tanggal_diterima` datetime DEFAULT NULL,
+  `balasan_admin` text,
+  `is_read_lab` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `distribusi_lab`
 --
 
-INSERT INTO `distribusi_lab` (`id_distribusi`, `id_praktek`, `id_lab`, `kode_distribusi`, `jumlah`, `tanggal_distribusi`, `spesifikasi`, `kondisi`, `status`, `keterangan`) VALUES
-(73, 29, 20, 'BPR-26-003-20260130', 1, '2026-01-30', 'Tang Besi', 'Baik', 'diterima', NULL),
-(76, 28, 20, 'TMIA/LP/BPR-26-002', 2, '2026-02-02', 'Isolasi Kabel Untuk Kabel Listrik', 'Baik', 'diterima', NULL),
-(77, 28, 20, 'TMIA/LP/BPR-26-002', 1, '2026-02-02', 'Isolasi Kabel Untuk Kabel Listrik', 'Baik', 'diterima', NULL),
-(79, 31, 6, 'OSP/LP/BPR-26-005', 4, '2026-01-30', 'Besi Lembar ', 'Baik', 'diterima', NULL),
-(80, 36, 6, 'OSP/LP/BPR-26-010', 4, '2026-01-30', 'Kabel NYAF Merah', 'Baik', 'diterima', NULL),
-(81, 36, 6, 'OSP/LP/BPR-26-010', 1, '2026-02-02', 'Kabel NYAF Merah', 'Baik', 'dikirim', NULL),
-(84, 33, 20, 'TMIA/LP/BPR-26-007', 3, '2026-02-10', 'Tabung Gas CO2', 'Baik', 'diterima', NULL),
-(86, 29, 20, 'TMIA/LP/BPR-26-003', 2, '2026-02-10', 'Tang Besi', 'Baik', 'diterima', NULL),
-(87, 36, 20, 'TMIA/LP/BPR-26-010', 3, '2026-02-10', 'Kabel NYAF Merah', 'Baik', 'diterima', NULL),
-(90, 31, 20, 'TMIA/LP/BPR-26-005', 3, '2026-02-13', 'Besi Lembar ', 'Baik', 'diterima', NULL),
-(91, 31, 20, 'TMIA/LP/BPR-26-005', 3, '2026-02-10', 'Besi Lembar ', 'Baik', 'ditolak', 'Kondisi Barang Rusak/Cacat - Barang tidak dapat digunakan');
+INSERT INTO `distribusi_lab` (`id_distribusi`, `id_permintaan`, `id_praktek`, `id_lab`, `kode_distribusi`, `jumlah`, `jumlah_diterima`, `tanggal_distribusi`, `spesifikasi`, `kondisi`, `status`, `keterangan`, `tanggal_diterima`, `balasan_admin`, `is_read_lab`) VALUES
+(250, NULL, 86, 20, 'P2', 10, 10, '2026-05-11 00:00:00', '123', 'Baik', 'diterima', 'Pencatatan stok awal (Otomatis)', NULL, NULL, 0),
+(251, NULL, 87, 20, 'P3', 3, 3, '2026-05-11 00:00:00', 'Kawat baja', 'Baik', 'diterima', 'Terima sebagian: jumlah kurang (Fisik: 3)', '2026-05-11 10:50:08', NULL, 0),
+(252, NULL, 86, 20, 'P2', 3, 3, '2026-05-11 00:00:00', '123', 'Baik', 'diterima', 'Terima sebagian: jumlah kurang (Fisik: 3)', '2026-05-11 10:50:24', NULL, 0),
+(253, NULL, 87, 20, 'P3', 17, 17, '2026-05-11 10:51:36', 'Kawat baja', 'Baik', 'diterima', 'Diterima sesuai dokumen', '2026-05-11 10:52:25', NULL, 0),
+(254, NULL, 86, 20, 'P2', 0, 0, '2026-05-11 10:52:46', '123', 'Baik', 'diterima', 'kurang bagus', NULL, NULL, 0),
+(259, NULL, 85, 20, 'P1', 0, 0, '2026-05-11 10:59:31', '123', 'Baik', 'diterima', 'uhdiauifg', NULL, NULL, 0),
+(261, NULL, 85, 20, 'P1', 5, 5, '2026-05-11 11:06:30', '123', 'Baik', 'diterima', 'Terima sebagian: jumlah kurang (Fisik: 5)', '2026-05-11 11:07:32', NULL, 0),
+(262, NULL, 86, 20, 'P2', 3, 3, '2026-05-11 11:06:38', '123', 'Baik', 'diterima', 'Diterima sesuai dokumen', '2026-05-11 11:07:12', NULL, 0),
+(263, NULL, 85, 20, 'P1', 0, 0, '2026-05-11 11:08:20', '123', 'Baik', 'diterima', 'weh', NULL, NULL, 0),
+(264, NULL, 85, 20, 'P1', 5, 5, '2026-05-11 11:08:47', '123', 'Baik', 'diterima', 'Diterima sesuai dokumen', '2026-05-11 11:09:05', NULL, 0),
+(265, NULL, 85, 20, 'P1', 2, 2, '2026-05-11 00:00:00', '123', 'Baik', 'diterima', 'Terima sebagian: jumlah kurang (Fisik: 2)', '2026-05-11 11:23:35', NULL, 0),
+(266, NULL, 85, 20, 'P1', 2, 2, '2026-05-11 11:26:20', '123', 'Baik', 'diterima', 'Terima sebagian (Fisik: 2). Alasan: barng kurang bagus', '2026-05-11 11:28:14', NULL, 0),
+(267, NULL, 85, 20, 'P1', 0, 0, '2026-05-11 11:31:56', '123', 'Baik', 'diterima', 'barangnnya juga tidak bgaus gays', NULL, NULL, 0),
+(268, NULL, 85, 20, 'P1', 2, 2, '2026-05-11 11:32:32', '123', 'Baik', 'diterima', 'Terima sebagian (Fisik: 2). Alasan: adadeh', '2026-05-11 11:33:01', NULL, 0),
+(269, NULL, 85, 20, 'P1', 0, 0, '2026-05-11 11:33:49', '123', 'Baik', 'diterima', 'aduh bang', NULL, NULL, 0),
+(270, NULL, 85, 20, 'P1', 4, 0, '2026-05-11 13:28:22', '123', 'Baik', 'dikirim', 'Kirim kekurangan/ulang (4 unit)', NULL, NULL, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gudang_persediaan`
+--
+
+CREATE TABLE `gudang_persediaan` (
+  `id_persediaan` int NOT NULL,
+  `nama_barang` varchar(255) NOT NULL,
+  `satuan` varchar(50) DEFAULT NULL,
+  `stok_awal` int DEFAULT '0',
+  `pengajuan_barang` int DEFAULT '0',
+  `pemakaian_barang` int DEFAULT '0',
+  `stok_akhir` int GENERATED ALWAYS AS (((`stok_awal` + `pengajuan_barang`) - `pemakaian_barang`)) VIRTUAL,
+  `tgl_input` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `gudang_persediaan`
+--
+
+INSERT INTO `gudang_persediaan` (`id_persediaan`, `nama_barang`, `satuan`, `stok_awal`, `pengajuan_barang`, `pemakaian_barang`, `tgl_input`) VALUES
+(2, 'EWTEYasfasg', 'SDGSgcgcg', 2354, 235, 235, '2026-04-06 05:29:10');
 
 -- --------------------------------------------------------
 
@@ -278,18 +305,58 @@ CREATE TABLE `pemakaian_lab` (
   `id_lab` int NOT NULL,
   `jumlah_pakai` int NOT NULL,
   `tgl_pakai` datetime DEFAULT CURRENT_TIMESTAMP,
-  `keterangan` text
+  `keterangan` text,
+  `status_kunci` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `pemakaian_lab`
 --
 
-INSERT INTO `pemakaian_lab` (`id_pemakaian`, `id_distribusi`, `kode_distribusi`, `id_praktek`, `id_lab`, `jumlah_pakai`, `tgl_pakai`, `keterangan`) VALUES
-(20, 73, '', 29, 20, 1, '2026-01-30 10:47:54', NULL),
-(21, 79, '', 31, 6, 3, '2026-01-30 15:03:12', NULL),
-(22, 80, '', 36, 6, 3, '2026-01-30 15:03:25', NULL),
-(23, 77, '', 28, 20, 1, '2026-02-10 10:40:19', NULL);
+INSERT INTO `pemakaian_lab` (`id_pemakaian`, `id_distribusi`, `kode_distribusi`, `id_praktek`, `id_lab`, `jumlah_pakai`, `tgl_pakai`, `keterangan`, `status_kunci`) VALUES
+(47, 0, 'P2', 86, 20, 5, '2026-05-11 13:12:34', NULL, 1),
+(48, 0, 'P1', 85, 20, 4, '2026-05-11 13:12:40', NULL, 1),
+(49, 0, 'P1', 85, 20, 3, '2026-05-11 13:17:10', NULL, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pengaturan_sistem`
+--
+
+CREATE TABLE `pengaturan_sistem` (
+  `nama_pengaturan` varchar(50) NOT NULL,
+  `nilai_pengaturan` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `pengaturan_sistem`
+--
+
+INSERT INTO `pengaturan_sistem` (`nama_pengaturan`, `nilai_pengaturan`) VALUES
+('status_input_stok', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `permintaan_bahan`
+--
+
+CREATE TABLE `permintaan_bahan` (
+  `id_permintaan` int NOT NULL,
+  `id_barang` int NOT NULL,
+  `id_user` int NOT NULL,
+  `stok_saat_ini` int DEFAULT '0',
+  `tgl_permintaan` datetime NOT NULL,
+  `status` enum('pending','approved','rejected') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `permintaan_bahan`
+--
+
+INSERT INTO `permintaan_bahan` (`id_permintaan`, `id_barang`, `id_user`, `stok_saat_ini`, `tgl_permintaan`, `status`) VALUES
+(37, 86, 11, 10, '2026-05-11 09:47:14', 'approved');
 
 -- --------------------------------------------------------
 
@@ -301,13 +368,15 @@ CREATE TABLE `permintaan_barang` (
   `id_permintaan` int NOT NULL,
   `id_kepala` int NOT NULL,
   `id_barang` int NOT NULL,
+  `stok_awal` int DEFAULT '0',
   `spesifikasi` text,
   `jumlah_minta` int NOT NULL,
   `kondisi` varchar(50) DEFAULT NULL,
   `jumlah_disetujui` int DEFAULT '0',
+  `jumlah_terpenuhi` int DEFAULT '0',
   `tgl_permintaan` datetime DEFAULT CURRENT_TIMESTAMP,
   `tgl_proses` datetime DEFAULT NULL,
-  `status` enum('pending','disetujui','ditolak') DEFAULT 'pending',
+  `status` enum('pending','disetujui','ditolak','dikirim') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'pending',
   `keterangan_kepala` text,
   `catatan_admin` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -316,27 +385,11 @@ CREATE TABLE `permintaan_barang` (
 -- Dumping data for table `permintaan_barang`
 --
 
-INSERT INTO `permintaan_barang` (`id_permintaan`, `id_kepala`, `id_barang`, `spesifikasi`, `jumlah_minta`, `kondisi`, `jumlah_disetujui`, `tgl_permintaan`, `tgl_proses`, `status`, `keterangan_kepala`, `catatan_admin`) VALUES
-(52, 11, 29, 'TANG BESI', 2, 'Baik', 0, '2026-01-30 10:42:34', NULL, 'disetujui', NULL, NULL),
-(54, 11, 30, '-', 5, 'BAIK', 0, '2026-01-30 11:00:56', NULL, 'disetujui', NULL, NULL),
-(55, 11, 28, '-', 3, 'BAIK', 0, '2026-01-30 11:01:33', NULL, 'disetujui', NULL, NULL),
-(56, 11, 28, '-', 2, 'BAIK', 0, '2026-01-30 11:02:54', NULL, 'disetujui', NULL, NULL),
-(57, 11, 28, '-', 12, 'BAIK', 0, '2026-01-30 11:15:01', NULL, 'disetujui', NULL, NULL),
-(58, 11, 33, '-', 3, 'BAIK', 0, '2026-01-30 11:23:18', NULL, 'disetujui', NULL, NULL),
-(59, 9, 31, '-', 4, 'BAIK', 0, '2026-01-30 14:49:58', NULL, 'disetujui', NULL, NULL),
-(60, 9, 36, '-', 4, 'BAIK', 0, '2026-01-30 14:50:07', NULL, 'disetujui', NULL, NULL),
-(61, 9, 36, '-', 2, 'BAIK', 0, '2026-01-30 22:48:47', NULL, 'disetujui', NULL, NULL),
-(62, 11, 30, '-', 2, 'BAIK', 0, '2026-02-02 09:53:46', NULL, 'disetujui', NULL, NULL),
-(63, 11, 33, '-', 2, 'BAIK', 0, '2026-02-10 10:56:41', NULL, 'disetujui', NULL, NULL),
-(64, 11, 33, '-', 3, 'BAIK', 0, '2026-02-10 10:56:49', NULL, 'disetujui', NULL, NULL),
-(65, 11, 36, '-', 2, 'BAIK', 0, '2026-02-10 10:56:54', NULL, 'disetujui', NULL, NULL),
-(66, 11, 29, '-', 2, 'BAIK', 0, '2026-02-10 11:10:59', NULL, 'disetujui', NULL, NULL),
-(67, 11, 36, '-', 3, 'BAIK', 0, '2026-02-10 11:11:06', NULL, 'disetujui', NULL, NULL),
-(68, 11, 32, '-', 3, 'BAIK', 0, '2026-02-10 11:11:13', NULL, 'disetujui', NULL, NULL),
-(69, 11, 32, '-', 3, 'BAIK', 0, '2026-02-10 11:15:03', NULL, 'disetujui', NULL, NULL),
-(70, 11, 31, '-', 3, 'BAIK', 0, '2026-02-10 11:18:13', NULL, 'disetujui', NULL, NULL),
-(71, 11, 31, '-', 3, 'BAIK', 0, '2026-02-10 11:18:18', NULL, 'disetujui', NULL, NULL),
-(72, 11, 44, '-', 2, 'BAIK', 0, '2026-02-13 15:17:13', NULL, 'pending', NULL, NULL);
+INSERT INTO `permintaan_barang` (`id_permintaan`, `id_kepala`, `id_barang`, `stok_awal`, `spesifikasi`, `jumlah_minta`, `kondisi`, `jumlah_disetujui`, `jumlah_terpenuhi`, `tgl_permintaan`, `tgl_proses`, `status`, `keterangan_kepala`, `catatan_admin`) VALUES
+(205, 11, 87, 0, 'Kawat baja', 20, 'Baik', 20, 0, '2026-05-11 10:48:40', '2026-05-11 10:49:20', 'disetujui', '', NULL),
+(206, 11, 86, 10, '123', 6, 'Baik', 6, 0, '2026-05-11 10:48:50', '2026-05-11 10:49:27', 'disetujui', '', NULL),
+(207, 11, 85, 0, '123', 10, 'Baik', 10, 0, '2026-05-11 10:58:35', '2026-05-11 10:58:54', 'disetujui', '', NULL),
+(208, 11, 85, 10, '123', 10, 'Baik', 10, 0, '2026-05-11 11:16:48', '2026-05-11 11:17:09', 'disetujui', '', NULL);
 
 -- --------------------------------------------------------
 
@@ -386,12 +439,24 @@ ALTER TABLE `distribusi`
   ADD KEY `id_lab` (`id_lab`);
 
 --
+-- Indexes for table `distribusi_history`
+--
+ALTER TABLE `distribusi_history`
+  ADD PRIMARY KEY (`id_history`);
+
+--
 -- Indexes for table `distribusi_lab`
 --
 ALTER TABLE `distribusi_lab`
   ADD PRIMARY KEY (`id_distribusi`),
   ADD KEY `id_praktek` (`id_praktek`),
   ADD KEY `id_lab` (`id_lab`);
+
+--
+-- Indexes for table `gudang_persediaan`
+--
+ALTER TABLE `gudang_persediaan`
+  ADD PRIMARY KEY (`id_persediaan`);
 
 --
 -- Indexes for table `jurusan`
@@ -428,6 +493,18 @@ ALTER TABLE `pemakaian_lab`
   ADD KEY `id_praktek` (`id_praktek`);
 
 --
+-- Indexes for table `pengaturan_sistem`
+--
+ALTER TABLE `pengaturan_sistem`
+  ADD PRIMARY KEY (`nama_pengaturan`);
+
+--
+-- Indexes for table `permintaan_bahan`
+--
+ALTER TABLE `permintaan_bahan`
+  ADD PRIMARY KEY (`id_permintaan`);
+
+--
 -- Indexes for table `permintaan_barang`
 --
 ALTER TABLE `permintaan_barang`
@@ -448,7 +525,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bahan_praktek`
 --
 ALTER TABLE `bahan_praktek`
-  MODIFY `id_praktek` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+  MODIFY `id_praktek` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
 
 --
 -- AUTO_INCREMENT for table `barang`
@@ -463,10 +540,22 @@ ALTER TABLE `distribusi`
   MODIFY `id_distribusi` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `distribusi_history`
+--
+ALTER TABLE `distribusi_history`
+  MODIFY `id_history` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
+--
 -- AUTO_INCREMENT for table `distribusi_lab`
 --
 ALTER TABLE `distribusi_lab`
-  MODIFY `id_distribusi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
+  MODIFY `id_distribusi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=271;
+
+--
+-- AUTO_INCREMENT for table `gudang_persediaan`
+--
+ALTER TABLE `gudang_persediaan`
+  MODIFY `id_persediaan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `jurusan`
@@ -496,13 +585,19 @@ ALTER TABLE `master_key`
 -- AUTO_INCREMENT for table `pemakaian_lab`
 --
 ALTER TABLE `pemakaian_lab`
-  MODIFY `id_pemakaian` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id_pemakaian` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+
+--
+-- AUTO_INCREMENT for table `permintaan_bahan`
+--
+ALTER TABLE `permintaan_bahan`
+  MODIFY `id_permintaan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `permintaan_barang`
 --
 ALTER TABLE `permintaan_barang`
-  MODIFY `id_permintaan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
+  MODIFY `id_permintaan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=209;
 
 --
 -- AUTO_INCREMENT for table `users`

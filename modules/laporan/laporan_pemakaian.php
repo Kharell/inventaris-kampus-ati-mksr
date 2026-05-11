@@ -6,13 +6,15 @@ checkAccess('admin');
 
 // Ambil data untuk filter dropdown
 $jurusan_query = mysqli_query($conn, "SELECT * FROM jurusan ORDER BY nama_jurusan ASC");
-$lab_all_query = mysqli_query($conn, "SELECT l.*, j.nama_jurusan FROM lab l JOIN jurusan j ON l.id_jurusan = j.id_jurusan ORDER BY j.nama_jurusan ASC, l.nama_lab ASC");
+// Pastikan mengambil id_jurusan untuk kebutuhan filter JS
+$lab_all_query = mysqli_query($conn, "SELECT l.*, j.nama_jurusan, j.id_jurusan as ref_jurusan FROM lab l JOIN jurusan j ON l.id_jurusan = j.id_jurusan ORDER BY j.nama_jurusan ASC, l.nama_lab ASC");
 
 $labs = [];
 while($l = mysqli_fetch_assoc($lab_all_query)) { $labs[] = $l; }
 
 // Statistik ringkas pemakaian
-$total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM pemakaian_lab"))['total'];
+$total_pemakaian_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM pemakaian_lab");
+$total_pemakaian = mysqli_fetch_assoc($total_pemakaian_res)['total'];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -50,7 +52,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
         }
         .report-selector:checked + .report-card {
             border-color: var(--gold); background: #fffdf2;
-            transform: translateX(10px);
+            transform: translateX(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         .report-selector:checked + .report-card .icon-shape {
             background-color: var(--gold); color: var(--navy);
@@ -60,9 +62,10 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
             width: 45px; height: 45px; border-radius: 10px; 
             display: flex; align-items: center; justify-content: center; 
             font-size: 1.2rem; background-color: #f8f9fa; color: var(--navy);
+            transition: 0.3s;
         }
 
-        .config-card { border-radius: 15px; border: none; }
+        .config-card { border-radius: 15px; border: none; position: sticky; top: 90px; }
         
         .format-pill {
             border-radius: 10px; font-weight: 600; padding: 10px;
@@ -78,27 +81,21 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
             font-weight: 700; border: none; border-radius: 12px; 
             padding: 15px; transition: 0.3s;
         }
-        .btn-gold:hover { background-color: #e6b800; transform: translateY(-2px); }
+        .btn-gold:hover { background-color: #e6b800; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,204,0,0.3);}
 
         .info-badge {
             background-color: #e7f1ff; color: #084298; border-radius: 8px;
             padding: 12px; font-size: 0.85rem; border: 1px solid #b8daff;
         }
 
-        /* CSS Tambahan untuk Opsi Kartu */
         .custom-option-card {
             border: 2px solid #e9ecef !important;
-            border-radius: 12px !important;
-            color: #666 !important;
-            transition: 0.3s;
+            border-radius: 12px !important; color: #666 !important; transition: 0.3s; cursor: pointer;
         }
         .btn-check:checked + .custom-option-card {
-            border-color: var(--navy) !important;
-            background-color: #f8f9fa !important;
+            border-color: var(--navy) !important; background-color: #f8f9fa !important;
         }
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-in-out;
-        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -117,11 +114,11 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
             <div class="header-card shadow-sm">
                 <div class="d-flex align-items-center">
                     <div class="me-3">
-                        <i class="bi bi-clipboard-data-fill text-warning fs-1"></i>
+                        <i class="bi bi-tools text-warning fs-1"></i>
                     </div>
                     <div>
-                        <h2 class="fw-bold mb-1">Laporan Pemakaian Bahan di Lab</h2>
-                        <p class="mb-0 text-white-50">Pantau penggunaan bahan praktek per Jurusan dan Laboratorium</p>
+                        <h2 class="fw-bold mb-1">Cetak Laporan Pemakaian Bahan</h2>
+                        <p class="mb-0 text-white-50">Filter rekapan bahan praktek yang telah digunakan oleh Laboratorium</p>
                     </div>
                 </div>
             </div>
@@ -130,13 +127,14 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                 <div class="row g-4">
                     
                     <div class="col-lg-7">
-                                          
+                        <h6 class="fw-bold text-navy text-uppercase small mb-3">1. Cakupan Wilayah Pemakaian</h6>
+                        
                         <input type="radio" class="report-selector" name="scope" id="scope_semua" value="semua" checked onclick="toggleScope('semua')">
                         <label class="report-card w-100" for="scope_semua">
                             <div class="icon-shape"><i class="bi bi-collection"></i></div>
                             <div>
                                 <span class="d-block fw-bold">Semua Data Pemakaian</span>
-                                <span class="small text-muted">Gabungan semua data pemakaian lab</span>
+                                <span class="small text-muted">Gabungan <?= $total_pemakaian ?> log pemakaian dari seluruh lab kampus</span>
                             </div>
                         </label>
 
@@ -145,7 +143,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                             <div class="icon-shape"><i class="bi bi-mortarboard"></i></div>
                             <div>
                                 <span class="d-block fw-bold">Berdasarkan Jurusan</span>
-                                <span class="small text-muted">Akumulasi pemakaian dalam satu jurusan</span>
+                                <span class="small text-muted">Akumulasi pemakaian bahan dalam satu jurusan tertentu</span>
                             </div>
                         </label>
 
@@ -154,7 +152,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                             <div class="icon-shape"><i class="bi bi-buildings"></i></div>
                             <div>
                                 <span class="d-block fw-bold">Berdasarkan Laboratorium</span>
-                                <span class="small text-muted">Detail penggunaan bahan di lab spesifik</span>
+                                <span class="small text-muted">Detail rincian penggunaan bahan di satu lab spesifik</span>
                             </div>
                         </label>
 
@@ -163,7 +161,10 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                                 <label class="form-label small fw-bold">PILIH JURUSAN</label>
                                 <select name="id_jurusan" id="id_jurusan" class="form-select border-2" onchange="filterLabByJurusan(this.value)">
                                     <option value="">-- Pilih Jurusan --</option>
-                                    <?php mysqli_data_seek($jurusan_query, 0); while($j = mysqli_fetch_assoc($jurusan_query)): ?>
+                                    <?php 
+                                    mysqli_data_seek($jurusan_query, 0); 
+                                    while($j = mysqli_fetch_assoc($jurusan_query)): 
+                                    ?>
                                         <option value="<?= $j['id_jurusan'] ?>"><?= $j['nama_jurusan'] ?></option>
                                     <?php endwhile; ?>
                                 </select>
@@ -183,26 +184,31 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                     <div class="col-lg-5">
                         <div class="card config-card shadow-sm h-100">
                             <div class="card-body p-4">
-                                <h6 class="fw-bold mb-4 text-navy text-uppercase small"><i class="bi bi-calendar-check-fill me-2"></i>Rentang Waktu</h6>
+                                <h6 class="fw-bold mb-4 text-navy text-uppercase small"><i class="bi bi-gear-fill me-2"></i>Konfigurasi Laporan</h6>
                                 
                                 <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">PERIODE WAKTU</label>
                                     <select name="periode_tipe" id="periode_tipe" class="form-select border-2" onchange="handlePeriode(this.value)" style="border-radius: 10px;">
                                         <option value="custom">Rentang Tanggal Bebas</option>
                                         <option value="bulan">Per Bulan</option>
-                                        <option value="triwulan">Triwulan</option>
+                                        <option value="triwulan">Triwulan (3 Bulan)</option>
                                         <option value="semester">Semester (6 Bulan)</option>
                                     </select>
                                 </div>
 
                                 <div class="row g-2 mb-3">
                                     <div class="col-12">
-                                        <label class="form-label small text-muted fw-bold">MULAI TANGGAL</label>
+                                        <label class="form-label small text-muted fw-bold" id="lbl_awal">MULAI TANGGAL</label>
                                         <input type="date" name="tgl_awal" id="tgl_awal" class="form-control border-2" value="<?= date('Y-m-d') ?>" onchange="hitungOtomatis()">
                                     </div>
                                     <div class="col-12" id="box_akhir">
                                         <label class="form-label small text-muted fw-bold">SAMPAI TANGGAL</label>
                                         <input type="date" name="tgl_akhir" id="tgl_akhir" class="form-control border-2" value="<?= date('Y-m-d') ?>">
                                     </div>
+                                </div>
+
+                                <div id="info_box" class="info-badge mb-4 d-none">
+                                    <i class="bi bi-info-circle-fill me-2"></i> <span id="info_txt"></span>
                                 </div>
 
                                 <div class="mb-4">
@@ -215,7 +221,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                                             <label class="btn btn-outline-light w-100 p-2 custom-option-card text-start" for="nama_asli">
                                                 <i class="bi bi-patch-check-fill mb-1 d-block" style="color: var(--navy);"></i>
                                                 <span class="d-block fw-bold text-navy small">Default</span>
-                                                <small class="text-muted" style="font-size: 0.6rem;"><?= $_SESSION['nama_user'] ?? 'User Aktif' ?></small>
+                                                <small class="text-muted" style="font-size: 0.6rem;"><?= $_SESSION['nama_lengkap'] ?? 'User Aktif' ?></small>
                                             </label>
                                         </div>
                                         <div class="col-6">
@@ -239,9 +245,6 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                                         </div>
                                     </div>
                                 </div>
-                                <div id="info_box" class="info-badge mb-4 d-none">
-                                    <i class="bi bi-info-circle-fill me-2"></i> <span id="info_txt"></span>
-                                </div>
 
                                 <div class="mb-4">
                                     <label class="form-label small fw-bold text-muted d-block">FORMAT OUTPUT</label>
@@ -262,7 +265,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
                                 </div>
 
                                 <button type="submit" class="btn btn-gold w-100 shadow-sm py-3">
-                                     <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN
+                                     <i class="bi bi-printer-fill me-2"></i> GENERATE DOKUMEN PEMAKAIAN
                                 </button>
                             </div>
                         </div>
@@ -282,17 +285,18 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
         
         if (show) {
             wrapper.style.display = 'block';
-            inputNama.setAttribute('required', 'required');
-            inputNip.setAttribute('required', 'required');
+            inputNama.required = true;
+            inputNip.required = true;
         } else {
             wrapper.style.display = 'none';
-            inputNama.removeAttribute('required');
-            inputNip.removeAttribute('required');
+            inputNama.required = false;
+            inputNip.required = false;
             inputNama.value = '';
             inputNip.value = '';
         }
     }
 
+    // Toggle tampilan filter wilayah (Jurusan / Lab)
     function toggleScope(val) {
         const panel = document.getElementById('panel_wilayah');
         const dJurusan = document.getElementById('div_jurusan');
@@ -312,16 +316,24 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
         }
     }
 
+    // Filter daftar lab ketika jurusan dipilih
     function filterLabByJurusan(id) {
         const labSelect = document.getElementById('id_lab');
         const opts = labSelect.options;
         labSelect.value = "";
+        
         for (let i = 0; i < opts.length; i++) {
             const jurId = opts[i].getAttribute('data-jurusan');
-            opts[i].style.display = (id === "" || jurId === id || opts[i].value === "") ? "block" : "none";
+            // Pastikan option default "-- Pilih Lab --" selalu muncul
+            if(opts[i].value === "") {
+                opts[i].style.display = "block";
+            } else {
+                opts[i].style.display = (id === "" || jurId === id) ? "block" : "none";
+            }
         }
     }
 
+    // Tampilkan / sembunyikan input tanggal akhir
     function handlePeriode(val) {
         const box = document.getElementById('box_akhir');
         const info = document.getElementById('info_box');
@@ -335,6 +347,7 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
         }
     }
 
+    // Hitung tanggal akhir secara otomatis (Bulan, Triwulan, Semester)
     function hitungOtomatis() {
         const tipe = document.getElementById('periode_tipe').value;
         const awal = document.getElementById('tgl_awal').value;
@@ -343,15 +356,24 @@ $total_pemakaian = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as to
 
         if (!awal || tipe === 'custom') return;
 
+        let dStart = new Date(awal);
         let dEnd = new Date(awal);
-        if (tipe === 'bulan') dEnd.setMonth(dEnd.getMonth() + 1);
-        else if (tipe === 'triwulan') dEnd.setMonth(dEnd.getMonth() + 3);
-        else if (tipe === 'semester') dEnd.setMonth(dEnd.getMonth() + 6);
+        
+        if (tipe === 'bulan') dEnd.setMonth(dStart.getMonth() + 1);
+        else if (tipe === 'triwulan') dEnd.setMonth(dStart.getMonth() + 3);
+        else if (tipe === 'semester') dEnd.setMonth(dStart.getMonth() + 6);
 
+        // Mundur 1 hari agar periodenya presisi (Misal: 1 Jan s/d 31 Jan)
         dEnd.setDate(dEnd.getDate() - 1);
-        const hasil = dEnd.toISOString().split('T')[0];
+        
+        // Format ke YYYY-MM-DD lokal
+        const y = dEnd.getFullYear();
+        const m = String(dEnd.getMonth() + 1).padStart(2, '0');
+        const d = String(dEnd.getDate()).padStart(2, '0');
+        
+        const hasil = `${y}-${m}-${d}`;
         akhirInput.value = hasil;
-        infoTxt.innerText = "Mencakup data hingga: " + hasil;
+        infoTxt.innerText = "Sistem akan menarik data pemakaian hingga: " + d.padStart(2, '0') + "/" + m + "/" + y;
     }
 </script>
 

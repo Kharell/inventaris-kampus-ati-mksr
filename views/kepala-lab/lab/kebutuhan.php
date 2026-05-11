@@ -106,7 +106,7 @@ while($row = mysqli_fetch_assoc($stok_lab_query)) {
                         <div class="btn-group shadow-sm">
                              <button type="button" class="btn btn-white border" onclick="location.href='kebutuhan.php'"><i class="bi bi-arrow-clockwise"></i> Reset</button>
                              <button type="button" class="btn btn-navy" data-bs-toggle="collapse" data-bs-target="#formCollapse">
-                                <i class="bi bi-plus-circle me-2"></i>Buat Pengajuan
+                                <i class="bi bi-plus-circle me-2"></i>Buat Pembelian
                              </button>
                         </div>
                     </div>
