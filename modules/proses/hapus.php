@@ -1,7 +1,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkAccess('admin');
+checkAccess(['admin', 'admin-acc']);
 
 // ==========================================
 // 1 & 2. LOGIKA HAPUS BARANG (ATK/KEBERSIHAN)

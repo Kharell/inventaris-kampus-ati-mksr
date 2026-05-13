@@ -12,6 +12,7 @@ $parts = explode('/', trim($current_dir, '/'));
 $root_folder = isset($parts[0]) ? "/" . $parts[0] . "/" : "/";
 $base_url = $protocol . "://" . $host . $root_folder;
 
+// Menangkap role dari session
 $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
 
 function isActive($path) {
@@ -31,11 +32,9 @@ function isExpandedByFolder($folder_name) {
         --navy-dark: #001f3f;
         --gold-poly: #ffcc00;
         --hover-bg: rgba(255, 204, 0, 0.15);
-        /* Kunci ukuran font di sini */
         --font-fixed: 15px !important; 
     }
 
-    /* Sidebar Base */
     .sidebar-wrapper {
         background-color: var(--navy-dark) !important;
         color: white !important;
@@ -44,129 +43,45 @@ function isExpandedByFolder($folder_name) {
         flex-direction: column;
     }
 
-    /* Sembunyikan Scrollbar */
-    .menu-container {
-        flex-grow: 1;
-        overflow-y: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
+    .menu-container { flex-grow: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
     .menu-container::-webkit-scrollbar { display: none; }
 
-    /** * SELEKTOR AGRESIF UNTUK KONSISTENSI FONT
-     * Memaksa semua elemen teks di dalam sidebar memiliki ukuran yang sama
-     */
-    .sidebar-wrapper a, 
-    .sidebar-wrapper button, 
-    .sidebar-wrapper span, 
-    .sidebar-wrapper i,
-    .nav-link,
-    .btn-toggle-nav {
+    .sidebar-wrapper a, .sidebar-wrapper button, .sidebar-wrapper span, .sidebar-wrapper i, .nav-link, .btn-toggle-nav {
         font-size: var(--font-fixed) !important;
         font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
         line-height: 1.2 !important;
         text-transform: none !important;
     }
 
-    /* Reset Button Style agar identik dengan Link */
     .nav-link, .btn-toggle-nav {
-        color: rgba(255,255,255,0.8) !important;
-        padding: 12px 15px !important;
-        display: flex !important;
-        align-items: center;
-        border-radius: 8px;
-        margin: 4px 10px;
-        transition: background 0.2s ease;
-        text-decoration: none !important;
-        background: transparent;
-        border: none;
-        width: calc(100% - 20px);
-        cursor: pointer;
+        color: rgba(255,255,255,0.8) !important; padding: 12px 15px !important; display: flex !important;
+        align-items: center; border-radius: 8px; margin: 4px 10px; transition: background 0.2s ease;
+        text-decoration: none !important; background: transparent; border: none; width: calc(100% - 20px); cursor: pointer;
     }
 
-    /* Hilangkan efek biru/outline saat diklik */
-    .nav-link:focus, .btn-toggle-nav:focus, .nav-link:active, .btn-toggle-nav:active {
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent;
-    }
+    .nav-link:focus, .btn-toggle-nav:focus, .nav-link:active, .btn-toggle-nav:active { outline: none !important; box-shadow: none !important; background: transparent; }
+    .nav-link:hover, .btn-toggle-nav:hover { color: var(--gold-poly) !important; background: var(--hover-bg) !important; }
+    .nav-link.active { color: var(--navy-dark) !important; background-color: var(--gold-poly) !important; font-weight: 600 !important; }
 
-    .nav-link:hover, .btn-toggle-nav:hover {
-        color: var(--gold-poly) !important;
-        background: var(--hover-bg) !important;
-    }
+    .submenu { list-style: none; padding: 0; margin: 0 10px 5px 10px; background: rgba(0,0,0,0.15); border-radius: 0 0 8px 8px; }
+    .submenu .nav-link { margin: 0; padding-left: 45px !important; width: 100%; }
+    .submenu .nav-link.active { background: rgba(255, 204, 0, 0.1) !important; color: var(--gold-poly) !important; border-left: 3px solid var(--gold-poly); border-radius: 0 8px 8px 0; }
 
-    /* Keadaan Aktif */
-    .nav-link.active {
-        color: var(--navy-dark) !important;
-        background-color: var(--gold-poly) !important;
-        font-weight: 600 !important;
-    }
-
-    /* Submenu (Dropdown) */
-    .submenu {
-        list-style: none;
-        padding: 0;
-        margin: 0 10px 5px 10px;
-        background: rgba(0,0,0,0.15);
-        border-radius: 0 0 8px 8px;
-    }
-
-    .submenu .nav-link {
-        margin: 0;
-        padding-left: 45px !important;
-        width: 100%;
-    }
-
-    .submenu .nav-link.active {
-        background: rgba(255, 204, 0, 0.1) !important;
-        color: var(--gold-poly) !important;
-        border-left: 3px solid var(--gold-poly);
-        border-radius: 0 8px 8px 0;
-    }
-
-    /* Ikon Chevron */
     .btn-toggle-nav::after {
-        display: inline-block;
-        margin-left: auto;
+        display: inline-block; margin-left: auto;
         content: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
-        width: 10px;
-        opacity: 0.5;
-        transition: transform 0.3s;
+        width: 10px; opacity: 0.5; transition: transform 0.3s;
     }
     .btn-toggle-nav:not(.collapsed)::after { transform: rotate(180deg); }
 
-    .nav-label-modern {
-        color: rgba(255,255,255,0.3);
-        font-size: 11px !important; /* Label tetap kecil agar proporsional */
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        padding: 20px 25px 8px;
-        font-weight: bold;
-    }
+    .nav-label-modern { color: rgba(255,255,255,0.3); font-size: 11px !important; text-transform: uppercase; letter-spacing: 1px; padding: 20px 25px 8px; font-weight: bold; }
 
-    /* Desktop Sidebar Fix */
     @media (min-width: 992px) {
-        .sidebar-wrapper {
-            width: var(--sidebar-width) !important;
-            height: 100vh !important;
-            position: fixed !important;
-            left: 0; top: 0;
-            z-index: 1050;
-        }
+        .sidebar-wrapper { width: var(--sidebar-width) !important; height: 100vh !important; position: fixed !important; left: 0; top: 0; z-index: 1050; }
         .main-content { margin-left: var(--sidebar-width) !important; }
     }
 
-    .btn-toggle-mobile {
-        position: fixed;
-        top: 15px; left: 15px;
-        z-index: 1100;
-        background: var(--navy-dark);
-        color: var(--gold-poly);
-        border: 1px solid var(--gold-poly);
-        padding: 8px 12px;
-        border-radius: 8px;
-    }
+    .btn-toggle-mobile { position: fixed; top: 15px; left: 15px; z-index: 1100; background: var(--navy-dark); color: var(--gold-poly); border: 1px solid var(--gold-poly); padding: 8px 12px; border-radius: 8px; }
 </style>
 
 <button class="btn btn-toggle-mobile d-lg-none shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
@@ -184,52 +99,53 @@ function isExpandedByFolder($folder_name) {
     <div class="menu-container">
         <div class="nav-label-modern">Menu Utama</div>
         
-        <a class="nav-link <?= isActive('views/' . (($role == 'admin') ? 'admin' : 'kepala-lab') . '/index.php'); ?>" 
-           href="<?= $base_url; ?>views/<?= ($role == 'admin') ? 'admin' : 'kepala-lab'; ?>/index.php">
+        <?php 
+            $dashboard_folder = 'kepala-lab';
+            if($role == 'admin') $dashboard_folder = 'admin';
+            if($role == 'admin-acc') $dashboard_folder = 'admin-acc';
+        ?>
+        <a class="nav-link <?= isActive("views/$dashboard_folder/index.php"); ?>" href="<?= $base_url; ?>views/<?= $dashboard_folder; ?>/index.php">
             <i class="bi bi-speedometer2 me-3"></i> Dashboard
         </a>
 
-        <?php if($role == 'admin'): ?>
+        <?php if($role == 'admin' || $role == 'admin-acc'): ?>
 
-              <button class="btn-toggle-nav <?= isExpandedByFolder('bahan-praktek') ? '' : 'collapsed'; ?>" 
-                    data-bs-toggle="collapse" data-bs-target="#collapseMaster">
+            <?php if($role == 'admin'): ?>
+            <button class="btn-toggle-nav <?= isExpandedByFolder('bahan-praktek') ? '' : 'collapsed'; ?>" data-bs-toggle="collapse" data-bs-target="#collapseMaster">
                 <span><i class="bi bi-database me-3"></i> Data Master</span>
             </button>
             <div class="collapse <?= isExpandedByFolder('bahan-praktek'); ?>" id="collapseMaster">
                 <ul class="submenu">
                     <li><a class="nav-link <?= isActive('bahan-praktek/jurusan.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/jurusan.php"><i class="bi bi-buildings-fill me-2"></i> Jurusan & Lab</a></li>
                     <li><a class="nav-link <?= isActive('bahan-praktek/kepala-lab.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/kepala-lab.php"><i class="bi bi-person-badge-fill me-2"></i> Kepala Lab</a></li>
+                    <li><a class="nav-link <?= isActive('bahan-praktek/kelola_admin.php'); ?>" href="<?= $base_url; ?>modules/bahan-praktek/kelola_admin.php"><i class="bi bi-person-lines-fill me-2"></i> Kelola Admin ACC</a></li>
                 </ul>
             </div>
+            <?php endif; ?>
 
-            <button class="btn-toggle-nav <?= isExpandedByFolder('gudang') ? '' : 'collapsed'; ?>" 
-                    data-bs-toggle="collapse" data-bs-target="#collapseGudang">
+            <button class="btn-toggle-nav <?= isExpandedByFolder('gudang') ? '' : 'collapsed'; ?>" data-bs-toggle="collapse" data-bs-target="#collapseGudang">
                 <span><i class="bi bi-box-seam me-3"></i> Gudang</span>
             </button>
             <div class="collapse <?= isExpandedByFolder('gudang'); ?>" id="collapseGudang">
                 <ul class="submenu">
                     <li><a class="nav-link <?= isActive('gudang/bahan-praktek.php'); ?>" href="<?= $base_url; ?>modules/gudang/bahan-praktek.php"><i class="bi bi-tools me-2"></i> Input Bahan Praktek</a></li>
+                    <?php if($role == 'admin'): ?>
                     <li><a class="nav-link <?= isActive('gudang/persediaan.php'); ?>" href="<?= $base_url; ?>modules/gudang/persediaan.php"><i class="bi bi-box-seam me-2"></i> Gudang Persediaan</a></li>
-    
-                    <!-- <li><a class="nav-link <?= isActive('gudang/atk.php'); ?>" href="<?= $base_url; ?>modules/gudang/atk.php"><i class="bi bi-pencil-fill me-2"></i> ATK</a></li>
-                    <li><a class="nav-link <?= isActive('gudang/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/gudang/kebersihan.php"><i class="bi bi-bucket-fill me-2"></i> Kebersihan</a></li> -->
+                    <?php endif; ?>
                 </ul>
             </div>
 
-            <button class="btn-toggle-nav <?= isExpandedByFolder('distribusi') ? '' : 'collapsed'; ?>" 
-                    data-bs-toggle="collapse" data-bs-target="#collapseDistribusi">
+            <button class="btn-toggle-nav <?= isExpandedByFolder('distribusi') ? '' : 'collapsed'; ?>" data-bs-toggle="collapse" data-bs-target="#collapseDistribusi">
                 <span><i class="bi bi-truck me-3"></i> Distribusi Lab</span>
             </button>
             <div class="collapse <?= isExpandedByFolder('distribusi'); ?>" id="collapseDistribusi">
                 <ul class="submenu">
-                    <li><a class="nav-link <?= isActive('distribusi/index.php'); ?>" href="<?= $base_url; ?>modules/distribusi/index.php"><i class="bi bi-tools me-2"></i>Konfirmasi Bahan Praktek</a></li>
-                    <!-- <li><a class="nav-link <?= isActive('distribusi/atk.php'); ?>" href="<?= $base_url; ?>modules/distribusi/atk.php"><i class="bi bi-pencil-fill me-2"></i> ATK</a></li>
-                    <li><a class="nav-link <?= isActive('distribusi/kebersihan.php'); ?>" href="<?= $base_url; ?>modules/distribusi/kebersihan.php"><i class="bi bi-bucket-fill me-2"></i> Kebersihan</a></li> -->
+                    <li><a class="nav-link <?= isActive('distribusi/index.php'); ?>" href="<?= $base_url; ?>modules/distribusi/index.php"><i class="bi bi-card-checklist me-2"></i> Konfirmasi Barang</a></li>
                 </ul>
             </div>
 
-            <button class="btn-toggle-nav <?= isExpandedByFolder('laporan') ? '' : 'collapsed'; ?>" 
-                    data-bs-toggle="collapse" data-bs-target="#collapseLaporan">
+            <?php if($role == 'admin'|| $role == 'admin-acc'): ?>
+            <button class="btn-toggle-nav <?= isExpandedByFolder('laporan') ? '' : 'collapsed'; ?>" data-bs-toggle="collapse" data-bs-target="#collapseLaporan">
                 <span><i class="bi bi-file-earmark-text me-3"></i> Laporan</span>
             </button>
             <div class="collapse <?= isExpandedByFolder('laporan'); ?>" id="collapseLaporan">
@@ -238,14 +154,15 @@ function isExpandedByFolder($folder_name) {
                     <li><a class="nav-link <?= isActive('laporan/laporan_distribusi.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_distribusi.php"><i class="bi bi-clipboard-data-fill me-2"></i> Distribusi</a></li>
                     <li><a class="nav-link <?= isActive('laporan/laporan_pemakaian.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_pemakaian.php"><i class="bi bi-clipboard-check-fill me-2"></i> Pemakaian</a></li>
                     <li><a class="nav-link <?= isActive('laporan/laporan_grafik.php'); ?>" href="<?= $base_url; ?>modules/laporan/laporan_grafik.php"><i class="bi bi-graph-up-arrow me-2"></i> Visualisasi Grafik</a></li>
-              
                 </ul>
             </div>
+            <?php endif; ?>
+
         <?php endif; ?>
 
         <?php if($role == 'kepala_lab' || $role == 'kepala-lab'): ?>
             <div class="nav-label-modern">Aktivitas Lab</div>
-            <a class="nav-link <?= isActive('lab/kebutuhan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/kebutuhan.php"><i class="bi bi-cart-plus me-3"></i> Input Kebutuhan</a>
+            <a class="nav-link <?= isActive('lab/kebutuhan.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/kebutuhan.php"><i class="bi bi-cart-plus me-3"></i> Buat Pembelian</a>
             <a class="nav-link <?= isActive('lab/konfirmasi.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/konfirmasi.php"><i class="bi bi-check2-square me-3"></i> Konfirmasi</a>
             <a class="nav-link <?= isActive('lab/stok.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/stok.php"><i class="bi bi-archive me-3"></i> Stok Lab</a>
             <a class="nav-link <?= isActive('lab/pemakaian.php'); ?>" href="<?= $base_url; ?>views/kepala-lab/lab/pemakaian.php"><i class="bi bi-clipboard-data me-3"></i> Lapor Pakai</a>
@@ -261,32 +178,21 @@ function isExpandedByFolder($folder_name) {
     </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-/**
- * 1. CEGAH TOMBOL BACK (Global)
- */
 function trapBack() {
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = function() {
         window.history.pushState(null, null, window.location.href);
-        // Tambahan: Paksa browser tetap di posisi saat ini
         window.history.forward();
     };
 }
 trapBack();
 
-/**
- * 2. FUNGSI LOGOUT MANUAL (Sudah diperbaiki)
- */
 function prosesLogout() {
-    // Pastikan Swal terdefinisi
     if (typeof Swal === 'undefined') {
-        if(confirm("Sesi anda akan diakhiri dari sistem?")) {
-             window.location.replace("<?= $base_url; ?>logout.php");
-        }
+        if(confirm("Sesi anda akan diakhiri dari sistem?")) window.location.replace("<?= $base_url; ?>logout.php");
         return;
     }
 
@@ -301,40 +207,26 @@ function prosesLogout() {
         reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
-            // Menggunakan replace agar history halaman ini terhapus
             window.location.replace("<?= $base_url; ?>logout.php");
         }
     });
 }
 
-/**
- * 3. LOGIKA LOGOUT OTOMATIS (Hanya Kepala Lab)
- */
-<?php if ($role !== 'admin'): ?>
+<?php if ($role !== 'admin' && $role !== 'admin-acc'): ?>
 (function() {
-    const maxInactivityTime = 1800000; // 30 menit dalam milidetik
+    const maxInactivityTime = 1800000;
     let logoutTimer;
     let lastKeepAlive = 0;
 
     function forceLogout() {
-        // Tambahan: Hapus jejak dashboard dari riwayat sebelum pindah ke login
         window.history.pushState(null, null, '<?= $base_url; ?>login.php');
-        
         window.location.replace("<?= $base_url; ?>login.php?pesan=sesi_habis");
-
-        // Tambahan: Cegah user menekan tombol kembali saat proses redirect
-        setTimeout(function() {
-            window.history.forward();
-        }, 0);
+        setTimeout(function() { window.history.forward(); }, 0);
     }
 
     function perbaruiSesiServer() {
         fetch("<?= $base_url; ?>config/refresh_session.php")
-        .then(response => {
-            if (response.status === 401) {
-                forceLogout();
-            }
-        })
+        .then(response => { if (response.status === 401) forceLogout(); })
         .catch(err => console.log("Koneksi terputus"));
     }
 
@@ -343,18 +235,14 @@ function prosesLogout() {
         logoutTimer = setTimeout(forceLogout, maxInactivityTime);
 
         let now = Date.now();
-        // Milidetik,Browser mengirim sinyal ke server setiap 5 menit untuk menjaga sesi tetap hidup selama user aktif.
-        if (now - lastKeepAlive > 300000) // 30 menit = 1800000 ms
-         { 
+        if (now - lastKeepAlive > 300000) { 
             perbaruiSesiServer();
             lastKeepAlive = now;
         }
     }
 
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    events.forEach(function(name) {
-        document.addEventListener(name, resetTimer, true);
-    });
+    events.forEach(function(name) { document.addEventListener(name, resetTimer, true); });
 
     resetTimer();
 })();

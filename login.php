@@ -4,38 +4,40 @@ include "config/database.php";
 
 $error = ""; 
 
-// 1. Tangkap pesan dari URL (agar muncul tulisan Sesi Habis)
+// 1. Tangkap pesan dari URL
 if (isset($_GET['pesan'])) {
     if ($_GET['pesan'] == 'sesi_habis') {
-        $error = "Sesi Kepala Lab telah berakhir, Silakan login kembali.";
-        $alert_class = "alert-warning"; // Warna kuning untuk sesi habis
+        $error = "Sesi Anda telah berakhir, Silakan login kembali.";
+        $alert_class = "alert-warning"; 
         $icon = "bi-clock-history";
     } else if ($_GET['pesan'] == 'gagal') {
         $error = "Username atau Password salah!";
-        $alert_class = "alert-danger"; // Warna merah untuk gagal login
+        $alert_class = "alert-danger"; 
         $icon = "bi-x-circle";
     } else if ($_GET['pesan'] == 'wajib_login') {
         $error = "Anda harus login untuk mengakses sistem.";
-        $alert_class = "alert-info"; // Warna biru untuk informasi
+        $alert_class = "alert-info"; 
         $icon = "bi-info-circle";
     } else if ($_GET['pesan'] == 'logout_berhasil') {
         $error = "Anda telah berhasil keluar sistem.";
-        $alert_class = "alert-success"; // Warna hijau untuk sukses logout
+        $alert_class = "alert-success"; 
         $icon = "bi-check-circle";
     }
 }
 
-// ... (Kode POST Login) ...
+// 2. Proses Login
 if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
-    $role_input = $_POST['role']; 
+    $role_input = $_POST['role']; // Bawaan form: 'admin', 'admin-acc', atau 'kepala_lab'
 
-    if ($role_input == 'admin') {
-        $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
+    // Pisahkan pengecekan tabel berdasarkan Role
+    if ($role_input == 'admin' || $role_input == 'admin-acc') {
+        // Cek di tabel users, dan pastikan rolenya cocok agar tidak silang akses
+        $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username' AND role='$role_input'");
         $data = mysqli_fetch_assoc($query);
-        $id_key = 'id_admin'; 
-        $nama_key = 'username'; 
+        $id_key = 'id_user'; // Sesuai kolom database Anda
+        $nama_key = 'nama_lengkap'; // Menggunakan nama_lengkap
     } else {
         $query = mysqli_query($conn, "SELECT * FROM kepala_lab WHERE username='$username'");
         $data = mysqli_fetch_assoc($query);
@@ -43,31 +45,37 @@ if (isset($_POST['login'])) {
         $nama_key = 'nama_kepala';
     }
 
+    // Jika username cocok dan password valid
     if ($data && password_verify($password, $data['password'])) {
         session_regenerate_id(true); 
         $_SESSION['id_user']  = $data[$id_key];
         $_SESSION['username'] = $data['username'];
         $_SESSION['role']     = $role_input;
-        $_SESSION['nama']     = $data[$nama_key];
+        $_SESSION['nama']     = $data[$nama_key] ?? $data['username']; // Fallback ke username jika nama kosong
         
-        // --- TAMBAHAN KODE UNTUK LAPORAN (AGAR NAMA/NIP DINAMIS) ---
-        if ($role_input == 'admin') {
-            $_SESSION['nama_lengkap'] = $data['nama_lengkap']; // Mengambil kolom nama_lengkap dari tabel users
-            $_SESSION['nip']          = $data['nip'];          // Mengambil kolom nip dari tabel users
+        // --- DATA UNTUK KEBUTUHAN CETAK LAPORAN ---
+        if ($role_input == 'admin' || $role_input == 'admin-acc') {
+            $_SESSION['nama_lengkap'] = $data['nama_lengkap']; 
+            $_SESSION['nip']          = $data['nip'];          
         } else {
-            $_SESSION['nama_lengkap'] = $data['nama_kepala'];  // Nama kepala lab
+            $_SESSION['nama_lengkap'] = $data['nama_kepala'];  
             $_SESSION['nip']          = $data['nip'] ?? '..........................'; 
+            $_SESSION['id_lab']       = $data['id_lab']; // Khusus Kepala Lab
         }
-        // ---------------------------------------------------------
 
+        // --- SISTEM KEAMANAN SESI ---
         $_SESSION['last_activity'] = time(); 
         $_SESSION['secure_fingerprint'] = md5($_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR']);
 
-        if($role_input == 'kepala_lab') {
-            $_SESSION['id_lab'] = $data['id_lab'];
+        // --- ARAHKAN KE DASHBOARD MASING-MASING ---
+        if ($role_input == 'admin') {
+            $redirect = "views/admin/index.php";
+        } else if ($role_input == 'admin-acc') {
+            $redirect = "views/admin-acc/index.php";
+        } else {
+            $redirect = "views/kepala-lab/index.php";
         }
-
-        $redirect = ($role_input == 'admin') ? "views/admin/index.php" : "views/kepala-lab/index.php";
+        
         header("Location: " . $redirect);
         exit();
     } else {
@@ -85,6 +93,8 @@ if (isset($_POST['login'])) {
     <title>Login | SIM Inventaris Politeknik ATI Makassar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --poltek-navy: #001f3f;
@@ -142,12 +152,12 @@ if (isset($_POST['login'])) {
         }
 
         /* Sisi Kanan (Form) */
-        .login-form { width: 55%; padding: 60px; background: #fff; }
+        .login-form { width: 55%; padding: 50px 60px; background: #fff; }
 
         .welcome-title { color: var(--poltek-navy); font-weight: 800; font-size: 2rem; }
 
-        /* Custom Role Selector (Card Style) */
-        .role-selector { display: flex; gap: 15px; margin-bottom: 25px; }
+        /* Custom Role Selector (Card Style - 3 Kolom) */
+        .role-selector { display: flex; gap: 10px; margin-bottom: 25px; }
         
         .role-option {
             flex: 1;
@@ -164,16 +174,17 @@ if (isset($_POST['login'])) {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px;
+            padding: 12px 5px;
             border: 2px solid #eee;
-            border-radius: 15px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
+            height: 100%;
         }
 
-        .role-card i { font-size: 1.5rem; color: #ccc; margin-bottom: 5px; }
-        .role-card span { font-size: 0.8rem; font-weight: 700; color: #888; text-transform: uppercase; }
+        .role-card i { font-size: 1.3rem; color: #ccc; margin-bottom: 5px; }
+        .role-card span { font-size: 0.75rem; font-weight: 700; color: #888; text-transform: uppercase; line-height: 1.1; }
 
         .role-option input:checked + .role-card {
             border-color: var(--poltek-gold);
@@ -211,10 +222,6 @@ if (isset($_POST['login'])) {
             .login-visual { display: none; }
             .login-form { width: 100%; padding: 40px 30px; }
         }
-        :root {
-            --poltek-navy: #001f3f;
-            --poltek-gold: #FFD700;
-        }
     </style>
 </head>
 <body>
@@ -235,35 +242,40 @@ if (isset($_POST['login'])) {
     </div>
 
     <div class="login-form">
-        <div class="mb-4">
-            <center>
+        <div class="mb-4 text-center">
             <h2 class="welcome-title mb-1">Login</h2>
-            </center> 
-            <br>
-            <p class="text-muted">Gunakan akun anda untuk mengakses dashboard.</p>
+            <p class="text-muted small mt-2">Pilih peran dan gunakan akun Anda untuk mengakses sistem.</p>
         </div>
 
         <?php if($error != ""): ?>
-            <div class="alert alert-danger border-0 small py-2 mb-4">
-                <i class="bi bi-x-circle-fill me-2"></i> <?= $error; ?>
+            <div class="alert <?= $alert_class; ?> border-0 small py-2 mb-4 d-flex align-items-center rounded-3">
+                <i class="bi <?= $icon; ?> me-2 fs-5"></i> 
+                <div><?= $error; ?></div>
             </div>
         <?php endif; ?>
 
         <form method="POST">
-            <center>
-            <label class="form-label text-uppercase mb-2">Pilih Akses</label>
-            </center>
-            <br>
+            <div class="text-center mb-2">
+                <label class="form-label text-uppercase mb-0">Pilih Akses Login</label>
+            </div>
+            
             <div class="role-selector">
                 <label class="role-option">
                     <input type="radio" name="role" value="admin" required checked>
                     <div class="role-card">
-                        <i class="bi bi-person-gear"></i>
-                        <span>Admin</span>
+                        <i class="bi bi-shield-lock"></i>
+                        <span>Admin Utama</span>
                     </div>
                 </label>
                 <label class="role-option">
-                    <input type="radio" name="role" value="kepala_lab">
+                    <input type="radio" name="role" value="admin-acc" required>
+                    <div class="role-card">
+                        <i class="bi bi-person-gear"></i>
+                        <span>Admin ACC</span>
+                    </div>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="role" value="kepala_lab" required>
                     <div class="role-card">
                         <i class="bi bi-person-workspace"></i>
                         <span>Kepala Lab</span>
@@ -282,105 +294,56 @@ if (isset($_POST['login'])) {
             <div class="mb-4">
                 <label class="form-label text-uppercase">Password</label>
                  <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>    
-                    <input 
-                        type="password" 
-                        name="password" 
-                        id="password"
-                        class="form-control" 
-                        placeholder="••••••••" 
-                        required
-                    >
-
-                    <span class="input-group-text password-toggle" onclick="togglePassword()">
+                    <span class="input-group-text"><i class="bi bi-key"></i></span>    
+                    <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+                    <span class="input-group-text password-toggle" onclick="togglePassword()" style="cursor: pointer;">
                         <i class="bi bi-eye-fill" id="toggleIcon"></i>
                     </span>
                 </div>
-
             </div>
 
             <button type="submit" name="login" class="btn btn-login">
                 MASUK SEKARANG <i class="bi bi-arrow-right ms-2"></i>
             </button>
-            <br>
-            <br>
-             <div class="text-center mt-2">
-                <p class="text-muted small">
+            
+            <div class="text-center mt-4">
+                <p class="text-muted small mb-1">
                     Belum punya akun? 
-                    <a href="daftarAdmin.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
-                        Daftar Admin
-                    </a>
+                    <a href="daftarAdmin.php" class="text-decoration-none fw-bold" style="color: #001f3f;">Daftar Admin</a>
                 </p>
-
-                  <p class="text-muted small">
-                    Admin lupa password? 
-                    <a href="resestPassword.php" class="text-decoration-none fw-bold" style="color: #001f3f;">
-                        Reset Password
-                    </a>
+                <p class="text-muted small">
+                    Lupa password? 
+                    <a href="resestPassword.php" class="text-decoration-none fw-bold" style="color: #001f3f;">Reset Password</a>
                 </p>
             </div>
 
-            <p class="text-center mt-5 text-muted small">
+            <p class="text-center mt-4 text-muted small" style="font-size: 0.7rem;">
                 &copy; 2026 Politeknik ATI Makassar
             </p>
         </form>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-function confirmLogout() {
-    Swal.fire({
-        title: 'Konfirmasi Keluar',
-        text: "Apakah Anda yakin ingin mengakhiri sesi ini, Politeknik ATI Makassar?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#001f3f', // Navy
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya, Keluar!',
-        cancelButtonText: 'Batal',
-        background: '#ffffff',
-        color: '#001f3f',
-        borderRadius: '20px',
-        customClass: {
-            popup: 'border-gold-popup'
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Jika klik Ya, arahkan ke file logout.php
-            window.location.href = "../../logout.php"; 
-        }
-    })
-}
-
 function togglePassword() {
     const passwordInput = document.getElementById("password");
     const icon = document.getElementById("toggleIcon");
 
     if (passwordInput.type === "password") {
         passwordInput.type = "text";
-        icon.classList.remove("bi-eye-fill");
-        icon.classList.add("bi-eye-slash-fill");
+        icon.classList.replace("bi-eye-fill", "bi-eye-slash-fill");
     } else {
         passwordInput.type = "password";
-        icon.classList.remove("bi-eye-slash-fill");
-        icon.classList.add("bi-eye-fill");
+        icon.classList.replace("bi-eye-slash-fill", "bi-eye-fill");
     }
 }
-// Kunci agar tidak bisa kembali ke dashboard setelah berada di halaman login
+
+// Mencegah user kembali ke dashboard tanpa login ulang
 window.history.pushState(null, null, window.location.href);
-    window.onpopstate = function () {
-        window.history.go(1);
-    };
+window.onpopstate = function () {
+    window.history.go(1);
+};
 </script>
-
-<style>
-    /* Tambahan agar pop-up punya aksen gold di atasnya */
-    .border-gold-popup {
-        border-top: 8px solid #FFD700 !important;
-    }
-</style>
-
 
 </body>
 </html>

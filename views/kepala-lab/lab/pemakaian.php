@@ -2,7 +2,7 @@
 session_start();
 include "../../../config/database.php";
 
-// 1. Proteksi Akses (Disamakan dengan file pertama)
+// 1. Proteksi Akses
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
     header("Location: ../../../login.php");
     exit;
@@ -10,22 +10,17 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
 
 $id_lab_user = $_SESSION['id_lab'] ?? '';
 
-// 2. Query Opsi Barang (Ditambahkan stok agar bisa muncul di auto-fill)
-$sql_opsi = "SELECT 
-                d.id_distribusi, d.kode_distribusi, d.id_praktek, d.spesifikasi, d.kondisi,
-                b.nama_bahan, b.satuan,
-                (d.jumlah - COALESCE((SELECT SUM(jumlah_pakai) FROM pemakaian_lab WHERE id_distribusi = d.id_distribusi), 0)) as sisa_stok
-             FROM distribusi_lab d
-             JOIN bahan_praktek b ON d.id_praktek = b.id_praktek
-             WHERE d.id_lab = '$id_lab_user' AND d.status = 'diterima'
-             HAVING sisa_stok > 0";
+// 2. Query Opsi Barang (Langsung baca dari bahan_praktek karena stok sudah terpusat)
+$sql_opsi = "SELECT id_praktek, kode_bahan, nama_bahan, spesifikasi, kondisi, satuan, stok as sisa_stok 
+             FROM bahan_praktek 
+             WHERE id_lab = '$id_lab_user' AND stok > 0 
+             ORDER BY nama_bahan ASC";
 $query_barang = mysqli_query($conn, $sql_opsi);
 
-// 3. Query Riwayat Pemakaian
-$sql_history = "SELECT p.*, b.nama_bahan, b.satuan, d.kode_distribusi, d.spesifikasi, d.kondisi
+// 3. Query Riwayat Pemakaian (Langsung JOIN ke bahan_praktek saja)
+$sql_history = "SELECT p.*, b.nama_bahan, b.satuan, b.kode_bahan, b.spesifikasi, b.kondisi
                 FROM pemakaian_lab p 
                 JOIN bahan_praktek b ON p.id_praktek = b.id_praktek 
-                JOIN distribusi_lab d ON p.id_distribusi = d.id_distribusi
                 WHERE p.id_lab = '$id_lab_user' 
                 ORDER BY p.tgl_pakai DESC";
 $riwayat = mysqli_query($conn, $sql_history);
@@ -75,7 +70,7 @@ $riwayat = mysqli_query($conn, $sql_history);
                         </div>
                     </div>
                 </div>
-                                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
                         <div class="btn-group shadow-sm">
                              <button type="button" class="btn btn-white border" onclick="location.href='pemakaian.php'"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
                              <button type="button" class="btn btn-navy" data-bs-toggle="collapse" data-bs-target="#formCollapse">
@@ -96,15 +91,17 @@ $riwayat = mysqli_query($conn, $sql_history);
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small text-muted">CARI KODE / NAMA BAHAN</label>
-                                    <select name="id_distribusi" id="pilih_bahan" class="form-select select2-pencarian" required>
+                                    <!-- UBAH NAME JADI id_praktek -->
+                                    <select name="id_praktek" id="pilih_bahan" class="form-select select2-pencarian" required>
                                         <option value="">Pilih bahan yang tersedia...</option>
                                         <?php while($b = mysqli_fetch_assoc($query_barang)): ?>
-                                            <option value="<?= $b['id_distribusi']; ?>" 
+                                            <!-- Value sekarang mengirim id_praktek|kode_bahan -->
+                                            <option value="<?= $b['id_praktek']; ?>|<?= $b['kode_bahan']; ?>" 
                                                     data-spesifikasi="<?= htmlspecialchars($b['spesifikasi']); ?>" 
                                                     data-kondisi="<?= htmlspecialchars($b['kondisi']); ?>"
                                                     data-stok="<?= $b['sisa_stok']; ?>"
                                                     data-satuan="<?= $b['satuan']; ?>">
-                                                <?= $b['kode_distribusi']; ?> - <?= $b['nama_bahan']; ?>
+                                                <?= $b['kode_bahan']; ?> - <?= $b['nama_bahan']; ?>
                                             </option>
                                         <?php endwhile; ?>
                                     </select>
@@ -140,34 +137,59 @@ $riwayat = mysqli_query($conn, $sql_history);
                     <div class="card-custom p-4">
                         <h5 class="fw-bold mb-4">Riwayat Pemakaian Bahan</h5>
                         <div class="table-responsive">
-                            <table id="tabelPemakaian" class="table table-hover w-100">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
+                            <table id="tabelPemakaian" class="table table-hover align-middle w-100">
+                                <thead class="table-light">
+                                    <tr class="text-muted small text-uppercase">
+                                        <th class="text-center" width="5%">No</th>
                                         <th>Waktu Lapor</th>
                                         <th>Nama Bahan</th>
                                         <th>Spesifikasi</th>
-                                        <th>Kondisi</th>
+                                        <th class="text-center">Kondisi</th>
                                         <th class="text-center">Jumlah Pakai</th>
-                                        <th class="text-center">Aksi</th>
+                                        <th class="text-center" width="15%">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php $no = 1; while($r = mysqli_fetch_assoc($riwayat)): ?>
                                     <tr>
-                                        <td class="text-muted"><?= $no++; ?></td>
-                                        <td><span class="small fw-semibold"><?= date('d/m/Y H:i', strtotime($r['tgl_pakai'])); ?></span></td>
+                                        <td class="text-center text-muted"><?= $no++; ?></td>
+                                        <td>
+                                            <div class="fw-bold text-dark"><?= date('d M Y', strtotime($r['tgl_pakai'])); ?></div>
+                                            <small class="text-muted"><i class="bi bi-clock me-1"></i><?= date('H:i', strtotime($r['tgl_pakai'])); ?></small>
+                                        </td>
                                         <td>
                                             <div class="fw-bold text-navy"><?= $r['nama_bahan']; ?></div>
-                                            <small class="text-muted"><?= $r['kode_distribusi']; ?></small>
+                                            <code class="text-muted bg-light px-2 py-1 rounded border shadow-sm" style="font-size: 0.75rem;"><?= $r['kode_bahan']; ?></code>
                                         </td>
-                                        <td><div class="small text-wrap" style="max-width: 150px;"><?= $r['spesifikasi']; ?></div></td>
-                                        <td><span class="badge bg-light text-dark border"><?= $r['kondisi']; ?></span></td>
-                                        <td class="text-center fw-bold text-primary"><?= $r['jumlah_pakai']; ?> <?= $r['satuan']; ?></td>
+                                        <td><div class="small text-wrap" style="max-width: 150px;"><?= $r['spesifikasi'] ?: '-'; ?></div></td>
                                         <td class="text-center">
-                                            <button onclick="confirmDelete('<?= $r['id_pemakaian']; ?>')" class="btn btn-sm btn-light text-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                            <span class="badge bg-light text-dark border rounded-pill px-3 py-1"><?= $r['kondisi']; ?></span>
+                                        </td>
+                                        <td class="text-center fw-bold text-danger">
+                                             <?= $r['jumlah_pakai']; ?> <small class="text-muted fw-normal"><?= $r['satuan']; ?></small>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php 
+                                            // Cek apakah data sudah dikunci (status_kunci = 1)
+                                            $is_locked = isset($r['status_kunci']) && $r['status_kunci'] == 1;
+                                            
+                                            if (!$is_locked): 
+                                            ?>
+                                                <!-- Jika BELUM dikunci: Tampilkan tombol Kunci & Hapus -->
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    <button onclick="confirmLock('<?= $r['id_pemakaian']; ?>')" class="btn btn-sm btn-outline-success rounded-circle shadow-sm" title="Kunci Laporan">
+                                                        <i class="bi bi-lock-fill"></i>
+                                                    </button>
+                                                    <button onclick="confirmDelete('<?= $r['id_pemakaian']; ?>')" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" title="Batalkan/Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            <?php else: ?>
+                                                <!-- Jika SUDAH dikunci: Tampilkan Label Terkunci -->
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary rounded-pill px-3 py-2">
+                                                    <i class="bi bi-lock-fill me-1"></i> Terkunci
+                                                </span>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endwhile; ?>
@@ -235,16 +257,51 @@ $riwayat = mysqli_query($conn, $sql_history);
         });
     });
 
+    function confirmLock(id) {
+    Swal.fire({
+        title: 'Kunci Laporan Ini?',
+        text: "Laporan pemakaian yang sudah dikunci tidak akan bisa dibatalkan atau dihapus lagi!",
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#198754', // Warna Hijau Success
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-lock-fill me-1"></i> Ya, Kunci Permanen',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Mengunci...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            window.location.href = "../proses/tambah.php?kunci_pakai=" + id;
+        }
+    });
+}
+
     function confirmDelete(id) {
         Swal.fire({
-            title: 'Batalkan Laporan?',
-            text: "Data akan dihapus dan stok akan dikembalikan!",
+            title: 'Batalkan Laporan Pemakaian?',
+            text: "Riwayat pemakaian ini akan dihapus dan stok fisik bahan akan DIKEMBALIKAN (+). Lanjutkan?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#001f3f',
-            confirmButtonText: 'Ya, Hapus'
+            confirmButtonColor: '#001f3f', // Warna Navy untuk tombol konfirmasi
+            cancelButtonColor: '#dc3545',  // Warna Merah untuk batal
+            confirmButtonText: '<i class="bi bi-arrow-counterclockwise me-1"></i> Ya, Kembalikan Stok',
+            cancelButtonText: 'Tutup'
         }).then((result) => {
-            if (result.isConfirmed) window.location.href = "../proses/tambah.php?hapus_pakai=" + id;
+            if (result.isConfirmed) {
+                // Tampilkan efek loading saat sistem memproses pengembalian stok
+                Swal.fire({
+                    title: 'Memproses...',
+                    text: 'Sedang mengembalikan stok bahan',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                
+                // Arahkan ke backend hapus
+                window.location.href = "../proses/tambah.php?hapus_pakai=" + id;
+            }
         });
     }
 </script>

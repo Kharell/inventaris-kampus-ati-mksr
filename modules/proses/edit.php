@@ -3,7 +3,7 @@
 <?php
 include "../../config/database.php";
 include "../../config/auth.php";
-checkAccess('admin');
+checkAccess(['admin', 'admin-acc']);
 
 // 1. UPDATE ATK
 if (isset($_POST['update_atk'])) {

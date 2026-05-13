@@ -6,7 +6,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kepala_lab') {
     exit("Akses Ditolak");
 }
 
-
 // 1. Deteksi Protokol (http atau https)
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
 
@@ -14,18 +13,15 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https:
 $host = $_SERVER['HTTP_HOST'];
 
 // 3. Deteksi Folder Proyek secara dinamis
-// Kita mengambil path script saat ini dan membuang nama filenya
-$current_path = $_SERVER['SCRIPT_NAME']; // Hasil: /folder_proyek/modules/laporan/export.php
+$current_path = $_SERVER['SCRIPT_NAME']; 
 $parts = explode('/', $current_path);
-$project_folder = $parts[1]; // Mengambil bagian pertama setelah slash pertama (nama folder proyek)
+$project_folder = $parts[1]; 
 
 // 4. Gabungkan menjadi Base URL
 $base_url = $protocol . $host . "/" . $project_folder . "/";
 
-// 5. Link Logo Final (Sesuaikan dengan folder image Anda dari root proyek)
+// 5. Link Logo Final
 $logo_url = $base_url . "images/images.png";
-
-
 
 // 1. Ambil Parameter
 $tipe_data = $_GET['tipe_data'] ?? 'pemakaian';
@@ -50,7 +46,7 @@ $user_data = mysqli_fetch_assoc($user_res);
 $id_lab_user = $user_data['id_lab'] ?? '';
 $nama_lab    = $user_data['nama_lab'] ?? 'Laboratorium';
 
-// LOGIKA CUSTOM: Jika user memilih custom, gunakan input manual. Jika tidak, pakai database.
+// LOGIKA CUSTOM
 if ($opsi_nama === 'custom' && !empty($custom_nama)) {
     $nama_kepala = $custom_nama;
     $nip_kepala  = $custom_nip;
@@ -72,25 +68,30 @@ if ($periode == 'triwulan') {
     $label_periode = date('F Y', strtotime($tanggal_mulai));
 }
 
-// 4. Query SQL
+// =========================================================================
+// 4. QUERY SQL (DIPERBAIKI UNTUK MENDUKUNG KONSEP "SATU GUDANG")
+// =========================================================================
 if ($tipe_data == 'pemakaian') {
-    $query = "SELECT p.*, b.nama_bahan, b.satuan, d.kode_distribusi, d.spesifikasi, d.kondisi
+    // JOIN langsung ke bahan_praktek, abaikan id_distribusi
+    $query = "SELECT p.*, b.nama_bahan, b.satuan, b.kode_bahan as kode_distribusi, b.spesifikasi, b.kondisi
               FROM pemakaian_lab p
               JOIN bahan_praktek b ON p.id_praktek = b.id_praktek
-              JOIN distribusi_lab d ON p.id_distribusi = d.id_distribusi
               WHERE p.id_lab = '$id_lab_user' 
               AND p.tgl_pakai BETWEEN '$tanggal_mulai' AND '$tanggal_selesai'
               ORDER BY p.tgl_pakai ASC";
+              
     $judul_laporan = "LAPORAN PERTANGGUNGJAWABAN PEMAKAIAN BAHAN";
 } else {
+    // Laporan Gabungan & Sisa membaca master bahan_praktek
+    // Stok Awal = Semua barang masuk. Total Pakai = Dipakai di periode ini. Sisa Stok = Stok Real-time
     $query = "SELECT 
-                d.kode_distribusi, d.spesifikasi, d.kondisi, b.nama_bahan, b.satuan, d.jumlah as stok_awal,
-                COALESCE((SELECT SUM(jumlah_pakai) FROM pemakaian_lab WHERE id_distribusi = d.id_distribusi), 0) as total_pakai,
-                (d.jumlah - COALESCE((SELECT SUM(jumlah_pakai) FROM pemakaian_lab WHERE id_distribusi = d.id_distribusi), 0)) as sisa_stok
-              FROM distribusi_lab d
-              JOIN bahan_praktek b ON d.id_praktek = b.id_praktek
-              WHERE d.id_lab = '$id_lab_user' AND d.status = 'diterima'
-              ORDER BY d.kode_distribusi ASC";
+                b.kode_bahan as kode_distribusi, b.spesifikasi, b.kondisi, b.nama_bahan, b.satuan, b.stok as sisa_stok,
+                COALESCE((SELECT SUM(jumlah_diterima) FROM distribusi_lab WHERE id_praktek = b.id_praktek AND id_lab = '$id_lab_user' AND status = 'diterima' AND tanggal_diterima <= '$tanggal_selesai'), 0) as stok_awal,
+                COALESCE((SELECT SUM(jumlah_pakai) FROM pemakaian_lab WHERE id_praktek = b.id_praktek AND id_lab = '$id_lab_user' AND tgl_pakai BETWEEN '$tanggal_mulai' AND '$tanggal_selesai'), 0) as total_pakai
+              FROM bahan_praktek b
+              WHERE b.id_lab = '$id_lab_user'
+              ORDER BY b.kode_bahan ASC";
+              
     $judul_laporan = ($tipe_data == 'gabungan') ? "LAPORAN REKAPITULASI STOK & PEMAKAIAN" : "LAPORAN SISA STOK BAHAN";
 }
 
@@ -108,9 +109,6 @@ if ($format == 'excel') {
 }
 $result = mysqli_query($conn, $query);
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="id">
@@ -147,7 +145,6 @@ $result = mysqli_query($conn, $query);
             .logo-container { width: 4.5cm !important; }
             .logo-container img { width: 4.5cm !important; }
         }
-
     </style>
 </head>
 <body <?= ($format == 'pdf') ? 'onload="window.print()"' : '' ?>>
@@ -158,7 +155,6 @@ $result = mysqli_query($conn, $query);
         <button onclick="window.close()" class="btn btn-sm btn-secondary">Tutup</button>
     </div>
     
-
     <table class="kop-table">
         <tr>
             <td class="logo-container">
@@ -244,7 +240,7 @@ $result = mysqli_query($conn, $query);
                 <?php elseif ($tipe_data == 'gabungan'): ?>
                     <td colspan="5" class="text-center">TOTAL KESELURUHAN</td>
                     <td class="text-center"><?= number_format($t_awal) ?></td>
-                    <td class="text-center"><?= number_format($t_qty) ?></td>
+                    <td class="text-center" style="color: red;"><?= number_format($t_qty) ?></td>
                     <td class="text-center"><?= number_format($t_sisa) ?></td>
                 <?php else: ?>
                     <td colspan="5" class="text-center">TOTAL KESELURUHAN</td>
@@ -255,7 +251,7 @@ $result = mysqli_query($conn, $query);
             </tr>
 
             <?php else: ?>
-                <tr><td colspan="10" class="text-center py-3">Tidak ada data.</td></tr>
+                <tr><td colspan="10" class="text-center py-3">Tidak ada data pada periode ini.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
