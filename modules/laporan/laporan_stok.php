@@ -10,9 +10,15 @@ $lab_all_query = mysqli_query($conn, "SELECT l.*, j.nama_jurusan FROM lab l JOIN
 $labs = [];
 while($l = mysqli_fetch_assoc($lab_all_query)) { $labs[] = $l; }
 
+<<<<<<< HEAD
 // // 2. Ambil statistik ringkas untuk card
 // $count_atk = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM barang WHERE kategori = 'ATK'"))['total'];
 // $count_kebersihan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM barang WHERE kategori = 'Kebersihan'"))['total'];
+=======
+// 2. Ambil statistik ringkas untuk card
+$count_atk = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM barang WHERE kategori = 'ATK'"))['total'];
+$count_kebersihan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM barang WHERE kategori = 'Kebersihan'"))['total'];
+>>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
 $count_praktek = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM bahan_praktek"))['total'];
 ?>
 <!DOCTYPE html>

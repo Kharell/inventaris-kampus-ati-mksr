@@ -275,8 +275,12 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
         <form id="formACC" action="../proses/tambah.php" method="POST" class="modal-content border-0 rounded-4 shadow-lg">
             <input type="hidden" name="id_permintaan" id="modIdReq">
             <input type="hidden" name="id_lab" id="modIdLab">
+<<<<<<< HEAD
             <input type="hidden" name="id_barang" id="modBarang"> 
             <input type="hidden" name="jumlah" id="modJumlah">
+=======
+            <input type="hidden" name="id_barang" id="modBarang"> <input type="hidden" name="jumlah" id="modJumlah">
+>>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
             <input type="hidden" name="kode_distribusi" id="modKode">
             <input type="hidden" name="kondisi" id="modKondisiHidden">
             <input type="hidden" name="tanggal_distribusi" value="<?= date('Y-m-d'); ?>">
@@ -315,11 +319,15 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
                 </div>
 
                 <div class="mt-4">
+<<<<<<< HEAD
                     <button type="submit" name="simpan_distribusi" class="btn btn-primary w-100 py-2 rounded-3 fw-bold mb-2 shadow-sm" style="background-color: var(--navy); border: none;">
+=======
+                    <button type="submit"name="simpan_distribusi" class="btn btn-navy w-100 py-2 rounded-3 fw-bold mb-2 shadow-sm">
+>>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                         <i class="bi bi-check2-circle me-1"></i> Setujui Sekarang
                     </button>
                     <button type="button" class="btn btn-link w-100 btn-sm text-muted text-decoration-none" data-bs-dismiss="modal">
-                        Kembali
+                         Kembali
                     </button>
                 </div>
             </div>
@@ -343,8 +351,113 @@ $list_barang = mysqli_query($conn, "SELECT id_praktek, nama_bahan, kode_bahan, s
     </div>
 </div>
 
+<<<<<<< HEAD
 <!-- ================= SCRIPT AREA ================= -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+=======
+
+<div class="modal fade" id="modalHistory" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 bg-light">
+                <h6 class="modal-title fw-bold"><i class="bi bi-list-ul me-2"></i>Histori Penerimaan</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="historiNamaBahan" class="fw-bold text-navy small"></p>
+                <div id="isiHistori" class="list-group list-group-flush small">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewHistory(id, nama) {
+    $('#historiNamaBahan').text(nama);
+    $('#isiHistori').html('<div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>');
+    $('#modalHistory').modal('show');
+
+    // Ambil data lewat AJAX
+    $.get('get_history_detail.php?id=' + id, function(data) {
+        $('#isiHistori').html(data);
+    });
+}
+
+
+
+function hapusDistribusi(id) {
+    Swal.fire({
+        title: 'Batalkan Distribusi?',
+        text: "Data akan dihapus silahkan informasikan agar mengajukan kembali!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33', // Warna merah untuk hapus
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Batalkan!',
+        cancelButtonText: 'Tutup'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mengirim request hapus ke file PHP
+            fetch(`../proses/hapus.php?hapus_distribusi=${id}`)
+                .then(response => response.text())
+                .then(data => {
+                    Swal.fire({
+                        title: 'Terhapus!',
+                        text: 'Distribusi dibatalkan & Silahkan Ajukan Kembali.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    
+                    // Refresh tabel (pastikan fungsi loadDistribusi atau reload halaman ada)
+                    setTimeout(() => {
+                        location.reload(); 
+                    }, 1500);
+                })
+                .catch(error => {
+                    Swal.fire('Gagal!', 'Terjadi kesalahan sistem.', 'error');
+                });
+        }
+    });
+}
+</script>
+
+
+
+
+
+<script>
+function kirimBalasan(id) {
+    const pesan = document.getElementById(`balasan_${id}`).value;
+
+    if (pesan.trim() === "") {
+        Swal.fire('Kosong', 'Tulis pesan balasan terlebih dahulu.', 'warning');
+        return;
+    }
+
+    fetch('../proses/kirim_catatan.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `id=${id}&pesan=${encodeURIComponent(pesan)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            Swal.fire({
+                title: 'Terkirim!',
+                text: 'Balasan Anda telah disimpan dan bisa dilihat Kepala Lab.',
+                icon: 'success',
+                timer: 1500
+            });
+            // Refresh tabel agar balasan langsung muncul di list
+            loadDistribusi(currentLabId, 1, ''); 
+        }
+    });
+}
+</script>
+
+>>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -465,6 +578,7 @@ function kirimBalasan(id) {
     });
 }
 
+<<<<<<< HEAD
 // 5. Hapus Distribusi
 function hapusDistribusi(id) {
     Swal.fire({
@@ -617,6 +731,374 @@ function handleSearch(val) {
     refreshContentOnly();
 }
 </script>
+=======
+
+    // 3. FUNGSI PENCARIAN
+    function handleSearch(val) {
+        loadDistribusi(currentLabId, 1, val);
+    }
+
+    // 4. MODAL KIRIM BAHAN
+    function openDistModal(id, lab, jur) {
+        document.getElementById('modIdLab').value = id;
+        document.getElementById('modLab').value = lab;
+        document.getElementById('modJurusan').value = jur;
+        document.getElementById('labName').innerText = lab;
+        
+        const modalElement = document.getElementById('distModal');
+        const myModal = new bootstrap.Modal(modalElement);
+        myModal.show();
+    }
+
+    // 5. GENERATE KODE OTOMATIS
+    const ambilInisial = (s) => s.split(' ').map(w => w[0]).join('').toUpperCase();
+
+    function generateCode() {
+        const selectBarang = document.getElementById('modBarang');
+        if(!selectBarang.value) return;
+
+        const selectedOption = selectBarang.options[selectBarang.selectedIndex];
+        const kodeBahan = selectedOption.getAttribute('data-kode');
+        const jur = ambilInisial(currentJurName);
+        const lab = ambilInisial(currentLabName);
+        
+        document.getElementById('modKode').value = `${jur}/${lab}/${kodeBahan}`;
+    }
+
+    // 6. FUNGSI EDIT
+    function openEditDist(id, nama, jumlah) {
+        document.getElementById('editIdDist').value = id;
+        document.getElementById('editNamaBahan').value = nama;
+        document.getElementById('editJumlah').value = jumlah;
+        
+        const myModal = new bootstrap.Modal(document.getElementById('editDistModal'));
+        myModal.show();
+    }
+
+
+    // 8. NOTIFIKASI URL PARAMETER
+    // 8. NOTIFIKASI URL PARAMETER (TEMA NAVY GOLD)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('status')) {
+        const status = urlParams.get('status');
+        const config = {
+            timer: 3000,
+            showConfirmButton: false,
+            timerProgressBar: true,
+            // Custom CSS agar pop-up selaras dengan tema Navy Gold
+            customClass: {
+                popup: 'rounded-4 border-0 shadow-lg'
+            }
+        };
+
+        if (status === 'sukses') {
+            Swal.fire({ 
+                ...config, 
+                icon: 'success', 
+                title: 'Pengiriman Berhasil!', 
+                text: 'Bahan telah berhasil didistribusikan ke laboratorium.',
+                iconColor: '#ffcc00', // Warna icon Gold
+            });
+        } else if (status === 'hapus_sukses') {
+            Swal.fire({ ...config, icon: 'success', title: 'Terhapus!', text: 'Distribusi dibatalkan & stok kembali.' });
+        } else if (status === 'edit_sukses') {
+            Swal.fire({ ...config, icon: 'success', title: 'Berhasil!', text: 'Data distribusi telah diperbarui.' });
+        } else if (status === 'stok_kurang') {
+            Swal.fire({ 
+                ...config, 
+                icon: 'error', 
+                title: 'Stok Tidak Cukup!', 
+                text: 'Gagal mengirim karena stok gudang tidak mencukupi.' 
+            });
+        } else if (status === 'gagal') {
+            Swal.fire({ ...config, icon: 'error', title: 'Kesalahan Sistem', text: 'Terjadi kesalahan saat memproses data.' });
+        }
+
+        // Membersihkan URL agar notifikasi tidak muncul lagi saat refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // Gunakan variabel global agar bisa diakses semua fungsi
+let currentLabId = '';
+let currentLabName = '';
+let currentJurName = '';
+
+// 1. FUNGSI UNTUK MENGISI DATA KE MODAL (Tetap Gunakan Ini)
+window.prosesACC = function(idReq, idBarang, jumlah, nama, spek, kondisi, kode, lab, jurusan, idLab) {
+    console.log("Mengisi Modal dengan:", {nama, kode, spek, kondisi});
+
+    try {
+        // 1. Isi Input Hidden (Untuk dikirim ke Database)
+        document.getElementById('modIdReq').value = idReq;
+        document.getElementById('modIdLab').value = idLab;
+        document.getElementById('modBarang').value = idBarang;
+        document.getElementById('modJumlah').value = jumlah;
+        document.getElementById('modKondisiHidden').value = kondisi;
+        
+        // Kode Distribusi Otomatis
+       if (document.getElementById('modKode')) {
+            document.getElementById('modKode').value = kode; 
+        }
+        // 2. Isi Tampilan Visual (Agar muncul di layar modal)
+        document.getElementById('textNamaBarang').innerText = nama;
+        document.getElementById('textJumlahDisplay').innerText = jumlah;
+        
+        // Perbaikan: Pastikan variabel ini masuk ke elemen display
+        document.getElementById('textKodeDisplay').innerText = kode || '-';
+        document.getElementById('textSpekDisplay').innerText = spek || '-';
+        document.getElementById('textKondisiDisplay').innerText = kondisi || '-';
+
+        // 3. Tampilkan Modal
+        const modalElement = document.getElementById('modalACC');
+        const instance = bootstrap.Modal.getOrCreateInstance(modalElement);
+        instance.show();
+
+    } catch (error) {
+        console.error("Gagal mengisi data modal:", error);
+    }
+}
+
+// 2. HANDLER SUBMIT (Hanya gunakan JQuery agar tidak bentrok)
+$(document).ready(function() {
+    $('#formACC').off('submit').on('submit', function(e) {
+        e.preventDefault();
+        
+        const $form = $(this);
+        const submitBtn = $form.find('button[type="submit"]');
+        
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Menyimpan...');
+
+        $.ajax({
+            // Arahkan ke file proses yang sudah kita pisah tadi
+            url: '../proses/proses_distribusi_barang.php', 
+            type: 'POST',
+            data: $form.serialize() + '&simpan_distribusi=true', 
+            success: function(response) {
+                if (response.trim() === "success") {
+                    // Tutup Modal
+                    const modalElement = document.getElementById('modalACC');
+                    const instance = bootstrap.Modal.getInstance(modalElement);
+                    if(instance) instance.hide();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Data distribusi telah divalidasi.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Jika kamu ingin reload halaman:
+                        location.reload(); 
+                        
+                        // ATAU jika ingin update tabel saja tanpa reload (seperti script 1):
+                        // loadDistribusi(currentLabId, 1, '');
+                    });
+                } else {
+                    Swal.fire('Gagal!', 'Respon Server: ' + response, 'error');
+                    submitBtn.prop('disabled', false).text('Setujui Sekarang');
+                }
+            },
+            error: function() {
+                Swal.fire('Error!', 'Gagal menghubungi server.', 'error');
+                submitBtn.prop('disabled', false).text('Setujui Sekarang');
+            }
+        });
+    });
+});
+
+
+function sinkronisasiData() {
+    const select = document.getElementById('modBarang');
+    
+    // Validasi jika tidak ada yang dipilih
+    if (!select || select.selectedIndex === -1 || !select.value) {
+        return;
+    }
+
+    const selected = select.options[select.selectedIndex];
+    
+    // Ambil attribute dari option yang dipilih
+    const kodeBahan = selected.getAttribute('data-kode') || "???";
+    const spekBahan = selected.getAttribute('data-spesifikasi') || "-";
+    const kondisiBahan = selected.getAttribute('data-kondisi') || "Baik";
+    const namaLab = document.getElementById('modLab').value || "LAB";
+
+    // --- LOGIKA KODE OTOMATIS ---
+    // Format: DIST - (3 Huruf Lab) - (Kode Bahan) - (Tgl)
+    const tgl = new Date().getDate().toString().padStart(2, '0');
+    const bln = (new Date().getMonth() + 1).toString().padStart(2, '0');
+    const kodeDistribusi = `DIST-${namaLab.substring(0, 3).toUpperCase()}-${kodeBahan}-${tgl}${bln}`;
+    
+    document.getElementById('modKode').value = kodeDistribusi;
+    document.getElementById('modSpesifikasi').value = spekBahan;
+    document.getElementById('modKondisiHidden').value = kondisiBahan;
+
+    // --- STYLING VISUAL KONDISI ---
+    const displayKondisi = document.getElementById('displayKondisi');
+    if (displayKondisi) {
+        displayKondisi.innerText = kondisiBahan;
+        
+        // Gunakan classList agar lebih aman daripada mengganti seluruh className
+        displayKondisi.className = "form-control border-0 fw-bold text-center text-uppercase"; // Reset
+        if (kondisiBahan.toLowerCase() === 'baik') {
+            displayKondisi.classList.add("bg-success-subtle", "text-success");
+        } else {
+            displayKondisi.classList.add("bg-warning-subtle", "text-warning");
+        }
+    }
+}
+
+
+
+</script>
+
+<script>
+function updateDetailBahan() {
+    const select = document.getElementById('modBarang');
+    const selectedOption = select.options[select.selectedIndex];
+
+    if (!select.value) {
+        document.getElementById('modKode').value = "";
+        document.getElementById('modSpesifikasi').value = "";
+        resetVisualKondisi();
+        return;
+    }
+
+    const kode = selectedOption.getAttribute('data-kode');
+    const spesifikasi = selectedOption.getAttribute('data-spesifikasi');
+    const kondisi = selectedOption.getAttribute('data-kondisi');
+
+    // 1. Set Kode & Spek
+    const tgl = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    document.getElementById('modKode').value = kode + "-" + tgl;
+    document.getElementById('modSpesifikasi').value = spesifikasi;
+
+    // 2. Set Value untuk PHP
+    document.getElementById('modKondisiHidden').value = kondisi;
+
+    // 3. Update Visual Centang
+    updateVisualKondisi(kondisi);
+}
+
+function updateVisualKondisi(kondisi) {
+    resetVisualKondisi();
+    let rowId = '', checkId = '', bgClass = '';
+
+    if (kondisi === 'Baik') { 
+        rowId = 'rowBaik'; checkId = 'checkBaik'; bgClass = 'bg-success text-white'; 
+    } else if (kondisi === 'Kurang Baik') { 
+        rowId = 'rowKurang'; checkId = 'checkKurang'; bgClass = 'bg-warning text-dark'; 
+    } else if (kondisi === 'Rusak') { 
+        rowId = 'rowRusak'; checkId = 'checkRusak'; bgClass = 'bg-danger text-white'; 
+    }
+
+    if (rowId) {
+        const row = document.getElementById(rowId);
+        row.classList.remove('opacity-50', 'text-muted');
+        row.classList.add(...bgClass.split(' '), 'shadow-sm');
+        document.getElementById(checkId).classList.remove('d-none');
+    }
+}
+
+function resetVisualKondisi() {
+    ['rowBaik', 'rowKurang', 'rowRusak'].forEach(id => {
+        const el = document.getElementById(id);
+        el.className = "d-flex align-items-center justify-content-between p-2 mb-1 rounded-2 text-muted opacity-50";
+    });
+    ['checkBaik', 'checkKurang', 'checkRusak'].forEach(id => {
+        document.getElementById(id).classList.add('d-none');
+    });
+}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+    $(document).ready(function() {
+        $('#formACC').on('submit', function(e) {
+            e.preventDefault();
+            
+            const $form = $(this);
+            
+            // Animasi Loading
+            Swal.fire({
+                title: 'Memproses Data...',
+                text: 'Sedang memvalidasi distribusi material',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.ajax({
+                url: $form.attr('action'), // Akan mengarah ke ../proses/tambah.php
+                type: 'POST',
+                data: $form.serialize() + '&simpan_distribusi=true',
+                success: function(response) {
+                    if (response.trim() === "success") {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Material telah divalidasi dan siap didistribusikan.',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        }).then(() => {
+                            // Tutup modal secara manual
+                            const modalElement = document.getElementById('modalACC');
+                            const instance = bootstrap.Modal.getInstance(modalElement);
+                            if(instance) instance.hide();
+                            
+                            // Segarkan data (Reload)
+                            location.reload(); 
+                        });
+                    } else {
+                        Swal.fire('Opps!', response, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error!', 'Gagal terhubung ke server.', 'error');
+                }
+            });
+        });
+    });
+
+
+    function resendBarang(id, jmlSisa, nama) {
+    Swal.fire({
+        title: 'Kirim Ulang Barang',
+        text: `Apakah Anda ingin mengirim ulang sisa ${jmlSisa} unit untuk ${nama}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Kirim!',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#198754'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '../proses/tambah.php',
+                type: 'POST',
+                data: { 
+                    aksi: 'kirim_ulang', 
+                    id: id,
+                    jumlah: jmlSisa 
+                },
+                success: function(res) {
+                    if(res.trim() === 'success') {
+                        Swal.fire('Berhasil!', 'Barang sisa telah dikirim ulang.', 'success')
+                            .then(() => location.reload());
+                    } else {
+                        Swal.fire('Gagal', res, 'error');
+                    }
+                }
+            });
+        }
+    });
+}
+    </script>
+
+    
+
+>>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
 
 </body>
 </html>

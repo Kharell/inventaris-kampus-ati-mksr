@@ -171,10 +171,13 @@ $id_lab_user = $_SESSION['id_lab'] ?? '';
         </main>
     </div>
 </div>
+<<<<<<< HEAD
 
 <!-- TAMBAHKAN BARIS INI: Script Bootstrap agar Menu Mobile bisa diklik -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+=======
+>>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
 <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
