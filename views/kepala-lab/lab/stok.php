@@ -12,15 +12,9 @@ $id_user = $_SESSION['id_user'];
 $id_lab_user = $_SESSION['id_lab'] ?? ''; 
 
 /**
-<<<<<<< HEAD
  * LOGIKA BARU: TAMPILKAN HANYA JIKA SUDAH ADA BARANG YANG DI-ACC
  * Menggunakan HAVING total_diterima > 0 agar barang yang belum pernah
  * dikirim atau belum di-ACC oleh Lab tidak muncul di tabel stok ini.
-=======
- * LOGIKA BARU: SATU GUDANG BERSAMA
- * Mengambil data stok, spesifikasi, dan kondisi LANGSUNG dari tabel bahan_praktek
- * karena stok Kepala Lab dan Admin sekarang bernilai sama.
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
  */
 $sql_stok = "SELECT 
                 b.id_praktek,
@@ -29,7 +23,6 @@ $sql_stok = "SELECT
                 b.kode_bahan,
                 b.spesifikasi, 
                 b.kondisi,
-<<<<<<< HEAD
                 -- Stok asli / Pusat tidak dibaca langsung untuk keamanan visual
                 -- Kita hitung manual mutasinya dari distribusi (Masuk) - pemakaian (Keluar)
                 COALESCE((
@@ -38,21 +31,13 @@ $sql_stok = "SELECT
                     WHERE id_praktek = b.id_praktek AND id_lab = '$id_lab_user' AND status = 'diterima'
                 ), 0) as total_diterima,
                 
-=======
-                b.stok as sisa_stok,
-                -- Menghitung total pemakaian untuk ditampilkan di tabel
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                 COALESCE((
                     SELECT SUM(jumlah_pakai) 
                     FROM pemakaian_lab 
                     WHERE id_praktek = b.id_praktek AND id_lab = '$id_lab_user'
                 ), 0) as total_terpakai
              FROM bahan_praktek b
-<<<<<<< HEAD
              HAVING total_diterima > 0 
-=======
-             WHERE b.id_lab = '$id_lab_user' 
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
              ORDER BY b.nama_bahan ASC";
 
 $query_stok = mysqli_query($conn, $sql_stok);
@@ -61,13 +46,8 @@ if (!$query_stok) {
     die("Gagal mengambil data stok: " . mysqli_error($conn));
 }
 
-<<<<<<< HEAD
 // --- STEP 2: Ambil Bahan HANYA untuk Dropdown Form Permintaan (Ini boleh baca semua) ---
 $query_barang = mysqli_query($conn, "SELECT * FROM bahan_praktek ORDER BY nama_bahan ASC");
-=======
-// --- STEP 2: Ambil Bahan HANYA dari Lab yang sama ---
-$query_barang = mysqli_query($conn, "SELECT * FROM bahan_praktek WHERE id_lab = '$id_lab_user' ORDER BY nama_bahan ASC");
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
 
 // --- STEP 3: Riwayat Permintaan ---
 $sql_riwayat = "SELECT p.*, b.kode_bahan,  b.nama_bahan, b.spesifikasi, b.kondisi 
@@ -281,11 +261,7 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                         
                         <div class="row g-3 align-items-end">
                             <div class="col-md-4">
-<<<<<<< HEAD
                                 <label class="form-label fw-bold small text-muted">CARI & PILIH BAHAN DARI PUSAT</label>
-=======
-                                <label class="form-label fw-bold small text-muted">CARI & PILIH BAHAN</label>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                                 <select id="pilih_bahan" class="form-select select2-pencarian">
                                     <option value="">Pilih bahan...</option>
                                     <?php 
@@ -313,13 +289,8 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                             </div>
 
                             <div class="col-md-1">
-<<<<<<< HEAD
                                 <label class="form-label fw-bold small text-muted">JUMLAH (UNIT)</label>
                                 <input type="number" id="input_stok_fisik" class="form-control border-primary" min="1" value="0">
-=======
-                                <label class="form-label fw-bold small text-muted">STOK</label>
-                                <input type="number" id="input_stok_fisik" class="form-control border-primary" min="0" value="0">
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                             </div>
 
                             <div class="col-md-2">
@@ -339,11 +310,7 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                                             <th>No</th>
                                             <th>Bahan</th>
                                             <th>Detail (Spec/Kon)</th>
-<<<<<<< HEAD
                                             <th width="15%">Jumlah Di Lab</th>
-=======
-                                            <th width="15%">Stok Lab Saat Ini</th>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                                             <th width="5%">Aksi</th>
                                         </tr>
                                     </thead>
@@ -361,11 +328,7 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                                         id="btn-submit-all" 
                                         class="btn btn-navy px-5 py-2 rounded-pill shadow-sm fw-bold" 
                                         <?= !$is_active ? 'disabled' : ''; ?>>
-<<<<<<< HEAD
                                     <i class="bi bi-send-check me-2"></i>Kirim Stok Ke Admin
-=======
-                                    <i class="bi bi-send-check me-2"></i>Kirim Data Pemakaian
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                                 </button>
                             </div>
                         </form>
@@ -394,7 +357,6 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                             $no = 1;
                             if (mysqli_num_rows($query_stok) > 0) :
                                 while ($row = mysqli_fetch_assoc($query_stok)) : 
-<<<<<<< HEAD
                                     // Logika perhitungan yang baru:
                                     // Stok Awal (masuk) diambil murni dari total barang yang 'diterima' dari admin
                                     $qty_awal = (float)($row['total_diterima'] ?? 0);
@@ -404,14 +366,6 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                                     
                                     // Sisa Stok di Lab adalah Awal - Terpakai
                                     $sisa = $qty_awal - $terpakai;
-=======
-                                    // Logika perhitungan agar sesuai dengan tabel bahan_praktek
-                                    $sisa = (float)($row['sisa_stok'] ?? 0);
-                                    $terpakai = (float)($row['total_terpakai'] ?? 0);
-                                    
-                                    // Stok awal adalah stok saat ini (sisa) + yang sudah terpakai
-                                    $qty_awal = $sisa + $terpakai;
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                                     
                                     // 1. Logic penentuan warna badge sisa stok
                                     if ($sisa <= 0) {
@@ -445,21 +399,12 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                                     </div>
                                 </td>
                                 
-<<<<<<< HEAD
                                 <td class="text-center fw-semibold text-success">
                                      <?= number_format($qty_awal, 0, ',', '.'); ?>
                                 </td>
                                 
                                 <td class="text-center text-danger fw-semibold">
                                      <?= number_format($terpakai, 0, ',', '.'); ?>
-=======
-                                <td class="text-center fw-semibold text-muted">
-                                    <?= number_format($qty_awal, 0, ',', '.'); ?>
-                                </td>
-                                
-                                <td class="text-center text-danger fw-semibold">
-                                    <?= number_format($terpakai, 0, ',', '.'); ?>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                                 </td>
                                 
                                 <td class="text-center">
@@ -490,15 +435,7 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                             </tr>
                             <?php 
                                 endwhile; 
-<<<<<<< HEAD
                             endif; ?>
-=======
-                            else: ?>
-                                <tr>
-                                    <td colspan="9" class="text-center text-muted py-4">Data stok tidak ditemukan.</td>
-                                </tr>
-                            <?php endif; ?>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                         </tbody>
                     </table>
                 </div>
@@ -508,31 +445,15 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
 </div>
 
 <div class="modal fade" id="modalHistory" tabindex="-1" aria-hidden="true">
-<<<<<<< HEAD
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-=======
-    <!-- Tambahkan modal-xl agar modal menjadi lebar dan tabel tidak berdesakan -->
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-            
-            <!-- Bagian Header Modal -->
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
             <div class="modal-header text-white border-0" style="background-color: #001f3f; border-radius: 15px 15px 0 0;">
                 <h5 class="modal-title fw-bold">
                     <i class="bi bi-clock-history me-2 text-warning"></i> Kartu Stok (Histori Mutasi)
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-<<<<<<< HEAD
             <div class="modal-body p-4">
-=======
-            
-            <!-- Bagian Body Modal -->
-            <div class="modal-body p-4">
-                
-                <!-- Kotak Info Nama Bahan -->
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                 <div class="d-flex align-items-center mb-4 p-3 bg-light rounded-3 border-start border-4 border-warning shadow-sm">
                     <div class="me-3">
                         <i class="bi bi-box-seam fs-2 text-primary"></i>
@@ -543,33 +464,16 @@ $is_active = $row_status['nilai_pengaturan'] == 1; // Akan bernilai true jika 1,
                     </div>
                 </div>
                 
-<<<<<<< HEAD
                 <div id="isiHistori">
-=======
-                <!-- Tempat Tabel Muncul (Akan diisi oleh file get_history_detail.php) -->
-                <div id="isiHistori">
-                    <!-- Efek Loading sebelum tabel muncul -->
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                     <div class="text-center py-5">
                         <div class="spinner-border text-primary" role="status"></div>
                         <p class="mt-2 text-muted small">Memuat histori mutasi...</p>
                     </div>
                 </div>
-<<<<<<< HEAD
             </div>
             <div class="modal-footer border-top-0 bg-light" style="border-radius: 0 0 15px 15px;">
                 <button type="button" class="btn btn-secondary rounded-pill px-4 shadow-sm" data-bs-dismiss="modal">Tutup</button>
             </div>
-=======
-                
-            </div>
-            
-            <!-- Bagian Footer Modal -->
-            <div class="modal-footer border-top-0 bg-light" style="border-radius: 0 0 15px 15px;">
-                <button type="button" class="btn btn-secondary rounded-pill px-4 shadow-sm" data-bs-dismiss="modal">Tutup</button>
-            </div>
-            
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
         </div>
     </div>
 </div>
@@ -599,7 +503,6 @@ function viewHistory(idPraktek, namaBahan) {
                 $('#tabelMutasi').DataTable().destroy();
             }
             
-<<<<<<< HEAD
             var t = $('#tabelMutasi').DataTable({
                 "language": { "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json" },
                 "pageLength": 5, 
@@ -609,30 +512,6 @@ function viewHistory(idPraktek, namaBahan) {
                 "responsive": true
             });
 
-=======
-            // Inisialisasi DataTables
-            var t = $('#tabelMutasi').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json"
-                },
-                "pageLength": 5, 
-                "lengthMenu": [[5, 10, 50, 100, -1], [5, 10, 50, 100, "Semua"]], 
-                
-                // PERHATIAN: Kita mengurutkan default berdasarkan Tanggal (Kolom Index 1), BUKAN Nomor (0)
-                "order": [[1, "desc"]], 
-                
-                // Nonaktifkan fitur pengurutan klik pada kolom Nomor
-                "columnDefs": [{
-                    "searchable": false,
-                    "orderable": false,
-                    "targets": 0
-                }],
-                "responsive": true
-            });
-
-            // LOGIKA PENOMORAN OTOMATIS: 
-            // Akan me-reset ulang angka 1,2,3 dst setiap kali data diurutkan atau dicari
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
             t.on('order.dt search.dt', function () {
                 let i = 1;
                 t.cells(null, 0, {search: 'applied', order: 'applied'}).every(function (cell) {
@@ -646,18 +525,9 @@ function viewHistory(idPraktek, namaBahan) {
     });
 }
 
-<<<<<<< HEAD
 $(document).ready(function() {
     $('#tabelStok').DataTable({
         "language": { "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json" },
-=======
-
-$(document).ready(function() {
-    $('#tabelStok').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json"
-        },
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
         "pageLength": 10,
         "order": [[8, "desc"]], 
         "responsive": true
@@ -747,7 +617,6 @@ $(document).ready(function() {
             title: 'Berhasil!',
             text: 'Daftar permintaan stok telah dikirim ke Admin Pusat.',
             icon: 'success',
-<<<<<<< HEAD
             confirmButtonColor: '#001f3f', // Warna Navy Tema Kita
             confirmButtonText: '<i class="bi bi-check2-circle me-1"></i> Oke, Mengerti',
             customClass: {
@@ -756,11 +625,6 @@ $(document).ready(function() {
             }
         }).then((result) => {
             // Membersihkan URL agar notifikasi tidak muncul berulang
-=======
-            confirmButtonColor: '#ffc107',
-            confirmButtonText: 'Oke'
-        }).then((result) => {
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
             window.history.replaceState({}, document.title, window.location.pathname);
         });
     } else if (status === 'empty') {

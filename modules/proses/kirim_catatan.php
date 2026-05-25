@@ -1,10 +1,6 @@
 <?php
 include "../../config/database.php";
-<<<<<<< HEAD
 checkAccess(['admin', 'admin-acc']);
-=======
-
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
 $id = $_POST['id'] ?? '';
 $pesan = $_POST['pesan'] ?? '';
 

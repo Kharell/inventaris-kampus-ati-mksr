@@ -263,17 +263,18 @@ $result = mysqli_query($conn, $query);
         </tr>
         <tr valign="top">
             <?php if ($show_double_ttd): ?>
+                
                 <td width="50%" align="center">
-                    <p>Mengetahui,<br>Admin Gudang Pusat,</p>
-                    <div style="height: 75px;"></div>
-                    <p style="margin-top:15px; margin-bottom: 0;"><b><u><?= strtoupper($nama_admin) ?></u></b></p>
-                    <p>NIP. <?= $nip_admin ?></p>
-                </td>
-                <td width="50%" align="center">
-                    <p>Menyetujui,<br><?= $jabatan_kepala ?>,</p>
+                    <p>Mengetahui,<br><?= $jabatan_kepala ?>,</p>
                     <div style="height: 75px;"></div>
                     <p style="margin-top:15px; margin-bottom: 0;"><b><u><?= strtoupper($nama_kepala) ?></u></b></p>
                     <p>NIP. <?= $nip_kepala ?></p>
+                </td>
+                <td width="50%" align="center">
+                    <p>Menyetujui,<br>Admin Gudang Pusat,</p>
+                    <div style="height: 75px;"></div>
+                    <p style="margin-top:15px; margin-bottom: 0;"><b><u><?= strtoupper($nama_admin) ?></u></b></p>
+                    <p>NIP. <?= $nip_admin ?></p>
                 </td>
             <?php else: ?>
                 <td width="50%"></td>

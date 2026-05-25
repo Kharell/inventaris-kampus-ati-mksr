@@ -31,19 +31,11 @@ $sql_req = "SELECT p.*, b.nama_bahan, b.satuan, b.stok, b.id_praktek, b.spesifik
 $query_req = mysqli_query($conn, $sql_req);
 ?>
 
-<<<<<<< HEAD
 <div id="ajax-state" data-lab-id="<?= $id_lab ?>" data-page="<?= $page ?>" data-keyword="<?= htmlspecialchars($keyword, ENT_QUOTES) ?>" data-limit="<?= $limit ?>" style="display:none;"></div>
 
 <div class="row align-items-center mb-4 anim-fade-up">
     <div class="col-md-6">
         <h5 class="fw-bold text-navy mb-1"><i class="bi bi-cpu-fill me-2 text-primary"></i>Manajemen Distribusi Lab</h5>
-=======
-<div id="ajax-state" data-lab-id="<?= $id_lab ?>" data-page="<?= $page ?>" data-keyword="<?= htmlspecialchars($keyword) ?>" data-limit="<?= $limit ?>" style="display:none;"></div>
-
-<div class="row align-items-center mb-4 anim-fade-up">
-    <div class="col-md-6">
-        <h5 class="fw-bold text-navy mb-1"><i class="bi bi-cpu-fill me-2"></i>Manajemen Distribusi Lab</h5>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
         <p class="text-muted small mb-0">Kelola pengiriman barang dan pantau status penerimaan.</p>
     </div>
 </div>
@@ -61,13 +53,8 @@ $query_req = mysqli_query($conn, $sql_req);
                         <th class="ps-4">TANGGAL</th>
                         <th class="ps-4">MATERIAL</th>    
                         <th class="text-center">SPEK & KONDISI</th>
-<<<<<<< HEAD
                         <th class="text-center">AKUMULASI STOK</th>
                         <th class="text-center pe-4">AKSI</th>
-=======
-                        <th class="text-center">STOK & MINTA</th>
-                        <th class="text-end pe-4">AKSI</th>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                     </tr>
                 </thead>
                 <tbody>
@@ -77,7 +64,6 @@ $query_req = mysqli_query($conn, $sql_req);
                         $stok_akumulasi = $stok_lama + $jumlah_baru;
                     ?>
                     <tr>
-<<<<<<< HEAD
                         <td class="ps-4"><div class="small fw-bold text-muted"><?= date('d/m/Y H:i', strtotime($req['tgl_permintaan'])) ?></div></td>
                         <td class="ps-4">
                             <div class="small text-muted font-monospace"><?= htmlspecialchars($req['kode_bahan']) ?></div>
@@ -109,23 +95,6 @@ $query_req = mysqli_query($conn, $sql_req);
                                     onclick="prosesACC('<?= $req['id_permintaan'] ?>', '<?= $req['id_praktek'] ?>', '<?= $jumlah_baru ?>', '<?= addslashes($req['nama_bahan']) ?>', '<?= addslashes($req['spesifikasi']) ?>', '<?= $req['kondisi'] ?>', '<?= $req['kode_bahan'] ?>', '', '', '<?= $id_lab ?>')">
                                 <i class="bi bi-check2-circle me-1"></i> ACC
                             </button>
-=======
-                        <td class="ps-4"><div class="smaller text-muted"><?= date('d/m/Y H:i', strtotime($req['tgl_permintaan'])) ?></div></td>
-                        <td class="ps-4">
-                            <div class="small text-muted"><?= htmlspecialchars($req['kode_bahan']) ?></div>
-                            <div class="fw-bold text-navy"><?= htmlspecialchars($req['nama_bahan']) ?></div>
-                        </td>
-                        <td class="text-center">
-                            <div class="small mb-1"><?= htmlspecialchars($req['spesifikasi'] ?: '-') ?></div>
-                            <span class="badge bg-info-subtle text-info border border-info rounded-pill" style="font-size: 10px;"><?= $req['kondisi'] ?></span>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge bg-primary px-2 py-1"><i class="bi bi-house-door me-1"></i><?= $req['stok_awal'] ?></span>
-                            <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-cart-plus me-1"></i><?= $req['jumlah_minta'] ?></span>
-                        </td>
-                        <td class="text-end pe-4">
-                           <button class="btn btn-navy btn-sm rounded-pill px-4" onclick="prosesACC('<?= $req['id_permintaan'] ?>', '<?= $req['id_praktek'] ?>', '<?= $req['jumlah_minta'] ?>', '<?= addslashes($req['nama_bahan']) ?>', '<?= addslashes($req['spesifikasi']) ?>', '<?= $req['kondisi'] ?>', '<?= $req['kode_bahan'] ?>', '', '', '<?= $id_lab ?>')">ACC</button>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                         </td>
                      </tr>
                     <?php endwhile; ?>
@@ -157,7 +126,6 @@ $query_req = mysqli_query($conn, $sql_req);
 
 <ul class="nav nav-pills mb-4 gap-2 anim-fade-up" id="distTab" role="tablist">
     <li class="nav-item">
-<<<<<<< HEAD
         <button class="nav-link active rounded-pill px-4 fw-bold shadow-sm tab-transit" id="tab-dikirim" data-bs-toggle="tab" data-bs-target="#transit-pane">
             <i class="bi bi-truck me-2"></i>In Transit
         </button>
@@ -171,24 +139,11 @@ $query_req = mysqli_query($conn, $sql_req);
         <button class="nav-link rounded-pill px-4 fw-bold shadow-sm tab-selesai" id="tab-diterima" data-bs-toggle="tab" data-bs-target="#done-pane">
             <i class="bi bi-check-all me-2"></i>Selesai
         </button>
-=======
-        <button class="nav-link rounded-pill px-4 fw-bold shadow-sm" id="tab-dikirim" data-bs-toggle="tab" data-bs-target="#transit-pane"><i class="bi bi-truck me-2"></i>In Transit</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link rounded-pill px-4 fw-bold shadow-sm border-danger" id="tab-ditolak" data-bs-toggle="tab" data-bs-target="#reject-pane"><i class="bi bi-x-circle me-2"></i>Masalah / Ditolak</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link rounded-pill px-4 fw-bold shadow-sm border-success" id="tab-diterima" data-bs-toggle="tab" data-bs-target="#done-pane"><i class="bi bi-check-all me-2"></i>Selesai</button>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
     </li>
 </ul>
 
 <div class="tab-content anim-fade-up">
-<<<<<<< HEAD
     <div class="tab-pane fade show active" id="transit-pane">
-=======
-    <div class="tab-pane fade" id="transit-pane">
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
         <?php renderTableDistribusi($conn, $id_lab, 'dikirim', $search_sql, 'warning', $limit, $offset, $page, $keyword); ?>
     </div>
     <div class="tab-pane fade" id="reject-pane">
@@ -222,22 +177,14 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
 ?>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-<<<<<<< HEAD
         <div class="text-muted small">Menampilkan <b class="text-navy"><?= min($offset + 1, $total_data) ?>-<?= min($offset + $limit, $total_data) ?></b> dari <b class="text-navy"><?= $total_data ?></b> data distribusi</div>
-=======
-        <div class="text-muted small">Menampilkan <b><?= min($offset + 1, $total_data) ?>-<?= min($offset + $limit, $total_data) ?></b> dari <b><?= $total_data ?></b> data</div>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
     </div>
 
     <?php if (mysqli_num_rows($query) > 0) : ?>
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden border-start border-<?= $theme ?> border-5">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-<<<<<<< HEAD
                 <thead class="bg-light small fw-bold text-muted">
-=======
-                <thead class="bg-light small fw-bold">
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                     <tr>
                         <th class="ps-4 text-center">NO</th>
                         <th>MATERIAL</th>
@@ -256,29 +203,16 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
                             <code class="kode-modern mb-1 d-inline-block"><?= $row['kode_distribusi'] ?></code>
                             <div class="fw-bold text-navy"><?= htmlspecialchars($row['nama_bahan']) ?></div>
                         </td>
-<<<<<<< HEAD
                         <td><div class="small text-muted text-truncate" style="max-width: 150px;" title="<?= htmlspecialchars($row['spesifikasi'] ?: '-') ?>"><?= htmlspecialchars($row['spesifikasi'] ?: '-') ?></div></td>
                         <td><div class="small fw-bold text-muted"><?= date('d M Y', strtotime($row['tanggal_distribusi'])) ?></div></td>
-=======
-                        <td><div class="small text-muted"><?= htmlspecialchars($row['spesifikasi'] ?: '-') ?></div></td>
-                        <td><div class="small fw-bold"><?= date('d/m/y', strtotime($row['tanggal_distribusi'])) ?></div></td>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                         <td class="text-center"><span class="badge bg-light text-dark border"><?= $row['jumlah'] ?> <?= $row['satuan'] ?></span></td>
                         
                         <?php if($status == 'diterima') : ?>
                         <td class="text-center">
-<<<<<<< HEAD
                             <span class="badge bg-success-subtle text-success border border-success px-2 py-1 shadow-sm"><?= $row['jumlah_diterima'] ?> <?= $row['satuan'] ?></span>
                         </td>
                         <?php endif; ?>
 
-=======
-                            <span class="badge bg-success-subtle text-success border border-success"><?= $row['jumlah_diterima'] ?> <?= $row['satuan'] ?></span>
-                        </td>
-                        <?php endif; ?>
-
-                        <!-- KOLOM STATUS & KONTROL -->
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                         <td class="text-center pe-4">
                             <?php if($status == 'ditolak_special') : ?>
                                 <?php 
@@ -286,42 +220,24 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
                                     $is_ditolak_total = ($row['status'] == 'ditolak');
                                 ?>
                                 
-<<<<<<< HEAD
                                 <div class="p-2 mb-2 rounded bg-white border border-danger shadow-sm text-start" style="max-width: 250px; margin: 0 auto;">
                                     <small class="fw-bold text-danger d-block mb-1" style="font-size: 0.65rem;">
                                         <i class="bi bi-exclamation-triangle-fill me-1"></i><?= $is_ditolak_total ? 'ALASAN DITOLAK:' : 'KETERANGAN KEKURANGAN:' ?>
-=======
-                                <!-- TAMPILAN ALASAN KEPALA LAB (Diletakkan di dalam TD) -->
-                                <div class="p-2 mb-2 rounded bg-white border border-danger shadow-sm text-start" style="max-width: 250px; margin: 0 auto;">
-                                    <small class="fw-bold text-danger d-block mb-1" style="font-size: 0.65rem;">
-                                        <?= $is_ditolak_total ? 'ALASAN DITOLAK:' : 'KETERANGAN KEKURANGAN:' ?>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                                     </small>
                                     <p class="mb-0 text-dark small" style="line-height: 1.2;">
                                         "<?= htmlspecialchars($row['keterangan'] ?? 'Tidak ada keterangan') ?>"
                                     </p>
                                 </div>
 
-<<<<<<< HEAD
                                 <button class="btn btn-sm <?= $is_ditolak_total ? 'btn-danger' : 'btn-warning' ?> rounded-pill px-3 shadow-sm fw-bold mt-1" 
-=======
-                                <!-- TOMBOL KIRIM ULANG -->
-                                <button class="btn btn-sm <?= $is_ditolak_total ? 'btn-danger' : 'btn-warning' ?> rounded-pill px-3 shadow-sm" 
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                                         onclick="resendBarang('<?= $row['id_distribusi'] ?>', '<?= $sisa ?>', '<?= addslashes($row['nama_bahan']) ?>')">
                                     <i class="bi bi-arrow-repeat me-1"></i> <?= $is_ditolak_total ? 'Kirim Ulang' : 'Kirim Kekurangan' ?> (<?= $sisa ?>)
                                 </button>
 
                             <?php elseif($status == 'dikirim') : ?>
-<<<<<<< HEAD
                                 <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-clock-history me-1"></i>Menunggu Lab</span>
                             <?php else : ?>
                                 <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-check-circle-fill me-1"></i>Selesai</span>
-=======
-                                <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill"><i class="bi bi-clock-history me-1"></i>Menunggu</span>
-                            <?php else : ?>
-                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Selesai</span>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -333,7 +249,6 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
     
     <?php if ($total_page > 1) : ?>
         <nav class="mt-4">
-<<<<<<< HEAD
             <ul class="pagination justify-content-center shadow-sm" style="border-radius: 50px; overflow: hidden; display: inline-flex;">
                 
                 <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
@@ -361,38 +276,19 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
                        Next <i class="bi bi-chevron-right ms-1"></i>
                     </a>
                 </li>
-=======
-            <ul class="pagination justify-content-center">
-                <?php for ($i = 1; $i <= $total_page; $i++) : ?>
-                    <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
-                        <a class="page-link border-0 rounded-pill shadow-sm mx-1" 
-                        href="javascript:void(0)" 
-                        onclick="loadDistribusi('<?= $id_lab ?>', <?= $i ?>, '<?= addslashes($keyword) ?>', <?= $limit ?>)">
-                        <?= $i ?>
-                        </a>
-                    </li>
-                <?php endfor; ?>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
             </ul>
         </nav>
     <?php endif; ?>
 
     <?php else : ?>
-<<<<<<< HEAD
         <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-light">
             <i class="bi bi-search text-muted opacity-25" style="font-size: 3.5rem;"></i>
             <p class="text-muted mt-3 fw-bold">Data tidak ditemukan.</p>
-=======
-        <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-            <i class="bi bi-inbox text-muted fs-1"></i>
-            <p class="text-muted small mt-2">Tidak ada data ditemukan</p>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
         </div>
     <?php endif;
 } ?>
 
 <style>
-<<<<<<< HEAD
 /* Utilities */
 .text-navy { color: #001f3f !important; }
 .bg-navy { background-color: #001f3f !important; }
@@ -425,14 +321,4 @@ function renderTableDistribusi($conn, $id_lab, $status, $search_sql, $theme, $li
 /* Animasi */
 .anim-fade-up { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-=======
-.text-navy { color: #002b5c; }
-.btn-navy { background: #002b5c; color: white; border: none; }
-.btn-navy:hover { background: #004080; color: white; }
-.kode-modern { background: #f1f3f5; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.75rem; }
-.nav-pills .nav-link { color: #555; background: #fff; border: 1px solid #dee2e6; margin-right: 5px; }
-.nav-pills .nav-link.active { background: #002b5c !important; color: #fff !important; border-color: #002b5c; }
-.anim-fade-up { animation: fadeUp 0.4s ease-out; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
 </style>

@@ -1,5 +1,6 @@
 <?php
 include "../../config/database.php";
+include "../../config/auth.php";
 checkAccess(['admin', 'admin-acc']);
 if (isset($_POST['status'])) {
     $status = (int)$_POST['status'];

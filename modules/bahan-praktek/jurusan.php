@@ -178,7 +178,6 @@ checkAccess('admin');
                                     <div class="icon-circle me-3"><?= $no_lab++ ?></div>
                                     <div>
                                         <h6 class="mb-0 fw-bold"><?= $rl['nama_lab'] ?></h6>
-                                        <small class="text-muted">Kode Lab : #LAB-<?= $rl['id_lab'] ?></small>
                                     </div>
                                 </div>
                                 <div>

@@ -22,6 +22,15 @@ if (isset($_GET['pesan'])) {
         $error = "Anda telah berhasil keluar sistem.";
         $alert_class = "alert-success"; 
         $icon = "bi-check-circle";
+    } else if ($_GET['pesan'] == 'reset_sukses') {
+        // --- TAMBAHAN BARU UNTUK NOTIFIKASI RESET PASSWORD ---
+        $error = "Password berhasil direset! Silakan login dengan password baru.";
+        $alert_class = "alert-success"; 
+        $icon = "bi-check-circle-fill";
+    } else if ($_GET['pesan'] == 'registrasi_sukses') {
+        $error = "Registrasi berhasil! Silakan login menggunakan akun baru Anda.";
+        $alert_class = "alert-success"; 
+        $icon = "bi-check-circle-fill";
     }
 }
 
@@ -29,15 +38,14 @@ if (isset($_GET['pesan'])) {
 if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
-    $role_input = $_POST['role']; // Bawaan form: 'admin', 'admin-acc', atau 'kepala_lab'
+    $role_input = $_POST['role']; 
 
     // Pisahkan pengecekan tabel berdasarkan Role
     if ($role_input == 'admin' || $role_input == 'admin-acc') {
-        // Cek di tabel users, dan pastikan rolenya cocok agar tidak silang akses
         $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username' AND role='$role_input'");
         $data = mysqli_fetch_assoc($query);
-        $id_key = 'id_user'; // Sesuai kolom database Anda
-        $nama_key = 'nama_lengkap'; // Menggunakan nama_lengkap
+        $id_key = 'id_user'; 
+        $nama_key = 'nama_lengkap'; 
     } else {
         $query = mysqli_query($conn, "SELECT * FROM kepala_lab WHERE username='$username'");
         $data = mysqli_fetch_assoc($query);
@@ -51,7 +59,7 @@ if (isset($_POST['login'])) {
         $_SESSION['id_user']  = $data[$id_key];
         $_SESSION['username'] = $data['username'];
         $_SESSION['role']     = $role_input;
-        $_SESSION['nama']     = $data[$nama_key] ?? $data['username']; // Fallback ke username jika nama kosong
+        $_SESSION['nama']     = $data[$nama_key] ?? $data['username']; 
         
         // --- DATA UNTUK KEBUTUHAN CETAK LAPORAN ---
         if ($role_input == 'admin' || $role_input == 'admin-acc') {
@@ -60,7 +68,7 @@ if (isset($_POST['login'])) {
         } else {
             $_SESSION['nama_lengkap'] = $data['nama_kepala'];  
             $_SESSION['nip']          = $data['nip'] ?? '..........................'; 
-            $_SESSION['id_lab']       = $data['id_lab']; // Khusus Kepala Lab
+            $_SESSION['id_lab']       = $data['id_lab']; 
         }
 
         // --- SISTEM KEAMANAN SESI ---
@@ -153,46 +161,24 @@ if (isset($_POST['login'])) {
 
         /* Sisi Kanan (Form) */
         .login-form { width: 55%; padding: 50px 60px; background: #fff; }
-
         .welcome-title { color: var(--poltek-navy); font-weight: 800; font-size: 2rem; }
 
-        /* Custom Role Selector (Card Style - 3 Kolom) */
+        /* Custom Role Selector */
         .role-selector { display: flex; gap: 10px; margin-bottom: 25px; }
+        .role-option { flex: 1; position: relative; }
+        .role-option input { position: absolute; opacity: 0; cursor: pointer; }
         
-        .role-option {
-            flex: 1;
-            position: relative;
-        }
-
-        .role-option input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-        }
-
         .role-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 12px 5px;
-            border: 2px solid #eee;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            height: 100%;
+            display: flex; flex-direction: column; align-items: center; padding: 12px 5px;
+            border: 2px solid #eee; border-radius: 12px; cursor: pointer;
+            transition: all 0.3s ease; text-align: center; height: 100%;
         }
 
         .role-card i { font-size: 1.3rem; color: #ccc; margin-bottom: 5px; }
         .role-card span { font-size: 0.75rem; font-weight: 700; color: #888; text-transform: uppercase; line-height: 1.1; }
 
-        .role-option input:checked + .role-card {
-            border-color: var(--poltek-gold);
-            background: rgba(255, 215, 0, 0.05);
-        }
-
-        .role-option input:checked + .role-card i { color: var(--poltek-navy); }
-        .role-option input:checked + .role-card span { color: var(--poltek-navy); }
+        .role-option input:checked + .role-card { border-color: var(--poltek-gold); background: rgba(255, 215, 0, 0.05); }
+        .role-option input:checked + .role-card i, .role-option input:checked + .role-card span { color: var(--poltek-navy); }
 
         /* Input Styles */
         .form-label { font-weight: 700; color: var(--poltek-navy); font-size: 0.85rem; }
@@ -201,22 +187,11 @@ if (isset($_POST['login'])) {
         .form-control:focus { border-color: #dee2e6; box-shadow: none; }
 
         .btn-login {
-            background: var(--poltek-navy);
-            color: var(--poltek-gold);
-            border: 2px solid var(--poltek-gold);
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: 800;
-            width: 100%;
-            transition: 0.4s;
-            letter-spacing: 1px;
+            background: var(--poltek-navy); color: var(--poltek-gold); border: 2px solid var(--poltek-gold);
+            padding: 15px; border-radius: 12px; font-weight: 800; width: 100%; transition: 0.4s; letter-spacing: 1px;
         }
 
-        .btn-login:hover {
-            background: var(--poltek-gold);
-            color: var(--poltek-navy);
-            box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
-        }
+        .btn-login:hover { background: var(--poltek-gold); color: var(--poltek-navy); box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3); }
 
         @media (max-width: 768px) {
             .login-visual { display: none; }
@@ -229,11 +204,9 @@ if (isset($_POST['login'])) {
 <div class="login-container">
     <div class="login-visual">
         <img src="images/logo.png" alt="Logo Politeknik ATI Makassar" onerror="this.src='https://upload.wikimedia.org/wikipedia/id/0/05/Logo_Politeknik_ATI_Makassar.png'">
-        
         <h2 class="fw-bold text-white mb-2">INVENTARIS</h2>
         <p class="text-white-50 small px-4">Sistem Informasi Manajemen Laboratorium & Bahan Praktek Terpadu <br>
           KEMENTERIAN PERINDUSTRIAN RI </p>
-        
         <div class="mt-4 pt-4 border-top border-white border-opacity-10">
             <span class="badge rounded-pill px-3 py-2" style="background: var(--poltek-gold); color: var(--poltek-navy);">
                 POLITEKNIK ATI MAKASSAR
@@ -308,13 +281,19 @@ if (isset($_POST['login'])) {
             
             <div class="text-center mt-4">
                 <p class="text-muted small mb-1">
-                    Belum punya akun? 
-                    <a href="daftarAdmin.php" class="text-decoration-none fw-bold" style="color: #001f3f;">Daftar Admin</a>
+                    Kepala Lab baru? 
+                    <a href="daftar_kepala_lab.php" class="text-decoration-none fw-bold" style="color: #001f3f;">Daftar Akun Lab</a>
                 </p>
-                <p class="text-muted small">
-                    Lupa password? 
-                    <a href="resestPassword.php" class="text-decoration-none fw-bold" style="color: #001f3f;">Reset Password</a>
-                </p>
+                
+                <div class="d-flex justify-content-center gap-3 mt-2">
+                    <a href="lupa_username.php" class="text-decoration-none fw-bold small" style="color: #b8860b;">
+                        <i class="bi bi-person-badge"></i> Lupa Username?
+                    </a>
+                    <span class="text-muted">|</span>
+                    <a href="lupa_password.php" class="text-decoration-none fw-bold small" style="color: #001f3f;">
+                        <i class="bi bi-key"></i> Lupa Password?
+                    </a>
+                </div>
             </div>
 
             <p class="text-center mt-4 text-muted small" style="font-size: 0.7rem;">

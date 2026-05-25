@@ -127,11 +127,7 @@ $total_pemakaian = mysqli_fetch_assoc($total_pemakaian_res)['total'];
                 <div class="row g-4">
                     
                     <div class="col-lg-7">
-<<<<<<< HEAD
                         <h5 class="fw-bold mb-4"><i class="bi bi-grid-fill me-2 text-primary"></i>Kategori Dokumen</h5>
-=======
-                        <h6 class="fw-bold text-navy text-uppercase small mb-3">1. Cakupan Wilayah Pemakaian</h6>
->>>>>>> 75ac65b1f3ece3b3423fc23e593fd1379ad3113e
                         
                         <input type="radio" class="report-selector" name="scope" id="scope_semua" value="semua" checked onclick="toggleScope('semua')">
                         <label class="report-card w-100" for="scope_semua">

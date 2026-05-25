@@ -3,14 +3,22 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Konfigurasi URL
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $host = $_SERVER['HTTP_HOST'];
 $current_page = $_SERVER['REQUEST_URI']; 
-$current_dir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-$parts = explode('/', trim($current_dir, '/'));
-$root_folder = isset($parts[0]) ? "/" . $parts[0] . "/" : "/";
-$base_url = $protocol . "://" . $host . $root_folder;
+
+// ==========================================
+// AUTO-DETEKSI LINGKUNGAN (LOCAL VS LIVE)
+// ==========================================
+if ($host === 'localhost' || $host === '127.0.0.1') {
+    // ---- SETTINGAN UNTUK LOCALHOST ----
+    // Ganti 'nama_folder_project_anda' sesuai dengan nama folder di htdocs
+    $folder_local = "inventaris-kampus-ati"; 
+    $base_url = $protocol . "://" . $host . "/" . $folder_local . "/";
+} else {
+    // ---- SETTINGAN UNTUK HOSTING / LIVE ----
+    $base_url = $protocol . "://" . $host . "/";
+}
 
 // Menangkap role dari session
 $role = isset($_SESSION['role']) ? $_SESSION['role'] : '';

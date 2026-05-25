@@ -96,6 +96,28 @@ $sql = "SELECT
         WHERE $where_clause
         ORDER BY l.nama_lab ASC, p.nama_bahan ASC";
 
+$title_suffix = "SEMUA UNIT / JURUSAN";
+$show_double_ttd = false;
+
+// KODE YANG DIPERBAIKI: Menghapus $query .= yang memicu error
+if ($scope == 'jurusan' && !empty($id_jurusan)) {
+    $res_j = mysqli_query($conn, "SELECT nama_jurusan FROM jurusan WHERE id_jurusan = '$id_jurusan'");
+    $title_suffix = "JURUSAN " . strtoupper(mysqli_fetch_assoc($res_j)['nama_jurusan']);
+} elseif ($scope == 'lab' && !empty($id_lab)) {
+    $res_l = mysqli_query($conn, "SELECT nama_lab FROM lab WHERE id_lab = '$id_lab'");
+    $title_suffix = " " . strtoupper(mysqli_fetch_assoc($res_l)['nama_lab']);
+    
+    // Aktifkan TTD Ganda jika difilter per Lab
+    $kepala_query = mysqli_query($conn, "SELECT k.nama_kepala, k.nip, l.nama_lab FROM kepala_lab k JOIN lab l ON k.id_lab = l.id_lab WHERE k.id_lab = '$id_lab'");
+    $k_data = mysqli_fetch_assoc($kepala_query);
+    if ($k_data) {
+        $show_double_ttd = true;
+        $nama_kepala = $k_data['nama_kepala']; 
+        $nip_kepala = $k_data['nip']; 
+        $jabatan_kepala = "Kepala " . $k_data['nama_lab'];
+    }
+}
+
 $result = mysqli_query($conn, $sql);
 $judul_laporan = "LAPORAN STOK BAHAN PRAKTEK / WORKSHOP";
 ?>
@@ -261,15 +283,29 @@ $judul_laporan = "LAPORAN STOK BAHAN PRAKTEK / WORKSHOP";
             <td colspan="2" align="right" style="padding-bottom: 10px; padding-right: 20px;">Makassar, <?= date('d F Y') ?></td>
         </tr>
         <tr valign="top">
-            <td width="60%"></td>
-            <td width="40%" align="center">
-                <p>Mengetahui,<br>Admin Gudang Pusat,</p>
-                <div style="height: 70px;"></div>
-                <p style="margin-top:15px; margin-bottom: 0;">
-                    <b><u><?= strtoupper($nama_admin) ?></u></b>
-                </p>
-                <p>NIP. <?= $nip_admin ?></p>
-            </td>
+            <?php if ($show_double_ttd): ?>
+                
+                <td width="50%" align="center">
+                    <p>Mengetahui,<br><?= $jabatan_kepala ?>,</p>
+                    <div style="height: 75px;"></div>
+                    <p style="margin-top:15px; margin-bottom: 0;"><b><u><?= strtoupper($nama_kepala) ?></u></b></p>
+                    <p>NIP. <?= $nip_kepala ?></p>
+                </td>
+                <td width="50%" align="center">
+                    <p>Menyetujui,<br>Admin Gudang Pusat,</p>
+                    <div style="height: 75px;"></div>
+                    <p style="margin-top:15px; margin-bottom: 0;"><b><u><?= strtoupper($nama_admin) ?></u></b></p>
+                    <p>NIP. <?= $nip_admin ?></p>
+                </td>
+            <?php else: ?>
+                <td width="50%"></td>
+                <td width="50%" align="center">
+                    <p>Mengetahui,<br>Admin Gudang Pusat,</p>
+                    <div style="height: 75px;"></div>
+                    <p style="margin-top:15px; margin-bottom: 0;"><b><u><?= strtoupper($nama_admin) ?></u></b></p>
+                    <p>NIP. <?= $nip_admin ?></p>
+                </td>
+            <?php endif; ?>
         </tr>
     </table>
 </div>

@@ -577,22 +577,66 @@ $qj = mysqli_query($conn, "SELECT * FROM jurusan ORDER BY nama_jurusan ASC");
     }
 
     function confirmDelete(id) {
-        Swal.fire({
-            title: 'Hapus Data Material?',
-            text: "Data yang dihapus tidak dapat dikembalikan!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: '<i class="bi bi-trash"></i> Ya, Hapus Permanen',
-            cancelButtonText: 'Batal',
-            customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-4 fw-bold', cancelButton: 'rounded-pill px-4 fw-bold' }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = `../proses/hapus.php?id=${id}&modul=praktek_pusat&id_lab=<?= $id_lab_selected ?>&id_j=<?= $id_j_selected ?>`;
-            }
-        });
-    }
+    Swal.fire({
+        title: 'Hapus Data Material?',
+        text: "Data yang dihapus tidak dapat dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-trash"></i> Ya, Hapus Permanen',
+        cancelButtonText: 'Batal',
+        customClass: { 
+            popup: 'rounded-4 shadow-lg border-0', 
+            confirmButton: 'rounded-pill px-4 fw-bold', 
+            cancelButton: 'rounded-pill px-4 fw-bold' 
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            // 1. Gunakan fetch (AJAX) alih-alih window.location.href
+            // Pastikan URL PHP-nya benar (saya perbaiki typo pada parameter modul)
+            const url = `../proses/hapus.php?id=${id}&modul=praktek_pusat&id_lab=<?= $id_lab_selected ?>&id_j=<?= $id_j_selected ?>`;
+            
+            fetch(url)
+            .then(response => response.json()) // 2. Ubah response menjadi objek JSON
+            .then(data => {
+                // 3. Cek status dari PHP
+                if (data.status === 'success') {
+                    // Pop-up Sukses
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: data.message,
+                        icon: 'success',
+                        customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-4 fw-bold' }
+                    }).then(() => {
+                        // Refresh halaman setelah user klik OK di pop-up sukses
+                        window.location.reload(); 
+                    });
+                } else if (data.status === 'error') {
+                    // Pop-up Gagal (Misal: karena data sudah didistribusikan)
+                    Swal.fire({
+                        title: 'Tidak Bisa Dihapus!',
+                        text: data.message,
+                        icon: 'error',
+                        customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-4 fw-bold' }
+                    });
+                }
+            })
+            .catch(error => {
+                // Pop-up jika terjadi error koneksi atau error di kode PHP
+                Swal.fire({
+                    title: 'Terjadi Kesalahan!',
+                    text: 'Gagal menghubungi server.',
+                    icon: 'error',
+                    customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-4 fw-bold' }
+                });
+                console.error("Error:", error);
+            });
+            
+        }
+    });
+}
 
     // AJAX UNTUK TOGGLE SWITCH AKSES LAB
     $(document).ready(function() {

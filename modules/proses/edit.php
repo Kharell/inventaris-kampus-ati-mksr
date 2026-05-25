@@ -48,23 +48,90 @@ if (isset($_POST['update_bahan_lab'])) {
     exit();
 }
 
-// 4. EDIT PERSEDIAAN GUDANG (Punya Anda sekarang Aman)
-if (isset($_POST['id_persediaan'])) {
-    $id        = mysqli_real_escape_string($conn, $_POST['id_persediaan']);
-    $nama      = mysqli_real_escape_string($conn, $_POST['nama_barang']);
-    $satuan    = mysqli_real_escape_string($conn, $_POST['satuan']);
-    $awal      = (int)$_POST['stok_awal'];
-    $pengajuan = (int)$_POST['pengajuan_barang'];
-    $pemakaian = (int)$_POST['pemakaian_barang'];
+// ==============================================================
+// LOGIKA UPDATE DATA GUDANG PERSEDIAAN (3 JENIS AKSI)
+// ==============================================================
+if (isset($_POST['jenis_update'])) {
+    $jenis = $_POST['jenis_update'];
+    $id = mysqli_real_escape_string($conn, $_POST['id_persediaan']);
 
-    $sql = "UPDATE gudang_persediaan SET nama_barang='$nama', satuan='$satuan', stok_awal='$awal', pengajuan_barang='$pengajuan', pemakaian_barang='$pemakaian' WHERE id_persediaan='$id'";
-    
-    if (mysqli_query($conn, $sql)) {
-        header("Location: ../gudang/persediaan.php?status=sukses");
-    } else {
-        header("Location: ../gudang/persediaan.php?status=gagal");
+    // Aksi 1: ADMIN MENAMBAH STOK BARU (PENGAJUAN / MASUK)
+    if ($jenis == 'tambah_stok') {
+        $jml_masuk = (int)$_POST['jumlah_masuk'];
+        // Kunci utamanya: pengajuan saat ini DITAMBAH dengan jumlah_masuk yang diinput
+        $query = "UPDATE gudang_persediaan SET pengajuan_barang = pengajuan_barang + $jml_masuk WHERE id_persediaan = '$id'";
+        
+        if (mysqli_query($conn, $query)) {
+            header("Location: ../gudang/persediaan.php?status=update_sukses");
+        }
     }
+
+    // Aksi 2: ADMIN MENGURANGI STOK (PEMAKAIAN / KELUAR)
+    elseif ($jenis == 'kurangi_stok') {
+        $jml_keluar = (int)$_POST['jumlah_keluar'];
+        // Kunci utamanya: pemakaian saat ini DITAMBAH dengan jumlah_keluar yang diinput
+        $query = "UPDATE gudang_persediaan SET pemakaian_barang = pemakaian_barang + $jml_keluar WHERE id_persediaan = '$id'";
+        
+        if (mysqli_query($conn, $query)) {
+            header("Location: ../gudang/persediaan.php?status=update_sukses");
+        }
+    }
+
+    // Aksi 3: ADMIN HANYA EDIT INFO DASAR (NAMA, SATUAN, STOK AWAL)
+    elseif ($jenis == 'edit_info') {
+        $nama = mysqli_real_escape_string($conn, $_POST['nama_barang']);
+        $satuan = mysqli_real_escape_string($conn, $_POST['satuan']);
+        $stok_awal = (int)$_POST['stok_awal'];
+        
+        $query = "UPDATE gudang_persediaan SET nama_barang = '$nama', satuan = '$satuan', stok_awal = '$stok_awal' WHERE id_persediaan = '$id'";
+        
+        if (mysqli_query($conn, $query)) {
+            header("Location: ../gudang/persediaan.php?status=update_sukses");
+        }
+    }
+    
     exit();
+}
+
+// 3. UPDATE KEPALA LAB
+if (isset($_POST['update_kepala'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id_kepala']);
+    $nama = mysqli_real_escape_string($conn, $_POST['nama_kepala']);
+    $nip = mysqli_real_escape_string($conn, $_POST['nip']);
+    $kontak = mysqli_real_escape_string($conn, $_POST['kontak']);
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+
+    // Logika update password: hanya diupdate jika input password tidak kosong
+    if (!empty($_POST['password'])) {
+        $pw_asli = $_POST['password'];
+        $password_hash = password_hash($pw_asli, PASSWORD_DEFAULT);
+        $password_plain = mysqli_real_escape_string($conn, $pw_asli);
+
+        $query = "UPDATE kepala_lab SET 
+                    nama_kepala='$nama', 
+                    username='$username', 
+                    password='$password_hash', 
+                    password_plain='$password_plain', 
+                    nip='$nip', 
+                    kontak='$kontak' 
+                  WHERE id_kepala='$id'";
+    } else {
+        // Jika password kosong, jangan update kolom password dan password_plain
+        $query = "UPDATE kepala_lab SET 
+                    nama_kepala='$nama', 
+                    username='$username', 
+                    nip='$nip', 
+                    kontak='$kontak' 
+                  WHERE id_kepala='$id'";
+    }
+
+    if (mysqli_query($conn, $query)) {
+        // Redirect dengan status update_sukses agar SweetAlert muncul
+        header("Location: ../bahan-praktek/kepala-lab.php?status=update_sukses");
+    } else {
+        header("Location: ../bahan-praktek/kepala-lab.php?status=gagal");
+    }
+    
 }
 
 // 5. UPDATE JURUSAN / LAB / KEPALA LAB / DISTRIBUSI (Gunakan pola yang sama)
@@ -219,46 +286,7 @@ if (isset($_POST['update_lab'])) {
     exit();
 }
 
-// 3. UPDATE KEPALA LAB
-if (isset($_POST['update_kepala'])) {
-    $id = mysqli_real_escape_string($conn, $_POST['id_kepala']);
-    $nama = mysqli_real_escape_string($conn, $_POST['nama_kepala']);
-    $nip = mysqli_real_escape_string($conn, $_POST['nip']);
-    $kontak = mysqli_real_escape_string($conn, $_POST['kontak']);
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
 
-    // Logika update password: hanya diupdate jika input password tidak kosong
-    if (!empty($_POST['password'])) {
-        $pw_asli = $_POST['password'];
-        $password_hash = password_hash($pw_asli, PASSWORD_DEFAULT);
-        $password_plain = mysqli_real_escape_string($conn, $pw_asli);
-
-        $query = "UPDATE kepala_lab SET 
-                    nama_kepala='$nama', 
-                    username='$username', 
-                    password='$password_hash', 
-                    password_plain='$password_plain', 
-                    nip='$nip', 
-                    kontak='$kontak' 
-                  WHERE id_kepala='$id'";
-    } else {
-        // Jika password kosong, jangan update kolom password dan password_plain
-        $query = "UPDATE kepala_lab SET 
-                    nama_kepala='$nama', 
-                    username='$username', 
-                    nip='$nip', 
-                    kontak='$kontak' 
-                  WHERE id_kepala='$id'";
-    }
-
-    if (mysqli_query($conn, $query)) {
-        // Redirect dengan status update_sukses agar SweetAlert muncul
-        header("Location: ../bahan-praktek/kepala-lab.php?status=update_sukses");
-    } else {
-        header("Location: ../bahan-praktek/kepala-lab.php?status=gagal");
-    }
-    
-}
 
 
 // EDIT PERSEDIAAN GUDANG

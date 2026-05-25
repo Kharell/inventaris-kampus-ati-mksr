@@ -110,7 +110,7 @@ $res = mysqli_query($conn, $query);
                                 <th class="ps-4 py-3">No</th>
                                 <th>Informasi Kepala</th>
                                 <th>Unit Kerja</th>
-                                <th>Akun Akses</th>
+                                <th>Username</th>
                                 <th>Kontak</th>
                                 <th class="text-center pe-4">Aksi</th>
                             </tr>
@@ -132,14 +132,7 @@ $res = mysqli_query($conn, $query);
                                 </td>
                                 <td>
                                     <div class="d-flex flex-column">
-                                        <!-- <small class="text-muted mb-1">User: <code class="text-primary fw-bold"><?= $row['username']; ?></code></small> -->
-                                        <small class="text-muted mb-1">Username: <code class="text-primary fw-bold">Dikunci</code></small>
-                                        <div class="input-group input-group-sm" style="width: 140px;">
-                                            <input type="password" class="form-control border-0 bg-light" id="listPw<?= $row['id_kepala']; ?>" value="<?= $row['password_plain']; ?>" readonly>
-                                            <span class="input-group-text bg-light border-0 cursor-pointer" onclick="toggleViewPw(<?= $row['id_kepala']; ?>)">
-                                                <i class="bi bi-eye-fill text-navy-deep" id="iconPw<?= $row['id_kepala']; ?>"></i>
-                                            </span>
-                                        </div>
+                                        <span class="badge badge-lab px-3 py-2 rounded-pill mb-1"><?= $row['username']; ?></span>
                                     </div>
                                 </td>
                                 <td>

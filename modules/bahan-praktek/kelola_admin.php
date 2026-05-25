@@ -322,20 +322,54 @@ if (isset($_POST['update_admin_acc'])) {
             input.type = input.type === "password" ? "text" : "password";
         }
 
-        function konfirmasiHapus(id) {
+       function konfirmasiHapus(id) {
             Swal.fire({
                 title: 'Hapus Akun?',
                 text: "Akses login Admin ACC ini akan dicabut permanen.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: colors.navy,
+                confirmButtonColor: colors.navy, 
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal',
                 customClass: { popup: 'rounded-4' }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = "../proses/hapus.php?hapus_admin_acc=" + id;
+                    
+                    // PERBAIKAN: Menggunakan format ?id=...&modul=admin_acc
+                    fetch("../proses/hapus.php?id=" + id + "&modul=admin_acc")
+                    .then(response => response.json()) 
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: data.message,
+                                icon: 'success',
+                                customClass: { popup: 'rounded-4' },
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload(); 
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Gagal Dihapus!',
+                                text: data.message,
+                                icon: 'error',
+                                customClass: { popup: 'rounded-4' }
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Terjadi kesalahan sistem atau koneksi terputus.',
+                            icon: 'error',
+                            customClass: { popup: 'rounded-4' }
+                        });
+                        console.error("Error:", error);
+                    });
+                    
                 }
             })
         }
